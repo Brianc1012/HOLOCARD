@@ -1,0 +1,273 @@
+body {
+    display: flex; /* Ensures the body uses flexbox for centering */
+    justify-content: center;
+    align-items: center;
+    background-image: url("../public/images/bg1.jpg"); /* Corrected syntax */
+    background-size: cover; /* Ensures the background image covers the entire viewport */
+    background-position: center; /* Centers the background image */
+    margin: 0; /* Removes default body margin */
+    height: 100vh; /* Ensures the body takes the full viewport height */
+    background-color: none;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.login-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: url('../public/images/bg1.jpg') center center/cover no-repeat;
+  filter: blur(2px) brightness(0.8);
+}
+
+.loginContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    position: absolute; /* Keeps the container centered */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #beb7fa7a;
+    outline: 1px solid #000;
+    width: 90%; /* Default width for smaller screens */
+    max-width: 500px; /* Maximum width for larger screens */
+    min-width: 300px; /* Minimum width to prevent it from shrinking too much */
+    height: auto; /* Adjusts height based on content */
+    max-height: 80%; /* Maximum height to prevent overflow */
+    min-height: 400px; /* Minimum height to ensure enough space for content */
+    border-radius: 30px;
+    flex-wrap: wrap;
+    padding: 3rem; /* Adds padding inside the container */
+    box-sizing: border-box; /* Ensures padding is included in width/height */
+    overflow: auto; /* Adds scrollbars if content exceeds max height */
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 2rem 2.5rem;
+}
+
+.login-container {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.13);
+  border-radius: 18px;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  max-width: 400px;
+  width: 100%;
+  margin: 3rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logoContainer {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35%; /* Set the width as a percentage of the parent container */
+    max-width: 200px; /* Set a maximum width for larger screens */
+    height: auto; /* Maintain aspect ratio */
+    aspect-ratio: 1 / 1; /* Ensures the container remains a square */
+    background-color: #ff3c0000;
+    border-radius: 10px; /* Optional: Remove or adjust for square corners */
+    overflow: hidden; /* Ensures the content does not overflow the container */
+    transition: transform 0.3s ease; /* Smooth scaling effect */
+    margin-bottom: 10%;
+    margin-top: 5%;
+}
+
+.logoContainer:hover {
+    transform: scale(1.1); /* Slightly enlarges the container on hover */
+}
+
+.logoContainer .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Make the logo fill the container */
+    height: 100%; /* Ensure the logo scales proportionally */
+    background-color: #1e0232;
+    border-radius: 10px; /* Optional: Remove or adjust for square corners */
+    padding: 0.5rem; /* Adds padding inside the logo container */
+    border-radius: 50%;
+}
+
+.logoContainer img {
+    width: 100%; /* Scale the image to fill the container */
+    height: 100%; /* Maintain the aspect ratio */
+    object-fit: contain; /* Ensures the image fits within the container */
+}
+
+.input {
+    outline: 2px solid rgb(0, 65, 228); /* Adds an outline to inputs and buttons */
+    border: 2px solid rgb(0, 71, 250); /* Ensures consistent border styling */
+    padding: 0.5rem; /* Adds padding for better spacing */
+    border-radius: 5px; /* Rounds the corners for a modern look */
+    font-size: 1rem; /* Ensures text is readable */
+    box-sizing: border-box; /* Includes padding and border in the element's total width */
+    align-items: baseline; /* Ensures the input stretches to fill the container */
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 0.7rem;
+    border: 1px solid #ddd;
+}
+
+.login-container input {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.7rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #f7f7fa;
+  transition: border 0.2s;
+}
+
+.input input{
+    width: 90%; /* Ensures the input field takes full width of the container */
+    height: 100%; /* Ensures the input field takes full height of the container */
+    background-color: #ffffff00; /* Sets a white background for the input field */
+    color: #000000; /* Sets text color to black for better readability */
+    border-radius: 5px; /* Rounds the corners for a modern look */
+    font-size: 1rem; /* Ensures text is readable */
+    padding: 0.5rem; /* Adds padding for better spacing */
+    box-sizing: border-box; /* Includes padding and border in the element's total width */
+}
+.submit {
+    outline: none; /* Removes the default outline */
+    width: 80%;
+    align-self: center;
+    border: 2px solid rgba(8, 56, 179, 0.987); /* Adds a border */
+    background-color: #0838b3; /* Sets the background color */
+    color: #fff; /* Sets the text color */
+    padding: 0.8rem 1.5rem; /* Adds padding for better spacing */
+    border-radius: 5px; /* Rounds the corners */
+    font-size: 1rem; /* Ensures text is readable */
+    cursor: pointer; /* Changes the cursor to a pointer */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Adds smooth hover effects */
+    background: #6a11cb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.7rem;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.login-container button {
+  width: 100%;
+  background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.submit:hover {
+    background-color: #062a8a; /* Darkens the background on hover */
+    transform: scale(1.05); /* Slightly enlarges the button on hover */
+    background: #2575fc;
+}
+
+.login-footer {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+}
+.login-footer a {
+  color: #6a11cb;
+  text-decoration: none;
+  font-weight: bold;
+}
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+form button:focus {
+    box-shadow: 0 0 5px rgba(240, 166, 8, 0.5); /* Adds a subtle glow effect */
+}
+
+.input input:focus {
+    outline: transparent; /* Removes the outline */
+    border: transparent; /* Removes the border */
+    box-shadow: none; /* Removes any shadow effects */
+    background-color: transparent; /* Resets the background to transparent */
+    color: inherit; /* Inherits the text color from the parent */
+}
+
+.forgotPassword {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    width: 100%;
+    height: 20%;
+    background-color: #9000ff00;
+    overflow: hidden; /* Prevents content from exceeding the container */
+    margin-top: 15%;
+    margin-bottom: 0%;
+}
+
+.forgotPassword p {
+    text-shadow: 0px 0px 0px rgba(0, 0, 0, 0.7); /* Stronger and more visible shadow */
+    color: #ffffff; /* Ensure the text color contrasts with the background */
+    font-size: 1rem;
+    font-weight: lighter; /* Use 'lighter' for proper CSS syntax */
+    text-align: center;
+    margin: 0; /* Removes default margin */
+}
+
+.forgotPassword a {
+    text-shadow: 0px 0px 0px rgb(9, 79, 255); /* Stronger and more visible shadow */
+    color: #00d0ff;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 0; /* Removes default margin */
+}
+
+.loginContainer form {
+    display: flex; /* Ensure the form is a flex container */
+    flex-direction: column; /* Stack the elements vertically */
+    gap: 1rem; /* Adds space between the child elements */
+    width: 100%; /* Optional: Ensures the form takes full width of the container */
+    align-items: left; /* Centers the child elements horizontally */
+    margin: top 1rem; ;
+}
+
+button[type="revealButton"] {
+    background-color: transparent;
+    border: none; /* Removes the default border */
+}
+
+button[type="revealButton"] :hover {
+    background-color: transparent;
+    font-size: 1.5rem; /* Increases font size on hover */
+    transform: scale(1.2); /* Slightly enlarges the button on hover */
+    transition: transform 0.3s ease; /* Smooth transition effect */
+}
+
+.login-logo img {
+  margin-bottom: 1.5rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 600px) {
+  .login-container {
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    max-width: 95vw;
+  }
+}

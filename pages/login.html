@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - HoloCard</title>
+  <link rel="stylesheet" href="../styles/login.css">
+</head>
+<body>
+  <div class="login-bg"></div>
+  <div class="login-container">
+    <div class="login-logo">
+      <img src="../public/images/holocardLogo.svg" alt="Logo" style="width:80px;height:80px;display:block;margin:0 auto;" />
+    </div>
+    <form id="loginForm" autocomplete="off">
+      <input type="email" id="loginEmail" placeholder="Email" required maxlength="100">
+      <input type="password" id="loginPassword" placeholder="Password" required maxlength="50">
+      <button type="submit">Log In</button>
+    </form>
+    <div class="login-footer">
+      <span>Don’t have an account? <a href="signup.html">SIGNUP</a></span>
+    </div>
+  </div>
+  <script src="../scripts/login.js"></script>
+</body>
+</html>

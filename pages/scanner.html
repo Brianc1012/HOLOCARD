@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanner</title>
+  <link rel="stylesheet" href="../styles/scanner.css" />
+  <!-- Load A-Frame -->
+<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+
+<!-- Load AR.js AFTER A-Frame -->
+<script src="https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
+
+ <script src="../scripts/scanner.js" defer></script>
+</head>
+<body>
+  <div class="scannerPageContainer">
+    <div class="backandlabel">
+      <button class="backButton" onclick="window.location.href='../pages/menuPage.html'">Back</button>
+      <h1 class="AppName">HoloCard</h1>
+    </div>
+
+    <h1 class="label">Scanner</h1>
+
+    <div class="scannerContainer">
+      <!-- AR Scene (optional, can be removed if not using A-Frame/AR.js) -->
+      <!-- <div class="camScanner">
+        <a-scene
+          embedded
+          vr-mode-ui="enabled: false"
+          arjs="sourceType: webcam; debugUIEnabled: false;"
+          style="width:100%; height:100%;"
+        >
+          <a-marker type="barcode" value="5">
+            <a-box position="0 0.5 0" material="color: blue"></a-box>
+          </a-marker>
+          <a-entity camera></a-entity>
+        </a-scene>
+      </div> -->
+      <div class="camScanner"></div>
+
+
+      <!-- Scanned Info -->
+      <div class="scannedDetails">
+        <h1 class="scannedDetailsLabel">Scanned Details</h1>
+        <div class="photoLogoContainer">
+          <img src="../public/images/holocardLogo.svg" alt="Logo" class="photoLogo" />
+        </div>
+        <div class="details">
+          <p class="detailsLabel" id="cardType">Card Type: None</p>
+          <p class="detailsLabel" id="company">Company: None</p>
+          <p class="detailsLabel" id="name">Name: None</p>
+          <p class="detailsLabel" id="email">Email: None</p>
+          <p class="detailsLabel" id="contact">Contact Number: None</p>
+          <p class="detailsLabel" id="birthDate">Date of Birth: None</p>
+          <p class="detailsLabel" id="address">Address: None</p>
+        </div>
+      </div>
+      <!-- AR overlay is handled by scanner.js and .details -->
+    </div>
+  </div>
+</body>
+</html>

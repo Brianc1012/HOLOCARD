@@ -1,0 +1,241 @@
+body {
+    background-color: #15092D;
+    font-family: Arial, sans-serif;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column ;
+    overflow: scroll;
+}
+
+button
+
+    .holocardPage {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .holocardContainer {
+        background-color: #1a0b38;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: #15092D 0px 5px 40px;
+    }
+
+    .backandlabel {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .backButton {
+        background-color: #5E17EB;
+        color: #fff; /* White text */
+        border: none;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-right: 1rem;
+        width: min-content;
+        height: min-content;
+        padding: 5px 10px;
+        text-align: center; /* Center the text */
+    }
+    
+    .backButton:hover {
+        background-color: #4a14b5;
+        transition: background-color 0.3s ease;
+        transform: scale(1.05);
+    }
+
+    .AppName {
+        font-size: 1.5rem;
+        color: #fff;
+        margin-left: 1rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: 0.1rem;
+    }
+
+    .label {
+        font-size: 1.5rem;
+        color: #fff;
+        margin-left: 1rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        text-align: left;
+        letter-spacing: 0.1rem;
+    }
+
+    .holocardControls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+        background-color: none;
+    }
+
+    .buttonContainer button {
+        background-color: #5E17EB;
+        color: #fff; /* White text */
+        border: none;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-right: 1rem;
+        width: max-content;
+        height: max-content;
+        padding: 5px 10px;
+        text-align: center; /* Center the text */
+    }
+
+    .buttonContainer button:hover{
+        background-color: #4a14b5;
+        transition: background-color 0.3s ease;
+        transform: scale(1.05);
+    }
+
+    .holocardList {
+        display: grid;
+        max-width: 100%;
+        margin: 0 auto;
+        gap: 1.55rem;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        background-color: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 0.2rem;
+        overflow: auto;
+    }
+
+
+    /* HOLOCARD STYLING*/
+    .card {
+        background-color: #6B21A8; /* Tailwind: bg-purple-600 */
+        color: white;
+        border-radius: 0.5rem; /* Tailwind: rounded-lg */
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); /* shadow-lg */
+        padding: 1.5rem; /* p-6 */
+        justify-content: space-around;
+    }
+
+    .card {
+        position: relative;
+        overflow: hidden;
+        background-color: #6B21A8; /* Tailwind: bg-purple-800 */
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        cursor:pointer;
+    }
+    
+    .card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 1000px;
+        height: 1000px;
+        background: conic-gradient(from 0deg,rgb(59, 16, 250),  rgb(0, 68, 255),#6a2be0, #6a2be0, rgb(59, 16, 250));
+        z-index: 0;
+        transition: all 0.5s ease;
+        transform: rotate(0deg);
+        animation: spinGradient 5s linear infinite;
+    }
+    
+    .card:hover {
+        background-color: #7C3AED; /* Tailwind: bg-purple-700 */
+        transform: scale(0.9) rotate(5deg);
+        border-radius: 10px;
+    }
+    
+    /* Ensure content stays on top of the ::before gradient */
+    .card > * {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Optional: slow spin for animated gradient */
+    @keyframes spinGradient {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    
+    
+    .card-title {
+        text-align: center;
+        font-size: 1.25rem; /* text-xl */
+        font-weight: bold;
+        margin-bottom: 0.2rem; /* mb-4 */
+    }
+    
+    .card-type {
+        text-align: center;
+        font-size: 1.125rem; /* text-lg */
+        font-weight: 500; /* font-medium */
+    }
+    
+    .type-label {
+        font-weight: 600; /* font-semibold */
+    }
+    
+    .card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem; /* space-x-4 */
+        margin-top: 1rem; /* mt-4 */
+    }
+    
+    .editBtn {
+        color: white;
+    }
+    
+    .editBtn:hover {
+        color: #D1D5DB; /* hover:text-gray-300 */
+        transform: scale(1.35); /* scale-105 */
+        transition: background-color 0.3s ease;
+
+    }
+    
+    .deleteBtn {
+        color: #EF4444; /* text-red-500 */
+    }
+    
+    .deleteBtn:hover {
+        color: #B91C1C; /* hover:text-red-700 */
+        transform: scale(1.35); /* scale-105 */
+        transition: background-color 0.3s ease;
+
+    }
+    
+    .ri-pencil-fill,
+    .ri-delete-bin-2-fill {
+        font-size: 1.25rem; /* text-xl */
+    }
+
+/*MODAL DISPLAY*/
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    }
+    
+    .modal-overlay.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    }
+    
+    
+    
+

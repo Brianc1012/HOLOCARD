@@ -1,0 +1,166 @@
+html, body {
+    display: flex; /* Ensures the body uses flexbox for centering */
+    justify-content: center;
+    align-items: center;
+    background-image: url("../public/images/bg1.jpg"); /* Corrected syntax */
+    background-size: cover; /* Ensures the background image covers the entire viewport */
+    background-position: center; /* Centers the background image */
+    margin: 0; /* Removes default body margin */
+    height: 100vh; /* Ensures the body takes the full viewport height */
+    background-color: none;
+}
+
+.mainMenuContainer {
+    display: flex;
+    flex-direction: row; /* Stack items vertically */
+    justify-content: center; /* Center items vertically */
+    align-items: center; /* Center items horizontally */
+    height: 100vh; /* Full viewport height */
+    width: 100vw; /* Full viewport width */
+    padding: 5%;
+   
+}
+
+.mainMenuContainer {
+    display: flex; /* Ensures the body uses flexbox for centering */
+    justify-content: center;
+    align-items: center;
+    background-image: url("../public/images/bg1.jpg"); /* Corrected syntax */
+    background-size: cover; /* Ensures the background image covers the entire viewport */
+    background-position: center; /* Centers the background image */
+    margin: 0; /* Removes default body margin */
+    background-color: none;
+  }
+  
+  .logoContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    justify-content: center; /* Center items vertically */
+    height: 100%;
+  }
+  
+  .logo {
+    max-width: 60%;
+    height: auto;
+    margin-bottom: 0rem;
+  }
+  
+  .menuItems {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    justify-content: center; /* Center items vertically */
+    height: 100%;
+  }
+  
+  .menuItems h1 {
+    font-size: 5vw;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .menuItems ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .menuItems li {
+    margin: 1rem 0;
+  }
+  
+  .menuItems a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.5vw;
+    padding: 0.8em 2em; /* Consistent padding for all buttons */
+    border: 0.2em solid #fff;
+    border-radius: 2em;
+    transition: all 0.3s ease;
+    display: inline-block;
+    width:40rem; /* Consistent button width */
+    text-align: center;
+  }
+  
+  .menuItems a:hover {
+    background: #fff;
+    color: #2575fc;
+    transform: scale(1.1);
+  }
+  
+  /* Logout Button */
+  .logoutButton {
+    margin-top: 2rem;
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.5vw;
+    padding: 0.8em 2em; /* Consistent padding */
+    border: 0.2em solid #ff4d4d;
+    border-radius: 2em;
+    background: #ff4d4d;
+    transition: all 0.3s ease;
+    width: 12rem; /* Consistent button width */
+    text-align: center;
+  }
+  
+  .logoutButton:hover {
+    background: #fff;
+    color: #ff4d4d;
+    transform: scale(1.1);
+  }
+  
+ /* Responsive Design */
+@media (max-width: 1080px) {
+    .mainMenuContainer {
+      flex-direction: column; /* Stack items vertically */
+      align-items: center; /* Center items horizontally */
+      justify-content: center; /* Center items vertically */
+      padding: 5%; /* Add padding for smaller screens */
+    }
+  
+    .logoContainer {
+      background-color: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center logo horizontally */
+      justify-content: center; /* Center logo vertically */
+      margin-bottom: 0.5rem; /* Add spacing below the logo */
+      width: 30%;
+      height: fit-content;
+    }
+  
+    .menuItems {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center buttons horizontally */
+      justify-content: top; /* Center buttons vertically */
+    }
+  
+    .menuItems h1 {
+      font-size: 5vw; /* Adjust font size for smaller screens */
+      text-align: center; /* Center the text */
+      margin-bottom: 0.5rem; /* Add spacing below the title */
+    }
+  
+    .menuItems a {
+      font-size: 2vw; /* Adjust button font size */
+      padding: 0.8em 1.5em; /* Adjust padding for smaller screens */
+      width: 30rem; /* Allow buttons to resize dynamically */
+      margin: 0.5rem 0; /* Add spacing between buttons */
+    }
+  
+    .logoutButton {
+      font-size: 4vw; /* Adjust logout button font size */
+      padding: 0.8em 1.5em; /* Adjust padding for smaller screens */
+      width: auto; /* Allow button to resize dynamically */
+      margin-top: 1rem; /* Add spacing above the logout button */
+    }
+  
+    .logo {
+      max-width: 100%; /* Adjust logo size for smaller screens */
+      height: auto;
+    }
+  }

@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HoloCard - Card List</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../styles/holocard.css" />
+  <link rel="stylesheet" href="../styles/addCard.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" />
+
+  <!-- A-Frame and AR.js -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js/aframe/build/aframe-ar.min.js"></script>
+
+  <!--SWEETALERTS-->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+  <div class="holocardPage">
+    <div class="backandlabel">
+      <button value="back" class="backButton" onclick="window.location.href='../pages/menuPage.html'">Back</button>
+      <h1 class="AppName">HoloCard</h1>
+    </div>
+
+    <div class="holocardContainer">
+      <div class="holocardControls">
+        <h1 class="label">Card List</h1>
+        <div class="buttonContainer">
+          <button class="addButton" onclick="openAddModal()">Add Card</button>
+        </div>
+      </div>
+
+      <div id="holocardList" class="holocardList"></div>
+    </div>
+  </div>
+
+  <!-- Modal will be injected here -->
+  <div id="modalContainer"></div>
+
+  <!-- External JavaScript -->
+  <script src="../scripts/holocard.js"></script>
+  <script>
+    // Ensure openAddModal is available for the Add Card button
+    window.openAddModal = window.openAddModal || openAddModal;
+  </script>
+</body>
+
+</html>

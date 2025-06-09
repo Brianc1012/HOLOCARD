@@ -1,0 +1,273 @@
+.modal-overlay {
+    display: none; /* Hide the modal by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    z-index: 1000; /* Ensure it appears above other elements */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active {
+    display: flex; /* Show the modal when active */
+}
+
+.modalContent {
+    background-color: #211A6B;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    width: 90%;
+    max-width: 800px;
+    height: 90%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#modalHeader h1 {
+    font-size: 1.5rem;
+    color: #fff;
+    margin-left: 0rem;
+    font-family: 'INter', sans-serif;
+    font-weight: bolder;
+    text-align: left;
+    letter-spacing: 0.1rem;
+}
+
+.cardTypeContainer {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 0.2rem;
+    width: 100%;
+}
+
+.cardTypeContainer label {
+    font-size: 1rem;
+    color: #fff;
+    margin-left: 0rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: bold;
+    text-align: left;
+    letter-spacing: 0.1rem;
+    margin-right: 0.5rem;
+}
+
+.customSelect select {
+    text-align: center;
+    appearance: none;
+    width: max-content;
+    padding: 1rem 0.5 1rem;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #000;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: normal;
+    padding-right:2rem;
+    padding-left: 0.5rem;
+}
+
+.customSelect {
+    position: relative;
+    display: inline-block;
+    width: max-content;
+    background-color: none;
+}
+
+/* Custom arrow using pseudo-element */
+.customSelect::after {
+    content: '▼';
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #555;
+  }
+
+
+.photoLogoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.photoPreviewClickable {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+  }
+  
+  .photoPreviewClickable:hover {
+    transform: scale(1.05);
+  }
+  
+.row {
+    width: 100%;
+    background-color: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    gap: 0.2rem;
+}
+
+.contactPersonDetails, .contactPerson {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+}
+
+
+
+    .contactPersonDetails {
+        padding: 0rem 0.5rem;
+        border:#5E17EB dashed 2px;
+        border-radius: 6px;
+    }
+
+.inputContainerSuffix {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    gap: 0.2rem;
+    width: max-content
+}
+
+.corporateDetails,
+.personalDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0rem;
+    padding: 0rem 0;
+    width: 100%;
+    background-color: none;
+    margin-top: 1rem;
+}
+
+.corporateDetails {
+    display: none;
+    margin-bottom: 1rem;
+}
+
+.contactPerson {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 0.5/rem;
+    gap: 0.2rem;
+}
+
+.commonDetails {
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+
+#address {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.5rem;
+    border-radius: 6px;
+    resize: vertical;
+}
+    label, .contactPerson h2 {
+        font-size: 1rem;
+        color: #fff;
+        margin-left: 0rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: normal;
+        text-align: left;
+        letter-spacing: 0.05rem;
+    }
+
+    input {
+        text-align: left;
+        appearance: none;
+        border-radius: 6px;
+        background-color: #fff;
+        color: #000;
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: normal;
+        padding-right:0rem;
+        padding-left: 1rem;
+    }
+
+
+.controls {
+    margin-top: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0rem;
+    margin-bottom: 0.5rem;
+}
+
+.buttonContainer {
+    display: flex;
+    gap: 1rem;
+}
+
+
+.controls button {
+    width: 100px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 1rem;
+}
+
+.cancelButton {
+    background-color: #5E17EB;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+
+.cancelButton:hover {
+    background-color: #4a14b5;
+    transform: scale(1.05);
+}
+
+.addButton {
+    background-color: none;
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.addButton:hover {
+    background-color: none;
+    transform: scale(1.05);
+}

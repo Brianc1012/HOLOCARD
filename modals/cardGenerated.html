@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Card Modal</title>
+
+  <!-- Remix Icon CDN for the download glyph -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" />
+
+  <!-- External stylesheet -->
+  <link rel="stylesheet" href="../styles/cardGenerated.css" />
+</head>
+
+<body>
+  <!-- ===== Modal Overlay ===== -->
+  <!-- changed only the wrapper class names so it matches addCard.html -->
+    <div class="modal-overlay active" role="dialog" aria-modal="true" aria-labelledby="cardTitle">
+        <div class="modal-body">
+            <header class="modal-header">
+                <h2 id="detailCardName">-</h2>
+                <button class="download-btn" aria-label="Download QR">
+                    <i class="ri-download-2-line" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <section class="modal-content">
+                <div class="qr-wrapper">
+                    <div class="qr-placeholder"><span>QR CODE</span></div>
+                </div>
+
+                <div class="details">
+
+                    <div class="details personalDetails">
+                        <ul>
+                            <li><span class="label">Card Type</span> <span class="value" id="detailCardType">—</span></li>
+                            <li><span class="label">First Name</span>  <span class="value" id="detailFirstName">—</span></li>
+                            <li><span class="label">Last Name</span>   <span class="value" id="detailLastName">—</span></li>
+                            <li><span class="label">Middle Name</span> <span class="value" id="detailMiddleName">—</span></li>
+                            <li><span class="label">Suffix</span>      <span class="value" id="detailSuffix">—</span></li>
+                            <li><span class="label">Birth Date</span>  <span class="value" id="detailBdate">—</span></li>
+                            <li><span class="label">Email Address</span> <span class="value" id="detailEmail">—</span></li>
+                            <li><span class="label">Contact&nbsp;No.</span> <span class="value" id="detailContact">—</span></li>
+                            <li class="address-row"><span class="label">Address</span> <span class="value" id="detailAddress">—</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="details corporateDetails">
+                        <ul>
+                            <li><span class="label">Card Type</span> <span class="value" id="detailCardType">—</span></li>
+                            <li><span class="label">First Name</span>  <span class="value" id="detailFirstName">—</span></li>
+                            <li><span class="label">Last Name</span>   <span class="value" id="detailLastName">—</span></li>
+                            <li><span class="label">Middle Name</span> <span class="value" id="detailMiddleName">—</span></li>
+                            <li><span class="label">Suffix</span>      <span class="value" id="detailSuffix">—</span></li>
+                            <li><span class="label">Company Name</span> <span class="value" id="detailCompany">—</span></li>
+                            <li><span class="label">Company Email</span> <span class="value" id="detailCompanyEmail">—</span></li>
+                            <li><span class="label">Contact&nbsp;No.</span> <span class="value" id="detailContact">—</span></li>
+                            <li class="address-row"><span class="label">Address</span> <span class="value" id="detailAddress">—</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="modal-footer">
+                <button class="close-btn" aria-label="Close modal">Close</button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="../scripts/qrcode.min.js"></script>
+    <script>
+// Ensure QR code is visible if loaded directly (for dev/testing)
+document.addEventListener('DOMContentLoaded', function() {
+  var qrContainer = document.querySelector('.qr-placeholder');
+  if (qrContainer && !qrContainer.querySelector('canvas, img')) {
+    var params = new URLSearchParams(window.location.search);
+    if (params.has('data')) {
+      var data = params.get('data');
+      try {
+        new QRCode(qrContainer, {
+          text: data,
+          width: 180,
+          height: 180,
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      } catch(e) {}
+    }
+  }
+});
+</script>
+</body>
+</html>
