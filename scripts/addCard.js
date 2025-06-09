@@ -58,7 +58,7 @@
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    /* —— collect data before SweetAlert closes the form —— */
+    // collect data before SweetAlert closes the form
     const isPersonal = catSel.value === "Personal";
     const data = {
       cardType        : catSel.value, // Personal | Corporate
@@ -67,12 +67,13 @@
       lastName        : form.querySelector(isPersonal ? "#Lname"  : "#CLname")?.value || "",
       middleName      : form.querySelector(isPersonal ? "#Mname"  : "#CMname")?.value || "",
       suffix          : form.querySelector(isPersonal ? "#nameSuffix"  : "#CnameSuffix")?.value || "",
-      birthDate       : form.querySelector("#birthDate")?.value || "",    // Personal only
+      birthDate       : form.querySelector("#birthDate")?.value || "",
       personalEmail   : form.querySelector("#email")?.value || "",
       companyEmail    : form.querySelector("#companyEmail")?.value || "",
       contact         : form.querySelector(isPersonal ? "#contact" : "#companyContact")?.value || "",
       address         : form.querySelector("#address")?.value || "",
       cardName        : ((isPersonal ? form.querySelector("#FName")?.value : form.querySelector("#company")?.value) || "undefined") + "'s Card",
+      uid             : localStorage.getItem('uid') || 1 // TODO: Use real user ID from auth
     };
 
     // Show confirmation modal with submitted data
@@ -87,12 +88,30 @@
       html,
       icon: "info",
       showCancelButton: true,
-      confirmButtonText: "Confirm & Generate QR",
+      confirmButtonText: "Confirm & Save",
       cancelButtonText: "Edit",
       allowOutsideClick: false,
       allowEscapeKey: false
     });
-    if (!result.isConfirmed) return; // User cancelled, let them edit
+    if (!result.isConfirmed) return;
+
+    // POST to API
+    try {
+      const res = await fetch('../api/add_card.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const apiResult = await res.json();
+      if (!apiResult.success) throw new Error(apiResult.error || 'Failed to add card');
+      // Success: close modal, show QR, refresh card list
+      modal.classList.remove("active");
+      if (window.refreshCardList) window.refreshCardList();
+      // Optionally show QR modal here (existing logic)
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message });
+      return;
+    }
 
     // Close the addCard modal before opening the cardGenerated modal
     modal.classList.remove("active");
