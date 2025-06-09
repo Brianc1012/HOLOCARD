@@ -3,6 +3,12 @@
    =========================================================================*/
 console.log("🚀 holocard.js started");
 
+// Warn if loaded via file:// instead of http(s)://
+if (location.protocol === 'file:') {
+  alert('ERROR: You must run this page from a web server (http://localhost/...), not open it directly as a file.');
+  console.error('Page loaded with file:// protocol. Please use http://localhost/... via XAMPP or similar.');
+}
+
 /* ------------------------------------------------------------------ */
 /* 1.  MOCK card list – replace with real data fetch later            */
 /* ------------------------------------------------------------------ */
@@ -96,7 +102,12 @@ async function refreshCardList() {
   const uid = localStorage.getItem('uid') || 1;
   try {
     const res = await fetch(`../api/get_cards.php?uid=${uid}`);
-    const data = await res.json();
+    const text = await res.text();
+    // Try to parse as JSON, but if it looks like HTML, show a clear error
+    if (text.trim().startsWith('<')) {
+      throw new Error('API returned HTML instead of JSON. This usually means the file path is wrong or the server is not running.');
+    }
+    const data = JSON.parse(text);
     if (!data.success) throw new Error(data.error || 'Failed to fetch cards');
     list.innerHTML = '';
     if (!data.cards.length) {

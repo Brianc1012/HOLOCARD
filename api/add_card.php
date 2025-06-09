@@ -24,8 +24,8 @@ try {
         }
     }
     
-    // Verify user exists
-    $stmt = $pdo->prepare("SELECT UID FROM Users WHERE UID = ? AND isDeleted = FALSE");
+    // Verify user exists (fix table name)
+    $stmt = $pdo->prepare("SELECT UID FROM user WHERE UID = ? AND isDeleted = FALSE");
     $stmt->execute([$input['uid']]);
     if (!$stmt->fetch()) {
         throw new Exception("Invalid user ID");

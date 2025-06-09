@@ -3,15 +3,20 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
+// Show errors as JSON for debugging (remove in production)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once '../database/connection.php';
 
+$response = ['success' => false, 'cards' => [], 'error' => 'Unknown error'];
+
 try {
-    $uid = $_GET['uid'] ?? null;
-    
+    $uid = isset($_GET['uid']) ? intval($_GET['uid']) : null;
     if (!$uid) {
         throw new Exception('User ID is required');
     }
-    
     // Get all cards for the user
     $stmt = $pdo->prepare("
         SELECT 
@@ -36,27 +41,19 @@ try {
         WHERE h.UID = ? AND h.isDeleted = FALSE
         ORDER BY h.HoloCardID DESC
     ");
-    
     $stmt->execute([$uid]);
-    $cards = $stmt->fetchAll();
-    
+    $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Convert QR codes to base64 for frontend
     foreach ($cards as &$card) {
-        if ($card['QRCode']) {
+        if (isset($card['QRCode']) && $card['QRCode']) {
             $card['QRCode'] = base64_encode($card['QRCode']);
         }
     }
-    
-    echo json_encode([
-        'success' => true,
-        'cards' => $cards
-    ]);
-    
+    $response['success'] = true;
+    $response['cards'] = $cards;
+    unset($response['error']);
 } catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage()
-    ]);
+    http_response_code(200); // Always return 200 so frontend can parse JSON
+    $response['error'] = $e->getMessage();
 }
-?>
+echo json_encode($response);

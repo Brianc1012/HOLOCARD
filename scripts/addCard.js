@@ -68,13 +68,16 @@
       middleName      : form.querySelector(isPersonal ? "#Mname"  : "#CMname")?.value || "",
       suffix          : form.querySelector(isPersonal ? "#nameSuffix"  : "#CnameSuffix")?.value || "",
       birthDate       : form.querySelector("#birthDate")?.value || "",
-      personalEmail   : form.querySelector("#email")?.value || "",
-      companyEmail    : form.querySelector("#companyEmail")?.value || "",
-      contact         : form.querySelector(isPersonal ? "#contact" : "#companyContact")?.value || "",
+      email           : form.querySelector(isPersonal ? "#email" : "#companyEmail")?.value || "",
+      contactNo       : form.querySelector(isPersonal ? "#contact" : "#companyContact")?.value || "",
       address         : form.querySelector("#address")?.value || "",
       cardName        : ((isPersonal ? form.querySelector("#FName")?.value : form.querySelector("#company")?.value) || "undefined") + "'s Card",
-      uid             : localStorage.getItem('uid') || 1 // TODO: Use real user ID from auth
+      uid             : localStorage.getItem('uid') || 1, // TODO: Use real user ID from auth
+      qrCode          : '' // Will be set below
     };
+
+    // Generate QR code data as base64 for backend
+    data.qrCode = btoa(JSON.stringify(data));
 
     // Show confirmation modal with submitted data
     let html = `<ul style='text-align:left;'>`;
