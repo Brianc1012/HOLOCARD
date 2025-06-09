@@ -66,3 +66,23 @@ function openAddModal() {
 }
 
 window.openAddModal = openAddModal;
+
+/* ------------------------------------------------------------------ */
+/* 3. Robust Add Card button binding (handles dynamic DOM changes)   */
+/* ------------------------------------------------------------------ */
+function bindAddCardBtn() {
+  const btn = document.getElementById("addCardBtn");
+  if (btn) {
+    btn.removeEventListener("click", window.openAddModal);
+    btn.addEventListener("click", window.openAddModal);
+  }
+}
+
+// Initial bind
+bindAddCardBtn();
+
+// Observe DOM for Add Card button changes
+const observer = new MutationObserver(() => {
+  bindAddCardBtn();
+});
+observer.observe(document.body, { childList: true, subtree: true });
