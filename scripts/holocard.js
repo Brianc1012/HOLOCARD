@@ -6,31 +6,31 @@ console.log("🚀 holocard.js started");
 /* ------------------------------------------------------------------ */
 /* 1.  MOCK card list – replace with real data fetch later            */
 /* ------------------------------------------------------------------ */
-document.addEventListener("DOMContentLoaded", () => {
-  const list = document.getElementById("holocardList");
-  if (!list) return console.error("❌ #holocardList not found");
+// document.addEventListener("DOMContentLoaded", () => {
+//   const list = document.getElementById("holocardList");
+//   if (!list) return console.error("❌ #holocardList not found");
 
-  [
-    { name: "John Doe",   type: "Personal Card"  },
-    { name: "Jane Smith", type: "Corporate Card" },
-    { name: "Alice Johnson", type: "Corporate Card" }
-  ].forEach(({ name, type }) => {
-    list.insertAdjacentHTML(
-      "beforeend",
-      /* html */ `
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title">${name}</h5>
-            <p class="card-type">Type: <span class="type-label">${type}</span></p>
-          </div>
-          <div class="card-actions">
-            <button class="editBtn"   title="Edit ${name}"><i class="ri-pencil-fill"></i></button>
-            <button class="deleteBtn" title="Delete ${name}"><i class="ri-delete-bin-2-fill"></i></button>
-          </div>
-        </div>`
-    );
-  });
-});
+//   [
+//     { name: "John Doe",   type: "Personal Card"  },
+//     { name: "Jane Smith", type: "Corporate Card" },
+//     { name: "Alice Johnson", type: "Corporate Card" }
+//   ].forEach(({ name, type }) => {
+//     list.insertAdjacentHTML(
+//       "beforeend",
+//       /* html */ `
+//         <div class="card">
+//           <div class="card-header">
+//             <h5 class="card-title">${name}</h5>
+//             <p class="card-type">Type: <span class="type-label">${type}</span></p>
+//           </div>
+//           <div class="card-actions">
+//             <button class="editBtn"   title="Edit ${name}"><i class="ri-pencil-fill"></i></button>
+//             <button class="deleteBtn" title="Delete ${name}"><i class="ri-delete-bin-2-fill"></i></button>
+//           </div>
+//         </div>`
+//     );
+//   });
+// });
 
 /* ------------------------------------------------------------------ */
 /* 2.  openAddModal() – fetch /modals/addCard.html and show it         */
@@ -86,3 +86,42 @@ const observer = new MutationObserver(() => {
   bindAddCardBtn();
 });
 observer.observe(document.body, { childList: true, subtree: true });
+
+// Fetch and render cards from API
+async function refreshCardList() {
+  const list = document.getElementById("holocardList");
+  if (!list) return console.error("❌ #holocardList not found");
+  list.innerHTML = '<div class="loading">Loading cards...</div>';
+  // TODO: Replace with real user ID from auth
+  const uid = localStorage.getItem('uid') || 1;
+  try {
+    const res = await fetch(`../api/get_cards.php?uid=${uid}`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to fetch cards');
+    list.innerHTML = '';
+    if (!data.cards.length) {
+      list.innerHTML = '<div class="empty">No cards found.</div>';
+      return;
+    }
+    data.cards.forEach(card => {
+      list.insertAdjacentHTML(
+        'beforeend',
+        `<div class="card">
+          <div class="card-header">
+            <h5 class="card-title">${card.CardName || '-'} </h5>
+            <p class="card-type">Type: <span class="type-label">${card.CardTypeText || '-'} </span></p>
+          </div>
+          <div class="card-actions">
+            <button class="editBtn"   title="Edit"><i class="ri-pencil-fill"></i></button>
+            <button class="deleteBtn" title="Delete"><i class="ri-delete-bin-2-fill"></i></button>
+          </div>
+        </div>`
+      );
+    });
+  } catch (e) {
+    list.innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", refreshCardList);
+window.refreshCardList = refreshCardList;
