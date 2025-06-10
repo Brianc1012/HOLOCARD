@@ -172,20 +172,57 @@ async function refreshCardList() {
         setField('detailContact', card.ContactNo);
         setField('detailAddress', card.Address);
         setField('detailBdate', card.BirthDate);
-        
-        // Generate QR code
+          // Generate enhanced AR-ready QR code
         const qrContainer = modal.querySelector('.qr-placeholder');
         if (qrContainer) {
           qrContainer.innerHTML = '';
-          try {
-            new QRCode(qrContainer, {
-              text: JSON.stringify(card),
-              width: 180,
-              height: 180,
-              correctLevel: QRCode.CorrectLevel.H
-            });
-          } catch(e) {
-            console.error('QR generation failed:', e);
+          
+          // Use the enhanced QR generation function if available
+          if (window.generateHoloCardQR) {
+            // Wait a bit for modal to be fully rendered
+            setTimeout(() => {
+              window.generateHoloCardQR(card);
+            }, 100);
+          } else {
+            // Fallback to enhanced manual generation
+            try {
+              const arData = {
+                type: "holocard-ar",
+                version: "1.0",
+                cardId: card.HoloCardID,
+                profile: {
+                  name: card.CardName,
+                  cardType: card.CardTypeText,
+                  email: card.Email,
+                  contact: card.ContactNo,
+                  address: card.Address,
+                  birthDate: card.BirthDate
+                },
+                ar: {
+                  markerType: "qr",
+                  markerSize: 0.1,
+                  trackingMode: "stable",
+                  renderDistance: 2.0
+                },
+                webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${card.HoloCardID}`,
+                generated: new Date().toISOString()
+              };
+
+              new QRCode(qrContainer, {
+                text: JSON.stringify(arData),
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H,
+                margin: 2
+              });
+
+              console.log('✅ Enhanced QR code generated for card:', card.HoloCardID);
+            } catch(e) {
+              console.error('❌ QR generation failed:', e);
+              qrContainer.innerHTML = '<p style="color: red;">QR Generation Failed</p>';
+            }
           }
         }
         

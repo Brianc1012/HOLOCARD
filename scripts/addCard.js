@@ -56,9 +56,7 @@
 
   /* ---------- SUBMIT → Swal → injected generated modal -------------- */
   form.addEventListener("submit", async e => {
-    e.preventDefault();
-
-    // collect data before SweetAlert closes the form
+    e.preventDefault();    // collect data before SweetAlert closes the form
     const isPersonal = catSel.value === "Personal";
     const data = {
       cardType        : catSel.value, // Personal | Corporate
@@ -73,7 +71,10 @@
       address         : form.querySelector("#address")?.value || "",
       cardName        : ((isPersonal ? form.querySelector("#FName")?.value : form.querySelector("#company")?.value) || "undefined") + "'s Card",
       uid             : localStorage.getItem('uid') || 1, // TODO: Use real user ID from auth
-      qrCode          : '' // Will be set below
+      qrCode          : '', // Will be set below
+      // Add proper email fields for modal mapping
+      personalEmail   : isPersonal ? form.querySelector("#email")?.value || "" : "",
+      companyEmail    : !isPersonal ? form.querySelector("#companyEmail")?.value || "" : ""
     };
 
     // Generate QR code data as base64 for backend
@@ -132,8 +133,7 @@
         const styleTag = document.createElement("style");
         styleTag.textContent = css;
         shadow.appendChild(styleTag);
-        shadow.appendChild(genModal);
-        const map = {
+        shadow.appendChild(genModal);        const map = {
           detailCardType     : data.cardType,
           detailCompany      : data.company,
           detailFirstName    : data.firstName,
@@ -141,9 +141,9 @@
           detailMiddleName   : data.middleName,
           detailSuffix       : data.suffix,
           detailBdate        : data.birthDate,
-          detailEmail        : isPersonal ? data.personalEmail : "—",
-          detailCompanyEmail : !isPersonal ? data.companyEmail : "—",
-          detailContact      : data.contact,
+          detailEmail        : isPersonal ? data.email : "—",
+          detailCompanyEmail : !isPersonal ? data.email : "—",
+          detailContact      : data.contactNo,
           detailAddress      : data.address,
           detailCardName     : data.cardName
         };
@@ -159,88 +159,117 @@
         modal.classList.remove('active');
         host.dataset.generatedModal = "true";
         document.body.appendChild(host);
-        requestAnimationFrame(() => genModal.classList.add("active"));
-        // Generate QR code inside the modal with black foreground and white background
+        requestAnimationFrame(() => genModal.classList.add("active"));        // Generate enhanced AR-ready QR code using the new system
         const qrContainer = shadow.querySelector('.qr-placeholder');
         if (qrContainer) {
           qrContainer.innerHTML = '';
-          const qr = new QRCode(qrContainer, {
-            text: JSON.stringify(data),
-            width: 180,
-            height: 180,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-          });
-          // Add AR marker corners (SVG overlay)
-          setTimeout(() => {
-            const img = qrContainer.querySelector('img');
-            if (img) {
-              // Create SVG overlay for AR marker corners
-              const svgNS = 'http://www.w3.org/2000/svg';
-              const svg = document.createElementNS(svgNS, 'svg');
-              svg.setAttribute('width', '180');
-              svg.setAttribute('height', '180');
-              svg.style.position = 'absolute';
-              svg.style.top = '0';
-              svg.style.left = '0';
-              svg.style.pointerEvents = 'none';
-              // Draw four L-shaped corners
-              const size = 24;
-              const stroke = 4;
-              const color = '#00eaff';
-              // Top-left
-              let path = document.createElementNS(svgNS, 'path');
-              path.setAttribute('d', `M${stroke/2},${size} V${stroke/2} H${size}`);
-              path.setAttribute('stroke', color);
-              path.setAttribute('stroke-width', stroke);
-              path.setAttribute('fill', 'none');
-              svg.appendChild(path);
-              // Top-right
-              path = document.createElementNS(svgNS, 'path');
-              path.setAttribute('d', `M${180-size},${stroke/2} H${180-stroke/2} V${size}`);
-              path.setAttribute('stroke', color);
-              path.setAttribute('stroke-width', stroke);
-              path.setAttribute('fill', 'none');
-              svg.appendChild(path);
-              // Bottom-left
-              path = document.createElementNS(svgNS, 'path');
-              path.setAttribute('d', `M${stroke/2},${180-size} V${180-stroke/2} H${size}`);
-              path.setAttribute('stroke', color);
-              path.setAttribute('stroke-width', stroke);
-              path.setAttribute('fill', 'none');
-              svg.appendChild(path);
-              // Bottom-right
-              path = document.createElementNS(svgNS, 'path');
-              path.setAttribute('d', `M${180-size},${180-stroke/2} H${180-stroke/2} V${180-size}`);
-              path.setAttribute('stroke', color);
-              path.setAttribute('stroke-width', stroke);
-              path.setAttribute('fill', 'none');
-              svg.appendChild(path);
-              // Wrap img and svg in a container
-              const wrap = document.createElement('div');
-              wrap.style.position = 'relative';
-              wrap.style.display = 'inline-block';
-              img.style.display = 'block';
-              wrap.appendChild(img);
-              wrap.appendChild(svg);
-              qrContainer.appendChild(wrap);
-            }
-          }, 100);
+          
+          // Load QR code library into shadow DOM
+          const qrScript = document.createElement('script');
+          qrScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+          qrScript.onload = () => {
+            // Create enhanced AR data structure
+            const arData = {
+              type: "holocard-ar",
+              version: "1.0",
+              cardId: Date.now(), // Temporary ID until we get the real one from API
+              profile: {
+                name: data.cardName || `${data.firstName} ${data.lastName}`.trim(),
+                cardType: data.cardType,
+                email: data.email,
+                contact: data.contactNo,
+                address: data.address,
+                birthDate: data.birthDate || ''
+              },
+              company: !isPersonal ? {
+                name: data.company,
+                email: data.email,
+                contact: data.contactNo
+              } : null,
+              ar: {
+                markerType: "qr",
+                markerSize: 0.1,
+                trackingMode: "stable",
+                renderDistance: 2.0
+              },
+              webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?temp=${Date.now()}`,
+              generated: new Date().toISOString()
+            };
+
+            // Generate QR with enhanced AR data
+            const qr = new QRCode(qrContainer, {
+              text: JSON.stringify(arData),
+              width: 200,
+              height: 200,
+              colorDark: "#000000",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.H,
+              margin: 2
+            });
+
+            // Add AR corner markers for visual indication
+            setTimeout(() => {
+              const canvas = qrContainer.querySelector('canvas');
+              if (canvas) {
+                const container = canvas.parentElement;
+                container.style.position = 'relative';
+                
+                // Create corner markers
+                const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+                corners.forEach(corner => {
+                  const marker = document.createElement('div');
+                  marker.className = `ar-corner ${corner}`;
+                  marker.style.cssText = `
+                    position: absolute;
+                    width: 15px;
+                    height: 15px;
+                    border: 2px solid #007bff;
+                    ${corner.includes('top') ? 'top: -3px;' : 'bottom: -3px;'}
+                    ${corner.includes('left') ? 'left: -3px;' : 'right: -3px;'}
+                    ${corner.includes('top') && corner.includes('left') ? 'border-right: none; border-bottom: none;' : ''}
+                    ${corner.includes('top') && corner.includes('right') ? 'border-left: none; border-bottom: none;' : ''}
+                    ${corner.includes('bottom') && corner.includes('left') ? 'border-right: none; border-top: none;' : ''}
+                    ${corner.includes('bottom') && corner.includes('right') ? 'border-left: none; border-top: none;' : ''}
+                  `;
+                  container.appendChild(marker);
+                });
+
+                // Add AR indicator
+                const arIndicator = document.createElement('div');
+                arIndicator.innerHTML = '📱 AR Ready';
+                arIndicator.style.cssText = `
+                  position: absolute;
+                  bottom: -25px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  font-size: 10px;
+                  color: #007bff;
+                  font-weight: bold;
+                  text-align: center;
+                `;
+                container.appendChild(arIndicator);
+                
+                console.log('✅ AR-ready QR code generated successfully');
+              }
+            }, 100);
+          };
+          shadow.appendChild(qrScript);
         }
+
         // Download QR button
         const downloadBtn = shadow.querySelector('.download-btn');
         if (downloadBtn && qrContainer) {
           downloadBtn.onclick = function() {
-            const img = qrContainer.querySelector('img');
-            if (img) {
-              const a = document.createElement('a');
-              a.href = img.src;
-              a.download = 'holocard_qr.png';
-              a.click();
+            const canvas = qrContainer.querySelector('canvas');
+            if (canvas) {
+              const link = document.createElement('a');
+              link.download = 'holocard_qr.png';
+              link.href = canvas.toDataURL('image/png');
+              link.click();
+              console.log('✅ QR code downloaded');
             }
           };
-        }        // Close button
+        }// Close button
         const closeBtn = shadow.querySelector('.close-btn');
         if (closeBtn) {
           closeBtn.onclick = (e) => {
