@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Structure Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Database Structure & Update Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Check Database Structure</h2>
+        <button onclick="checkDatabase()">Check Database</button>
+        <div id="dbResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Personal Card Update</h2>
+        <button onclick="testPersonalUpdate()">Test Personal Update</button>
+        <div id="personalResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Corporate Card Update</h2>
+        <button onclick="testCorporateUpdate()">Test Corporate Update</button>
+        <div id="corporateResult"></div>
+    </div>
+    
+    <script>
+        async function checkDatabase() {
+            const result = document.getElementById('dbResult');
+            result.innerHTML = '<div>🔄 Checking database...</div>';
+            
+            try {
+                // Check if we can load cards (this tests the database structure)
+                const response = await fetch('./api/get_cards.php?uid=1');
+                const data = await response.json();
+                
+                if (data.success && data.cards.length > 0) {
+                    result.innerHTML = `
+                        <div class="success">✅ Database structure is correct</div>
+                        <pre>${JSON.stringify(data.cards, null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="error">❌ No cards found or database issue</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Database check failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testPersonalUpdate() {
+            const result = document.getElementById('personalResult');
+            result.innerHTML = '<div>🔄 Testing personal card update...</div>';
+            
+            const testData = {
+                cardId: 1, // Assuming card 1 exists
+                cardType: 'Personal',
+                firstName: 'UpdatedJohn',
+                lastName: 'UpdatedDoe',
+                middleName: 'UpdatedMiddle',
+                suffix: 'Jr.',
+                email: 'updated.john@example.com',
+                contactNo: '555-1234',
+                address: 'Updated Address 123',
+                birthDate: '1990-01-01'
+            };
+            
+            try {
+                const response = await fetch('./api/update_card.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const apiResult = await response.json();
+                
+                if (apiResult.success) {
+                    result.innerHTML = `
+                        <div class="success">✅ Personal card update successful!</div>
+                        <pre>Data sent: ${JSON.stringify(testData, null, 2)}</pre>
+                    `;
+                    Swal.fire('Success!', 'Personal card updated successfully', 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ Personal update failed: ${apiResult.error}</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Personal update test failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testCorporateUpdate() {
+            const result = document.getElementById('corporateResult');
+            result.innerHTML = '<div>🔄 Testing corporate card update...</div>';
+            
+            const testData = {
+                cardId: 2, // Assuming card 2 is corporate
+                cardType: 'Corporate',
+                company: 'Updated Test Corporation',
+                email: 'updated.contact@testcorp.com',
+                contactNo: '555-5678',
+                address: 'Updated Business Address 456'
+            };
+            
+            try {
+                const response = await fetch('./api/update_card.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const apiResult = await response.json();
+                
+                if (apiResult.success) {
+                    result.innerHTML = `
+                        <div class="success">✅ Corporate card update successful!</div>
+                        <pre>Data sent: ${JSON.stringify(testData, null, 2)}</pre>
+                    `;
+                    Swal.fire('Success!', 'Corporate card updated successfully', 'success');
+                } else {
+                    result.innerHTML = `<div class="error">❌ Corporate update failed: ${apiResult.error}</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Corporate update test failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-check database on load
+        window.addEventListener('load', checkDatabase);
+    </script>
+</body>
+</html>

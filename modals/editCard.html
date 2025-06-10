@@ -12,20 +12,19 @@
 </head>
 <body>
     <div class="modal-overlay">
-        <div class="modalContent">
-            <div id="modalHeader">
+        <div class="modalContent">            <div id="modalHeader">
                 <h1 class="modalTitle">Edit Card</h1>
             </div>
-            <div class="cardTypeContainer">
-                <label for="editCardCategory">Card Type:</label>
-                <div class="customSelect">
-                    <select id="editCardCategory" name="editCardCategory" required data-required>
-                        <option value="Personal">Personal</option>
-                        <option value="Corporate">Corporate</option>
-                    </select>
-                </div>
-            </div>
             <form id="editCardForm">
+                <div class="cardTypeContainer">
+                    <label for="editCardCategory">Card Type:</label>
+                    <div class="customSelect">
+                        <select id="editCardCategory" name="editCardCategory" required data-required>
+                            <option value="Personal">Personal</option>
+                            <option value="Corporate">Corporate</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="photoLogoContainer">
                     <label for="editPhotoUpload" class="photoUploadLabel">
                         <img src="../public/images/holocardLogo.svg" alt="Upload Photo" id="editPhotoPreview" class="photoPreviewClickable" />

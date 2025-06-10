@@ -254,12 +254,16 @@ async function refreshCardList() {
           const doc = new DOMParser().parseFromString(html, 'text/html');
           const modal = doc.querySelector('.modal-overlay');
           if (!modal) return Swal.fire('Error', 'Edit modal not found.', 'error');
-          
-          modalContainer.innerHTML = '';
+            modalContainer.innerHTML = '';
           modalContainer.appendChild(modal);
           modal.classList.add('active');
           
           console.log('Modal loaded and activated');
+          console.log('Modal elements check:');
+          console.log('- Form:', modal.querySelector('#editCardForm'));
+          console.log('- Save button:', modal.querySelector('#editCardButton'));
+          console.log('- Cancel button:', modal.querySelector('.cancelButton'));
+          console.log('- Category select:', modal.querySelector('#editCardCategory'));
           
           // Set cardId for update
           modal.dataset.cardId = card.HoloCardID;
@@ -296,12 +300,20 @@ async function refreshCardList() {
               setTimeout(() => modal.remove(), 300);
             });
           }
+            // Add form submit event listener
+          console.log('Setting up form submit listener...');
           
-          // Add form submit event listener
-          if (modal.querySelector('#editCardForm')) {
-            modal.querySelector('#editCardForm').addEventListener('submit', async function(e) {
-              e.preventDefault();
+          const editForm = modal.querySelector('#editCardForm');
+          const saveButton = modal.querySelector('#editCardButton');
+          
+          if (editForm) {
+            console.log('Edit form found, adding submit listener');
+            editForm.addEventListener('submit', async function(e) {
+              e.preventDefault();              console.log('Form submitted!');
+              
               const isPersonal = modal.querySelector('#editCardCategory').value === 'Personal';
+              console.log('Is Personal card:', isPersonal);
+              
               const data = {
                 cardType: modal.querySelector('#editCardCategory').value,
                 company: modal.querySelector('#editCompany')?.value || '',
@@ -316,28 +328,64 @@ async function refreshCardList() {
                 cardId: modal.dataset.cardId
               };
               
-              // Validate required fields
-              if (!data.email || !data.contactNo || !data.cardId) {
-                Swal.fire('Error', 'Please fill in all required fields.', 'error');
+              console.log('Data to submit:', data);
+              console.log('Card ID from modal dataset:', modal.dataset.cardId);
+              
+              // More detailed validation
+              const requiredFields = [];
+              if (!data.cardId) requiredFields.push('Card ID');
+              if (!data.email) requiredFields.push('Email');
+              if (!data.contactNo) requiredFields.push('Contact Number');
+              if (isPersonal && !data.firstName) requiredFields.push('First Name');
+              if (isPersonal && !data.lastName) requiredFields.push('Last Name');
+              if (!isPersonal && !data.company) requiredFields.push('Company');
+              
+              if (requiredFields.length > 0) {
+                Swal.fire('Error', `Please fill in the following required fields: ${requiredFields.join(', ')}`, 'error');
                 return;
               }
               
               try {
+                console.log('Sending update request...');
                 const res = await fetch('../api/update_card.php', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(data)
                 });
+                
+                console.log('Response received:', res);
                 const apiResult = await res.json();
+                console.log('API result:', apiResult);
+                
                 if (!apiResult.success) throw new Error(apiResult.error || 'Failed to update card');
                 Swal.fire('Success', 'Card updated successfully!', 'success');
                 modal.classList.remove('active');
                 setTimeout(() => modal.remove(), 300);
                 refreshCardList();
               } catch (err) {
+                console.error('Update error:', err);
                 Swal.fire('Error', err.message, 'error');
               }
             });
+          } else {
+            console.error('Edit form not found!');
+          }
+            // Also add direct click listener to Save Changes button
+          if (saveButton) {
+            console.log('Save button found, adding click listener');
+            saveButton.addEventListener('click', function(e) {
+              console.log('Save button clicked directly');
+              e.preventDefault(); // Prevent default button behavior
+              // The form submission will handle the logic
+              if (editForm) {
+                console.log('Dispatching submit event to form');
+                editForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+              } else {
+                console.error('Form not found when save button clicked');
+              }
+            });
+          } else {
+            console.error('Save button not found!');
           }
         } catch (err) {
           console.error('Error loading edit modal:', err);

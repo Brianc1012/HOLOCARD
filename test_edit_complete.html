@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Edit Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="./styles/addCard.css" />
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>HoloCard Edit Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>Step 1: Load Cards</h2>
+        <button onclick="loadCards()">Load Cards from API</button>
+        <div id="cardsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 2: Test Edit Modal</h2>
+        <button onclick="testEditModal()">Load Edit Modal</button>
+        <div id="modalResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 3: Test Save Changes</h2>
+        <button onclick="testSaveChanges()">Test Save Changes</button>
+        <div id="saveResult"></div>
+    </div>
+    
+    <div id="modalContainer"></div>
+    
+    <script>
+        let testCards = [];
+        
+        async function loadCards() {
+            const resultDiv = document.getElementById('cardsResult');
+            try {
+                const response = await fetch('./api/get_cards.php?uid=1');
+                const data = await response.json();
+                
+                if (data.success && data.cards.length > 0) {
+                    testCards = data.cards;
+                    resultDiv.innerHTML = `<div class="success">✅ Loaded ${data.cards.length} cards successfully</div>`;
+                    data.cards.forEach(card => {
+                        resultDiv.innerHTML += `<p>Card ${card.HoloCardID}: ${card.CardName} (${card.CardTypeText})</p>`;
+                    });
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ No cards found or API error</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error loading cards: ${error.message}</div>`;
+            }
+        }
+        
+        async function testEditModal() {
+            const resultDiv = document.getElementById('modalResult');
+            
+            if (testCards.length === 0) {
+                resultDiv.innerHTML = `<div class="error">❌ No cards loaded. Please load cards first.</div>`;
+                return;
+            }
+            
+            try {
+                const modalContainer = document.getElementById('modalContainer');
+                const response = await fetch('./modals/editCard.html');
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    resultDiv.innerHTML = `<div class="error">❌ Modal not found in HTML</div>`;
+                    return;
+                }
+                
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                modal.classList.add('active');
+                
+                // Use first card for testing
+                const testCard = testCards[0];
+                modal.dataset.cardId = testCard.HoloCardID;
+                
+                // Check all required elements
+                const elements = {
+                    form: modal.querySelector('#editCardForm'),
+                    saveButton: modal.querySelector('#editCardButton'),
+                    cancelButton: modal.querySelector('.cancelButton'),
+                    categorySelect: modal.querySelector('#editCardCategory'),
+                    emailField: modal.querySelector('#editEmail'),
+                    contactField: modal.querySelector('#editContact')
+                };
+                
+                let allElementsFound = true;
+                let elementStatus = '';
+                
+                Object.entries(elements).forEach(([name, element]) => {
+                    if (element) {
+                        elementStatus += `✅ ${name} found<br>`;
+                    } else {
+                        elementStatus += `❌ ${name} NOT found<br>`;
+                        allElementsFound = false;
+                    }
+                });
+                
+                if (allElementsFound) {
+                    // Populate with test data
+                    const isPersonal = testCard.CardTypeText === 'Personal';
+                    elements.categorySelect.value = isPersonal ? 'Personal' : 'Corporate';
+                    
+                    // Show/hide appropriate sections
+                    modal.querySelector('.personalDetails').style.display = isPersonal ? 'block' : 'none';
+                    modal.querySelector('.corporateDetails').style.display = isPersonal ? 'none' : 'block';
+                    
+                    // Populate fields
+                    if (isPersonal) {
+                        if (modal.querySelector('#editFName')) modal.querySelector('#editFName').value = testCard.CardName?.split(' ')[0] || '';
+                        if (modal.querySelector('#editLname')) modal.querySelector('#editLname').value = testCard.CardName?.split(' ')[1] || '';
+                        elements.emailField.value = testCard.Email || '';
+                        elements.contactField.value = testCard.ContactNo || '';
+                    } else {
+                        if (modal.querySelector('#editCompany')) modal.querySelector('#editCompany').value = testCard.CardName || '';
+                        if (modal.querySelector('#editCompanyEmail')) modal.querySelector('#editCompanyEmail').value = testCard.Email || '';
+                        if (modal.querySelector('#editCompanyContact')) modal.querySelector('#editCompanyContact').value = testCard.ContactNo || '';
+                    }
+                    
+                    if (modal.querySelector('#editAddress')) modal.querySelector('#editAddress').value = testCard.Address || '';
+                    
+                    resultDiv.innerHTML = `<div class="success">✅ Modal loaded successfully with test data<br>${elementStatus}</div>`;
+                    
+                    // Add event listeners
+                    elements.cancelButton.addEventListener('click', () => {
+                        modal.classList.remove('active');
+                    });
+                    
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Missing required elements<br>${elementStatus}</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error loading modal: ${error.message}</div>`;
+            }
+        }
+        
+        async function testSaveChanges() {
+            const resultDiv = document.getElementById('saveResult');
+            const modal = document.querySelector('.modal-overlay');
+            
+            if (!modal) {
+                resultDiv.innerHTML = `<div class="error">❌ No modal loaded. Please load edit modal first.</div>`;
+                return;
+            }
+            
+            const form = modal.querySelector('#editCardForm');
+            const saveButton = modal.querySelector('#editCardButton');
+            
+            if (!form || !saveButton) {
+                resultDiv.innerHTML = `<div class="error">❌ Form or save button not found</div>`;
+                return;
+            }
+            
+            try {
+                // Add form submit listener
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    resultDiv.innerHTML = `<div>🔄 Form submitted, processing...</div>`;
+                    
+                    const isPersonal = modal.querySelector('#editCardCategory').value === 'Personal';
+                    const data = {
+                        cardType: modal.querySelector('#editCardCategory').value,
+                        company: modal.querySelector('#editCompany')?.value || '',
+                        firstName: modal.querySelector(isPersonal ? '#editFName' : '#editCFName')?.value || '',
+                        lastName: modal.querySelector(isPersonal ? '#editLname' : '#editCLname')?.value || '',
+                        email: modal.querySelector(isPersonal ? '#editEmail' : '#editCompanyEmail')?.value || '',
+                        contactNo: modal.querySelector(isPersonal ? '#editContact' : '#editCompanyContact')?.value || '',
+                        address: modal.querySelector('#editAddress')?.value || '',
+                        cardId: modal.dataset.cardId
+                    };
+                    
+                    console.log('Test data being sent:', data);
+                    
+                    try {
+                        const response = await fetch('./api/update_card.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        const result = await response.json();
+                        console.log('API response:', result);
+                        
+                        if (result.success) {
+                            resultDiv.innerHTML = `<div class="success">✅ Save changes successful!</div>`;
+                            Swal.fire('Success!', 'Card updated successfully!', 'success');
+                        } else {
+                            resultDiv.innerHTML = `<div class="error">❌ API error: ${result.error}</div>`;
+                        }
+                    } catch (apiError) {
+                        resultDiv.innerHTML = `<div class="error">❌ API call failed: ${apiError.message}</div>`;
+                    }
+                });
+                
+                // Trigger form submission
+                resultDiv.innerHTML = `<div>🔄 Triggering form submission...</div>`;
+                saveButton.click();
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error setting up save test: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-load cards on page load
+        window.addEventListener('load', loadCards);
+    </script>
+</body>
+</html>

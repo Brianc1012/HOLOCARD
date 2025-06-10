@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Update Card</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h1>Test Update Card Functionality</h1>
+    <button onclick="testUpdate()">Test Update Card</button>
+    
+    <script>
+    async function testUpdate() {
+        const data = {
+            cardId: 1, // Assuming card with ID 1 exists
+            cardType: "Personal",
+            firstName: "John",
+            lastName: "Updated",
+            email: "john.updated@email.com",
+            contactNo: "9876543210",
+            address: "Updated Address"
+        };
+        
+        console.log('Testing update with data:', data);
+        
+        try {
+            const res = await fetch('./api/update_card.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            console.log('Response status:', res.status);
+            const result = await res.json();
+            console.log('API result:', result);
+            
+            if (result.success) {
+                Swal.fire('Success', 'Card updated successfully!', 'success');
+            } else {
+                Swal.fire('Error', result.error || 'Update failed', 'error');
+            }
+        } catch (err) {
+            console.error('Update error:', err);
+            Swal.fire('Error', err.message, 'error');
+        }
+    }
+    </script>
+</body>
+</html>

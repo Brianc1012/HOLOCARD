@@ -8,30 +8,105 @@ require_once '../database/connection.php';
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
+    error_log('Update card input: ' . print_r($input, true));
+    
     if (!isset($input['cardId']) || empty($input['cardId'])) {
         throw new Exception('Missing card ID');
     }
     $cardId = intval($input['cardId']);
-    // Update fields (add more as needed)
-    $fields = [
-        'CardType' => $input['cardType'] === 'Corporate' ? 1 : 0,
-        'Address' => $input['address'],
-        'ContactNo' => $input['contactNo'],
-        'Email' => $input['email'],
-        'BirthDate' => $input['birthDate']
-    ];
-    $set = [];
-    $params = [];
-    foreach ($fields as $k => $v) {
-        $set[] = "$k = ?";
-        $params[] = $v;
+    
+    // Start transaction
+    $pdo->beginTransaction();
+    
+    // Update HoloCard table
+    $cardType = $input['cardType'] === 'Corporate' ? 1 : 0;
+    $stmt = $pdo->prepare("UPDATE HoloCard SET CardType = ?, Address = ?, ContactNo = ?, Email = ?, BirthDate = ? WHERE HoloCardID = ?");
+    $stmt->execute([
+        $cardType,
+        $input['address'] ?? '',
+        $input['contactNo'] ?? '',
+        $input['email'] ?? '',
+        $input['birthDate'] ?? null,
+        $cardId
+    ]);
+    
+    if ($cardType === 0) {
+        // Personal card - update Personal table
+        // First check if personal record exists
+        $stmt = $pdo->prepare("SELECT * FROM Personal WHERE HoloCardID = ?");
+        $stmt->execute([$cardId]);
+        $personalExists = $stmt->fetch();
+        
+        if ($personalExists) {
+            // Update existing personal record
+            $stmt = $pdo->prepare("UPDATE Personal SET FirstName = ?, LastName = ?, MiddleName = ?, Suffix = ? WHERE HoloCardID = ?");
+            $stmt->execute([
+                $input['firstName'] ?? '',
+                $input['lastName'] ?? '',
+                $input['middleName'] ?? '',
+                $input['suffix'] ?? '',
+                $cardId
+            ]);
+        } else {
+            // Insert new personal record
+            $stmt = $pdo->prepare("INSERT INTO Personal (HoloCardID, FirstName, LastName, MiddleName, Suffix) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $cardId,
+                $input['firstName'] ?? '',
+                $input['lastName'] ?? '',
+                $input['middleName'] ?? '',
+                $input['suffix'] ?? ''
+            ]);
+        }
+        
+        // Remove any company record if it exists
+        $stmt = $pdo->prepare("DELETE FROM Company WHERE HoloCardID = ?");
+        $stmt->execute([$cardId]);
+        
+    } else {
+        // Corporate card - update Company table
+        // First check if company record exists
+        $stmt = $pdo->prepare("SELECT * FROM Company WHERE HoloCardID = ?");
+        $stmt->execute([$cardId]);
+        $companyExists = $stmt->fetch();
+        
+        if ($companyExists) {
+            // Update existing company record
+            $stmt = $pdo->prepare("UPDATE Company SET CompanyName = ?, CompanyEmail = ?, CompanyContact = ? WHERE HoloCardID = ?");
+            $stmt->execute([
+                $input['company'] ?? '',
+                $input['email'] ?? '',
+                $input['contactNo'] ?? '',
+                $cardId
+            ]);
+        } else {
+            // Insert new company record
+            $stmt = $pdo->prepare("INSERT INTO Company (HoloCardID, CompanyName, CompanyEmail, CompanyContact) VALUES (?, ?, ?, ?)");
+            $stmt->execute([
+                $cardId,
+                $input['company'] ?? '',
+                $input['email'] ?? '',
+                $input['contactNo'] ?? ''
+            ]);
+        }
+        
+        // Remove any personal record if it exists
+        $stmt = $pdo->prepare("DELETE FROM Personal WHERE HoloCardID = ?");
+        $stmt->execute([$cardId]);
     }
-    $params[] = $cardId;
-    $sql = 'UPDATE HoloCard SET ' . implode(', ', $set) . ' WHERE HoloCardID = ?';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    echo json_encode(['success' => true]);
+    
+    // Commit transaction
+    $pdo->commit();
+    
+    error_log('Update successful for card ID: ' . $cardId);
+    echo json_encode(['success' => true, 'message' => 'Card updated successfully']);
+    
 } catch (Exception $e) {
+    // Rollback transaction on error
+    if ($pdo->inTransaction()) {
+        $pdo->rollback();
+    }
+    error_log('Update card error: ' . $e->getMessage());
     http_response_code(200);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
