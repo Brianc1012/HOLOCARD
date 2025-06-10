@@ -118,171 +118,44 @@
     }
 
     // Close the addCard modal before opening the cardGenerated modal
-    modal.classList.remove("active");
-
-    // Show the cardGenerated modal and QR code
+    modal.classList.remove("active");    // Show the cardGenerated modal and QR code
     fetch("../modals/cardGenerated.html")
       .then(r => r.text())
       .then(async html => {
-        const doc      = new DOMParser().parseFromString(html, "text/html");
-        const genModal = doc.querySelector(".modal-overlay");
+        // Create modal container and inject directly into DOM (not shadow DOM)
+        const modalContainer = document.getElementById('modalContainer') || document.body;
+        modalContainer.innerHTML = html;
+        
+        const genModal = modalContainer.querySelector(".modal-overlay");
         if (!genModal) throw new Error("modal-overlay missing in cardGenerated.html");
-        const host   = document.createElement("div");
-        const shadow = host.attachShadow({ mode: "open" });
-        const css = await fetch("../styles/cardGenerated.css").then(r => r.text());
-        const styleTag = document.createElement("style");
-        styleTag.textContent = css;
-        shadow.appendChild(styleTag);
-        shadow.appendChild(genModal);        const map = {
-          detailCardType     : data.cardType,
-          detailCompany      : data.company,
-          detailFirstName    : data.firstName,
-          detailLastName     : data.lastName,
-          detailMiddleName   : data.middleName,
-          detailSuffix       : data.suffix,
-          detailBdate        : data.birthDate,
-          detailEmail        : isPersonal ? data.email : "—",
-          detailCompanyEmail : !isPersonal ? data.email : "—",
-          detailContact      : data.contactNo,
-          detailAddress      : data.address,
-          detailCardName     : data.cardName
+        
+        // Create card data structure for the enhanced generator
+        const cardData = {
+          HoloCardID: Date.now(),
+          CardName: data.cardName,
+          CardTypeText: data.cardType,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          middleName: data.middleName,
+          suffix: data.suffix,
+          Email: data.email,
+          ContactNo: data.contactNo,
+          Address: data.address,
+          BirthDate: data.birthDate,
+          CompanyName: data.company,
+          CompanyEmail: !isPersonal ? data.email : ''
         };
-        Object.entries(map).forEach(([id, value]) => {
-          const span = shadow.querySelector(`#${id}`);
-          if (span) span.textContent = value || "—";
-        });
-        shadow.querySelector(".personalDetails").style.display  = isPersonal ? "block" : "none";
-        shadow.querySelector(".corporateDetails").style.display = isPersonal ? "none"  : "block";
-        // Remove any existing cardGenerated modals before opening a new one
-        document.querySelectorAll('div[data-generated-modal]').forEach(m => m.remove());
-        // Hide the addCard modal (ensure it's not visible)
-        modal.classList.remove('active');
-        host.dataset.generatedModal = "true";
-        document.body.appendChild(host);
-        requestAnimationFrame(() => genModal.classList.add("active"));        // Generate enhanced AR-ready QR code using the new system
-        const qrContainer = shadow.querySelector('.qr-placeholder');
-        if (qrContainer) {
-          qrContainer.innerHTML = '';
-          
-          // Load QR code library into shadow DOM
-          const qrScript = document.createElement('script');
-          qrScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-          qrScript.onload = () => {
-            // Create enhanced AR data structure
-            const arData = {
-              type: "holocard-ar",
-              version: "1.0",
-              cardId: Date.now(), // Temporary ID until we get the real one from API
-              profile: {
-                name: data.cardName || `${data.firstName} ${data.lastName}`.trim(),
-                cardType: data.cardType,
-                email: data.email,
-                contact: data.contactNo,
-                address: data.address,
-                birthDate: data.birthDate || ''
-              },
-              company: !isPersonal ? {
-                name: data.company,
-                email: data.email,
-                contact: data.contactNo
-              } : null,
-              ar: {
-                markerType: "qr",
-                markerSize: 0.1,
-                trackingMode: "stable",
-                renderDistance: 2.0
-              },
-              webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?temp=${Date.now()}`,
-              generated: new Date().toISOString()
-            };
 
-            // Generate QR with enhanced AR data
-            const qr = new QRCode(qrContainer, {
-              text: JSON.stringify(arData),
-              width: 200,
-              height: 200,
-              colorDark: "#000000",
-              colorLight: "#ffffff",
-              correctLevel: QRCode.CorrectLevel.H,
-              margin: 2
-            });
-
-            // Add AR corner markers for visual indication
-            setTimeout(() => {
-              const canvas = qrContainer.querySelector('canvas');
-              if (canvas) {
-                const container = canvas.parentElement;
-                container.style.position = 'relative';
-                
-                // Create corner markers
-                const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-                corners.forEach(corner => {
-                  const marker = document.createElement('div');
-                  marker.className = `ar-corner ${corner}`;
-                  marker.style.cssText = `
-                    position: absolute;
-                    width: 15px;
-                    height: 15px;
-                    border: 2px solid #007bff;
-                    ${corner.includes('top') ? 'top: -3px;' : 'bottom: -3px;'}
-                    ${corner.includes('left') ? 'left: -3px;' : 'right: -3px;'}
-                    ${corner.includes('top') && corner.includes('left') ? 'border-right: none; border-bottom: none;' : ''}
-                    ${corner.includes('top') && corner.includes('right') ? 'border-left: none; border-bottom: none;' : ''}
-                    ${corner.includes('bottom') && corner.includes('left') ? 'border-right: none; border-top: none;' : ''}
-                    ${corner.includes('bottom') && corner.includes('right') ? 'border-left: none; border-top: none;' : ''}
-                  `;
-                  container.appendChild(marker);
-                });
-
-                // Add AR indicator
-                const arIndicator = document.createElement('div');
-                arIndicator.innerHTML = '📱 AR Ready';
-                arIndicator.style.cssText = `
-                  position: absolute;
-                  bottom: -25px;
-                  left: 50%;
-                  transform: translateX(-50%);
-                  font-size: 10px;
-                  color: #007bff;
-                  font-weight: bold;
-                  text-align: center;
-                `;
-                container.appendChild(arIndicator);
-                
-                console.log('✅ AR-ready QR code generated successfully');
-              }
-            }, 100);
-          };
-          shadow.appendChild(qrScript);
-        }
-
-        // Download QR button
-        const downloadBtn = shadow.querySelector('.download-btn');
-        if (downloadBtn && qrContainer) {
-          downloadBtn.onclick = function() {
-            const canvas = qrContainer.querySelector('canvas');
-            if (canvas) {
-              const link = document.createElement('a');
-              link.download = 'holocard_qr.png';
-              link.href = canvas.toDataURL('image/png');
-              link.click();
-              console.log('✅ QR code downloaded');
-            }
-          };
-        }// Close button
-        const closeBtn = shadow.querySelector('.close-btn');
-        if (closeBtn) {
-          closeBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            genModal.classList.remove('active');
-            setTimeout(() => {
-              host.remove();
-            }, 300);
-            // Also clear the form and show the addCard modal again if needed
-            clearForm();
-          };
-        }
+        // Show the modal
+        genModal.classList.add("active");
+          // Use the enhanced QR generator
+        setTimeout(() => {
+          if (typeof window.generateHoloCardQR === 'function') {
+            window.generateHoloCardQR(cardData);
+          } else {
+            console.error('Enhanced QR generator not available');
+          }
+        }, 100);
       })
       .catch(err => console.error("❌ Card-Generated modal error:", err));
   });
