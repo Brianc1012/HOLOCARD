@@ -240,12 +240,16 @@
               a.click();
             }
           };
-        }
-        // Close button
+        }        // Close button
         const closeBtn = shadow.querySelector('.close-btn');
         if (closeBtn) {
-          closeBtn.onclick = () => {
-            host.remove();
+          closeBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            genModal.classList.remove('active');
+            setTimeout(() => {
+              host.remove();
+            }, 300);
             // Also clear the form and show the addCard modal again if needed
             clearForm();
           };

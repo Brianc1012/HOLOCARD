@@ -28,6 +28,7 @@ if (location.protocol === 'file:') {
 /* ------------------------------------------------------------------ */
 function openAddModal() {
   console.log('🔧 openAddModal() called');
+  alert('openAddModal called!');
   const host = document.getElementById("modalContainer");
   const existing = document.querySelector(".modal-overlay");
   if (existing) {
@@ -353,6 +354,7 @@ async function refreshCardList() {
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🎯 DOM Content Loaded - starting card refresh");
+  alert("DOM loaded - about to call refreshCardList");
   refreshCardList();
 });
 window.refreshCardList = refreshCardList;

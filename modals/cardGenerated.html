@@ -67,9 +67,7 @@
                 <button class="close-btn" aria-label="Close modal">Close</button>
             </footer>
         </div>
-    </div>
-
-    <script src="../scripts/qrcode.min.js"></script>
+    </div>    <script src="../scripts/qrcode.min.js"></script>
     <script>
 // Ensure QR code is visible if loaded directly (for dev/testing)
 document.addEventListener('DOMContentLoaded', function() {
@@ -87,6 +85,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       } catch(e) {}
     }
+  }
+
+  // Fix: Close button should close the modal
+  var closeBtn = document.querySelector('.close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      // Remove the modal overlay from DOM
+      var modal = document.querySelector('.modal-overlay');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(function() {
+          if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+          }
+        }, 300);
+      }
+      // Also try to remove from modalContainer if it exists
+      var modalContainer = document.getElementById('modalContainer');
+      if (modalContainer) {
+        modalContainer.innerHTML = '';
+      }
+    });
   }
 });
 </script>

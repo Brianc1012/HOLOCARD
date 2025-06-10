@@ -1,0 +1,149 @@
+<!-- filepath: modals/editCard.html -->
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Card Modal</title>
+    <link rel="stylesheet" href="../styles/addCard.css" />
+    <script src="../scripts/qrcode.min.js"></script>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="modal-overlay">
+        <div class="modalContent">
+            <div id="modalHeader">
+                <h1 class="modalTitle">Edit Card</h1>
+            </div>
+            <div class="cardTypeContainer">
+                <label for="editCardCategory">Card Type:</label>
+                <div class="customSelect">
+                    <select id="editCardCategory" name="editCardCategory" required data-required>
+                        <option value="Personal">Personal</option>
+                        <option value="Corporate">Corporate</option>
+                    </select>
+                </div>
+            </div>
+            <form id="editCardForm">
+                <div class="photoLogoContainer">
+                    <label for="editPhotoUpload" class="photoUploadLabel">
+                        <img src="../public/images/holocardLogo.svg" alt="Upload Photo" id="editPhotoPreview" class="photoPreviewClickable" />
+                    </label>
+                    <input type="file" id="editPhotoUpload" name="editPhotoUpload" accept="image/*" style="display: none;">
+                </div>
+                <!-- Corporate Details -->
+                <div class="corporateDetails">
+                    <label for="editCompany">Company:</label>
+                    <input type="text" id="editCompany" name="editCompany" required data-required>
+                    <div class="contactPerson">
+                        <h2>Contact Person</h2>
+                        <div class="contactPersonDetails">
+                            <div class="row">
+                                <div class="inputContainer">
+                                    <label for="editCFName">First Name:</label>
+                                    <input type="text" id="editCFName" name="editCFName" required data-required>
+                                </div>
+                                <div class="inputContainer">
+                                    <label for="editCLname">Last Name:</label>
+                                    <input type="text" id="editCLname" name="editCLname" required data-required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="inputContainer">
+                                    <label for="editCMname">Middle Name:</label>
+                                    <input type="text" id="editCMname" name="editCMname">
+                                </div>
+                                <div class="inputContainerSuffix">
+                                    <label for="editCnameSuffix">Suffix:</label>
+                                    <div class="customSelect">
+                                        <select id="editCnameSuffix" name="editCnameSuffix">
+                                            <option value="">None</option>
+                                            <option value="Jr.">Jr.</option>
+                                            <option value="Sr.">Sr.</option>
+                                            <option value="III">III</option>
+                                            <option value="IV">IV</option>
+                                            <option value="V">V</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="inputContainer">
+                            <label for="editCompanyEmail">Company Email:</label>
+                            <input type="email" id="editCompanyEmail" name="editCompanyEmail" required data-required>
+                        </div>
+                        <div class="inputContainer">
+                            <label for="editCompanyContact">Company Contact Number:</label>
+                            <input type="tel" id="editCompanyContact" name="editCompanyContact">
+                        </div>
+                    </div>
+                </div>
+                <!-- Personal Details -->
+                <div class="personalDetails">
+                    <div class="name">
+                        <div class="row">
+                            <div class="inputContainer">
+                                <label for="editFName">First Name:</label>
+                                <input type="text" id="editFName" name="editFName" required data-required>
+                            </div>
+                            <div class="inputContainer">
+                                <label for="editLname">Last Name:</label>
+                                <input type="text" id="editLname" name="editLname" required data-required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="inputContainer">
+                                <label for="editMname">Middle Name:</label>
+                                <input type="text" id="editMname" name="editMname">
+                            </div>
+                            <div class="inputContainerSuffix">
+                                <label for="editNameSuffix">Suffix:</label>
+                                <div class="customSelect">
+                                    <select id="editNameSuffix" name="editNameSuffix">
+                                        <option value="">None</option>
+                                        <option value="Jr.">Jr.</option>
+                                        <option value="Sr.">Sr.</option>
+                                        <option value="III">III</option>
+                                        <option value="PhD">PhD</option>
+                                        <option value="MD">MD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <label for="editBirthDate">Date of Birth:</label>
+                                <input type="date" id="editBirthDate" name="editBirthDate">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="inputContainer">
+                            <label for="editEmail">Personal Email:</label>
+                            <input type="email" id="editEmail" name="editEmail" required data-required>
+                        </div>
+                        <div class="inputContainer">
+                            <label for="editContact">Contact Number:</label>
+                            <input type="tel" id="editContact" name="editContact" required data-required>
+                        </div>
+                    </div>
+                </div>
+                <div class="commonDetails">
+                    <label for="editAddress">Address:</label>
+                    <textarea id="editAddress" name="editAddress"></textarea>
+                </div>
+                <div class="controls">
+                    <div class="buttonContainer">
+                        <button type="button" class="cancelButton">Cancel</button>
+                        <button type="submit" class="addButton" id="editCardButton">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+    // JS logic for toggling personal/corporate fields and previewing photo will be handled by editCard.js
+    </script>
+</body>
+</html>
