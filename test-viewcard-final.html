@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViewCard Modal Final Test</title>
+    <link rel="stylesheet" href="styles/addCard.css">
+    <link rel="stylesheet" href="styles/cardGenerated.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .test-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+        
+        .test-personal {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+        }
+        
+        .test-corporate {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .status h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+            padding: 5px 0;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">
+            <i class="ri-eye-line"></i>
+            ViewCard Modal Final Test
+        </h1>
+        
+        <div class="status">
+            <h3><i class="ri-information-line"></i> Test Status</h3>
+            <div id="statusInfo" class="status-item info">Ready to test ViewCard modal functionality</div>
+            <div id="statusAPI" class="status-item">API Status: <span id="apiStatus">Testing...</span></div>
+            <div id="statusModal" class="status-item">Modal Status: <span id="modalStatus">Not tested</span></div>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="test-btn test-personal" onclick="testPersonalCard()">
+                <i class="ri-user-line"></i>
+                Test Personal Card
+            </button>
+            
+            <button class="test-btn test-corporate" onclick="testCorporateCard()">
+                <i class="ri-building-line"></i>
+                Test Corporate Card
+            </button>
+            
+            <button class="test-btn" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white;" onclick="testRealData()">
+                <i class="ri-database-line"></i>
+                Test Real Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script>
+        // Test API connection first
+        async function testAPI() {
+            try {
+                const response = await fetch('../api/get_cards.php?uid=1');
+                const data = await response.json();
+                
+                if (data.success && data.cards.length > 0) {
+                    document.getElementById('apiStatus').textContent = `✅ Connected (${data.cards.length} cards found)`;
+                    document.getElementById('apiStatus').className = 'success';
+                    return data.cards;
+                } else {
+                    document.getElementById('apiStatus').textContent = '⚠️ No cards found';
+                    document.getElementById('apiStatus').className = 'error';
+                    return [];
+                }
+            } catch (error) {
+                document.getElementById('apiStatus').textContent = '❌ API Error: ' + error.message;
+                document.getElementById('apiStatus').className = 'error';
+                return [];
+            }
+        }
+
+        // Sample test data
+        const samplePersonalCard = {
+            HoloCardID: "test-123",
+            CardName: "John Michael Doe",
+            CardTypeText: "Personal",
+            FirstName: "John",
+            LastName: "Doe",
+            Email: "john.doe@email.com",
+            ContactNo: "+1 (555) 123-4567",
+            Address: "123 Main Street, New York, NY 10001",
+            BirthDate: "1990-05-15"
+        };
+
+        const sampleCorporateCard = {
+            HoloCardID: "test-456",
+            CardName: "TechCorp Solutions Inc.",
+            CardTypeText: "Corporate",
+            CompanyName: "TechCorp Solutions Inc.",
+            Email: "contact@techcorp.com",
+            ContactNo: "+1 (555) 987-6543",
+            Address: "456 Business Ave, Silicon Valley, CA 94043",
+            ContactPerson: "Jane Smith",
+            Position: "CEO"
+        };
+
+        async function openViewModal(cardData) {
+            try {
+                document.getElementById('modalStatus').textContent = 'Loading modal...';
+                document.getElementById('modalStatus').className = 'info';
+                
+                const modalContainer = document.getElementById('modalContainer');
+                const res = await fetch('../modals/viewCard.html');
+                const html = await res.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    throw new Error('Modal not found in viewCard.html');
+                }
+                
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                modal.classList.add('active');
+                
+                document.getElementById('modalStatus').textContent = '✅ Modal loaded successfully';
+                document.getElementById('modalStatus').className = 'success';
+                
+                // Wait for modal to be fully rendered, then populate
+                setTimeout(() => {
+                    if (window.populateViewCard) {
+                        window.populateViewCard(cardData);
+                        console.log('✅ Modal populated with data');
+                    } else {
+                        console.error('❌ populateViewCard function not available');
+                    }
+                }, 200);
+                
+            } catch (error) {
+                console.error('Error opening view modal:', error);
+                document.getElementById('modalStatus').textContent = '❌ Error: ' + error.message;
+                document.getElementById('modalStatus').className = 'error';
+                Swal.fire('Error', 'Failed to load view modal: ' + error.message, 'error');
+            }
+        }
+
+        function testPersonalCard() {
+            console.log('🧪 Testing personal card modal');
+            openViewModal(samplePersonalCard);
+        }
+
+        function testCorporateCard() {
+            console.log('🧪 Testing corporate card modal');
+            openViewModal(sampleCorporateCard);
+        }
+
+        async function testRealData() {
+            console.log('🧪 Testing with real database data');
+            const cards = await testAPI();
+            if (cards.length > 0) {
+                // Use the first card from the database
+                openViewModal(cards[0]);
+            } else {
+                Swal.fire('No Data', 'No real cards found in database. Please add some cards first.', 'warning');
+            }
+        }
+
+        // Test API on page load
+        window.addEventListener('load', () => {
+            testAPI();
+        });
+
+        // Global close function for the modal
+        window.closeViewModal = function() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    const modalContainer = document.getElementById('modalContainer');
+                    if (modalContainer) {
+                        modalContainer.innerHTML = '';
+                    }
+                }, 300);
+            }
+        };
+    </script>
+</body>
+</html>

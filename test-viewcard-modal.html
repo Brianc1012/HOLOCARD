@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test ViewCard Modal</title>
+    <link rel="stylesheet" href="styles/addCard.css">
+    <link rel="stylesheet" href="styles/cardGenerated.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <script src="scripts/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        .test-personal {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+        }
+        
+        .test-corporate {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+            color: white;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .features-list {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .features-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .feature-icon {
+            color: #28a745;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">
+            <i class="ri-eye-line"></i>
+            ViewCard Modal Test
+        </h1>
+        
+        <div class="test-buttons">
+            <button class="test-btn test-personal" onclick="testPersonalCard()">
+                <i class="ri-user-line"></i>
+                Test Personal Card
+            </button>
+            
+            <button class="test-btn test-corporate" onclick="testCorporateCard()">
+                <i class="ri-building-line"></i>
+                Test Corporate Card
+            </button>
+        </div>
+        
+        <div class="features-list">
+            <div class="features-title">
+                <i class="ri-check-double-line"></i>
+                ViewCard Modal Features
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Unified modern UI design with gradient backgrounds</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Working close button with multiple close methods (X, Escape, click outside)</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>AR-ready QR code generation with enhanced visual markers</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Dynamic field display based on card type (Personal/Corporate)</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Action buttons: Edit, Download QR, Share functionality</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Responsive design for mobile and desktop</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Loading states and error handling for QR generation</span>
+            </div>
+            <div class="feature-item">
+                <i class="ri-check-line feature-icon"></i>
+                <span>Enhanced AR corner markers with pulse animations</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script>
+        // Sample card data for testing
+        const samplePersonalCard = {
+            HoloCardID: "123",
+            CardName: "John Michael Doe",
+            CardTypeText: "Personal",
+            Email: "john.doe@email.com",
+            ContactNo: "+1 (555) 123-4567",
+            Address: "123 Main Street, New York, NY 10001",
+            BirthDate: "1990-05-15"
+        };
+
+        const sampleCorporateCard = {
+            HoloCardID: "456",
+            CardName: "TechCorp Solutions Inc.",
+            CardTypeText: "Corporate",
+            Email: "contact@techcorp.com",
+            ContactNo: "+1 (555) 987-6543",
+            Address: "456 Business Ave, Silicon Valley, CA 94043",
+            ContactPerson: "Jane Smith"
+        };
+
+        async function openViewModal(cardData) {
+            try {
+                const modalContainer = document.getElementById('modalContainer');
+                const res = await fetch('modals/viewCard.html');
+                const html = await res.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    throw new Error('Modal not found in viewCard.html');
+                }
+                
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                modal.classList.add('active');
+                
+                // Populate card data
+                setTimeout(() => {
+                    populateViewCard(modal, cardData);
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error opening view modal:', error);
+                Swal.fire('Error', 'Failed to load view modal: ' + error.message, 'error');
+            }
+        }
+
+        function populateViewCard(modal, cardData) {
+            console.log('📋 Populating view card with data:', cardData);
+
+            const isPersonal = cardData.CardTypeText === 'Personal';
+            
+            // Update card type badge
+            const badge = modal.querySelector('#cardTypeBadge');
+            if (badge) {
+                badge.textContent = cardData.CardTypeText + ' Card';
+                badge.className = `card-type-badge ${isPersonal ? 'card-type-personal' : 'card-type-corporate'}`;
+            }
+
+            // Show/hide appropriate sections
+            const personalSection = modal.querySelector('.personalDetails');
+            const corporateSection = modal.querySelector('.corporateDetails');
+            
+            if (personalSection) personalSection.style.display = isPersonal ? 'block' : 'none';
+            if (corporateSection) corporateSection.style.display = isPersonal ? 'none' : 'block';
+
+            // Helper function to set field value
+            const setField = (id, value) => {
+                const element = modal.querySelector('#' + id);
+                if (element) {
+                    element.textContent = value || '—';
+                    if (!value) element.classList.add('empty-field');
+                    else element.classList.remove('empty-field');
+                }
+            };
+
+            if (isPersonal) {
+                // Personal card fields
+                setField('detailFullName', cardData.CardName);
+                setField('detailEmail', cardData.Email);
+                setField('detailContact', cardData.ContactNo);
+                setField('detailBirthDate', cardData.BirthDate);
+                setField('detailAddress', cardData.Address);
+            } else {
+                // Corporate card fields
+                setField('detailCompanyName', cardData.CardName);
+                setField('detailContactPerson', cardData.ContactPerson || 'Not specified');
+                setField('detailCompanyEmail', cardData.Email);
+                setField('detailCompanyContact', cardData.ContactNo);
+                setField('detailCompanyAddress', cardData.Address);
+            }
+
+            // Generate AR-ready QR code
+            const qrContainer = modal.querySelector('#qrCodeContainer');
+            if (qrContainer) {
+                try {
+                    // Create AR-ready data structure
+                    const arData = {
+                        type: "holocard-ar",
+                        version: "2.0",
+                        cardId: cardData.HoloCardID,
+                        profile: {
+                            name: cardData.CardName,
+                            cardType: cardData.CardTypeText,
+                            email: cardData.Email,
+                            contact: cardData.ContactNo,
+                            address: cardData.Address,
+                            birthDate: cardData.BirthDate
+                        },
+                        ar: {
+                            markerType: "qr",
+                            markerSize: 0.1,
+                            trackingMode: "stable",
+                            renderDistance: 2.0,
+                            effects: ["glow", "float", "rotate"]
+                        },
+                        webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`,
+                        generated: new Date().toISOString()
+                    };
+
+                    // Clear loading state
+                    qrContainer.innerHTML = '';
+
+                    // Generate QR code
+                    new QRCode(qrContainer, {
+                        text: JSON.stringify(arData),
+                        width: 200,
+                        height: 200,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H,
+                        margin: 4
+                    });
+
+                    console.log('✅ Enhanced QR code generated for card:', cardData.HoloCardID);
+                } catch (error) {
+                    console.error('❌ QR generation failed:', error);
+                    qrContainer.innerHTML = `
+                        <div class="qr-error">
+                            <i class="ri-error-warning-line"></i>
+                            <div>Failed to generate QR code</div>
+                            <small>${error.message}</small>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function testPersonalCard() {
+            openViewModal(samplePersonalCard);
+        }
+
+        function testCorporateCard() {
+            openViewModal(sampleCorporateCard);
+        }
+
+        // Global close function for the modal
+        window.closeViewModal = function() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    const modalContainer = document.getElementById('modalContainer');
+                    if (modalContainer) {
+                        modalContainer.innerHTML = '';
+                    }
+                }, 300);
+            }
+        };
+    </script>
+</body>
+</html>

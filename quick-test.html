@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViewCard Quick Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 ViewCard Quick Test</h1>
+        <p>Testing core ViewCard modal functionality</p>
+        
+        <button class="test-btn" onclick="quickTest()">🚀 Test ViewCard Modal</button>
+        
+        <div id="status" class="status info">Ready to test...</div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            console.log(message);
+        }
+
+        async function quickTest() {
+            try {
+                updateStatus('Loading ViewCard modal...', 'info');
+                
+                // Test data
+                const testCard = {
+                    HoloCardID: "quick-test-123",
+                    CardName: "Quick Test User",
+                    CardTypeText: "Personal",
+                    Email: "test@quicktest.com",
+                    ContactNo: "555-QUICK",
+                    Address: "123 Quick Test St",
+                    BirthDate: "1990-01-01"
+                };                // Load modal
+                const modalContainer = document.getElementById('modalContainer');
+                const response = await fetch('../modals/viewCard.html');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch modal: ${response.status}`);
+                }
+                
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    throw new Error('Modal overlay not found in HTML');
+                }
+                
+                // Clear and inject modal
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                
+                updateStatus('Modal loaded, executing scripts...', 'info');
+                
+                // Execute scripts
+                const scripts = modal.querySelectorAll('script');
+                console.log(`Found ${scripts.length} scripts`);
+                
+                scripts.forEach((script, index) => {
+                    try {
+                        const newScript = document.createElement('script');
+                        newScript.textContent = script.textContent;
+                        document.head.appendChild(newScript);
+                        document.head.removeChild(newScript);
+                        console.log(`Script ${index + 1} executed`);
+                    } catch (error) {
+                        console.error(`Script ${index + 1} error:`, error);
+                    }
+                });
+                
+                // Wait for scripts to register functions
+                setTimeout(() => {
+                    if (window.populateViewCard && window.closeViewModal) {
+                        updateStatus('Functions available, populating data...', 'info');
+                        
+                        // Show modal
+                        modal.classList.add('active');
+                        
+                        // Populate data
+                        try {
+                            window.populateViewCard(testCard);
+                            updateStatus('✅ SUCCESS! Modal is working correctly!', 'success');
+                              // Test close button
+                            setTimeout(() => {
+                                const closeBtn = modal.querySelector('.close-btn');
+                                if (closeBtn) {
+                                    const closeBtnStyles = window.getComputedStyle(closeBtn);
+                                    const isVisible = closeBtnStyles.display !== 'none' && 
+                                                    closeBtnStyles.visibility !== 'hidden' && 
+                                                    closeBtnStyles.opacity !== '0';
+                                    
+                                    if (isVisible) {
+                                        updateStatus('✅ SUCCESS! Modal and close button working perfectly!', 'success');
+                                        
+                                        // Test clicking the close button
+                                        setTimeout(() => {
+                                            updateStatus('🔴 Testing close button click...', 'info');
+                                            closeBtn.click();
+                                            
+                                            setTimeout(() => {
+                                                const stillActive = modal.classList.contains('active');
+                                                if (!stillActive) {
+                                                    updateStatus('🎉 PERFECT! Close button works correctly!', 'success');
+                                                } else {
+                                                    updateStatus('⚠️ Close button clicked but modal still active', 'error');
+                                                }
+                                            }, 500);
+                                        }, 2000);
+                                    } else {
+                                        updateStatus(`⚠️ Close button found but not visible: display=${closeBtnStyles.display}, visibility=${closeBtnStyles.visibility}, opacity=${closeBtnStyles.opacity}`, 'error');
+                                    }
+                                } else {
+                                    updateStatus('❌ Close button not found in modal', 'error');
+                                }
+                            }, 1000);
+                            
+                        } catch (populateError) {
+                            updateStatus(`❌ Data population failed: ${populateError.message}`, 'error');
+                        }
+                    } else {
+                        updateStatus('❌ Functions not available after script execution', 'error');
+                        console.log('populateViewCard:', typeof window.populateViewCard);
+                        console.log('closeViewModal:', typeof window.closeViewModal);
+                    }
+                }, 200);
+                
+            } catch (error) {
+                updateStatus(`❌ Test failed: ${error.message}`, 'error');
+                console.error('Quick test error:', error);
+            }
+        }
+
+        // Global close function for fallback
+        window.closeViewModal = function() {
+            console.log('Global closeViewModal called');
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    document.getElementById('modalContainer').innerHTML = '';
+                }, 300);
+            }
+        };
+    </script>
+</body>
+</html>

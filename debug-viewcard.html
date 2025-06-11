@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViewCard Modal Debug</title>
+    <link rel="stylesheet" href="styles/addCard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .debug-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .test-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .debug-log {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-info { background: #d1ecf1; color: #0c5460; }
+        .log-success { background: #d4edda; color: #155724; }
+        .log-error { background: #f8d7da; color: #721c24; }
+        .log-warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1 class="debug-title">🔍 ViewCard Modal Debug Tool</h1>
+        
+        <div>
+            <button class="test-btn" onclick="debugModalLoad()">🚀 Debug Modal Load</button>
+            <button class="test-btn" onclick="testCloseButton()">❌ Test Close Button</button>
+            <button class="test-btn" onclick="testDataPopulation()">📋 Test Data Population</button>
+            <button class="test-btn" onclick="clearLog()">🧹 Clear Log</button>
+        </div>
+        
+        <div id="debugLog" class="debug-log">
+            <div class="log-entry log-info">🎯 Debug tool ready. Click buttons above to test modal functionality.</div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script>
+        // Debug logging
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('debugLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '<div class="log-entry log-info">🧹 Log cleared.</div>';
+        }
+
+        // Test modal loading step by step
+        async function debugModalLoad() {
+            addLog('🚀 Starting modal load debug...', 'info');
+            
+            try {
+                // Step 1: Check modal container
+                const modalContainer = document.getElementById('modalContainer');
+                if (!modalContainer) {
+                    addLog('❌ Modal container not found!', 'error');
+                    return;
+                }
+                addLog('✅ Modal container found', 'success');
+
+                // Step 2: Fetch modal HTML
+                addLog('📡 Fetching modal HTML...', 'info');
+                const res = await fetch('modals/viewCard.html');
+                if (!res.ok) {
+                    addLog(`❌ Failed to fetch modal: ${res.status} ${res.statusText}`, 'error');
+                    return;
+                }
+                addLog('✅ Modal HTML fetched successfully', 'success');
+
+                // Step 3: Parse HTML
+                const html = await res.text();
+                addLog(`📄 HTML content length: ${html.length} characters`, 'info');
+                
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    addLog('❌ .modal-overlay not found in parsed HTML', 'error');
+                    return;
+                }
+                addLog('✅ Modal overlay element found', 'success');
+
+                // Step 4: Inject into DOM
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                addLog('✅ Modal injected into DOM', 'success');
+
+                // Step 5: Check for scripts
+                const scripts = modal.querySelectorAll('script');
+                addLog(`📜 Found ${scripts.length} script tags in modal`, 'info');
+
+                // Step 6: Check for close button
+                const closeBtn = modal.querySelector('.close-btn');
+                if (closeBtn) {
+                    addLog('✅ Close button found in modal', 'success');
+                    addLog(`🔍 Close button HTML: ${closeBtn.outerHTML}`, 'info');
+                } else {
+                    addLog('❌ Close button not found!', 'error');
+                }
+
+                // Step 7: Activate modal
+                modal.classList.add('active');
+                addLog('✅ Modal activated with .active class', 'success');
+
+                // Step 8: Check for window functions
+                setTimeout(() => {
+                    if (window.closeViewModal) {
+                        addLog('✅ window.closeViewModal function available', 'success');
+                    } else {
+                        addLog('❌ window.closeViewModal function NOT available', 'error');
+                    }
+
+                    if (window.populateViewCard) {
+                        addLog('✅ window.populateViewCard function available', 'success');
+                    } else {
+                        addLog('❌ window.populateViewCard function NOT available', 'error');
+                    }
+                }, 500);
+
+            } catch (error) {
+                addLog(`💥 Error during modal load: ${error.message}`, 'error');
+                console.error('Debug error:', error);
+            }
+        }
+
+        // Test close button functionality
+        function testCloseButton() {
+            addLog('🔴 Testing close button functionality...', 'info');
+            
+            const modal = document.querySelector('.modal-overlay');
+            if (!modal) {
+                addLog('❌ No modal found to test close button', 'error');
+                return;
+            }
+
+            const closeBtn = modal.querySelector('.close-btn');
+            if (!closeBtn) {
+                addLog('❌ Close button not found in current modal', 'error');
+                return;
+            }
+
+            addLog('✅ Close button found, testing click...', 'info');
+            
+            // Test programmatic click
+            try {
+                closeBtn.click();
+                addLog('✅ Close button click executed', 'success');
+                
+                // Check if modal is still active after a delay
+                setTimeout(() => {
+                    const stillActive = modal.classList.contains('active');
+                    if (stillActive) {
+                        addLog('⚠️ Modal still active after close button click', 'warning');
+                    } else {
+                        addLog('✅ Modal successfully closed', 'success');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addLog(`❌ Error clicking close button: ${error.message}`, 'error');
+            }
+        }
+
+        // Test data population
+        function testDataPopulation() {
+            addLog('📋 Testing data population...', 'info');
+            
+            const testData = {
+                HoloCardID: "debug-123",
+                CardName: "Debug Test Card",
+                CardTypeText: "Personal",
+                Email: "debug@test.com",
+                ContactNo: "555-DEBUG",
+                Address: "123 Debug Street",
+                BirthDate: "2000-01-01"
+            };
+
+            if (window.populateViewCard) {
+                addLog('✅ populateViewCard function found, calling with test data...', 'info');
+                try {
+                    window.populateViewCard(testData);
+                    addLog('✅ populateViewCard executed successfully', 'success');
+                } catch (error) {
+                    addLog(`❌ Error in populateViewCard: ${error.message}`, 'error');
+                }
+            } else {
+                addLog('❌ populateViewCard function not available', 'error');
+            }
+        }
+
+        // Global close function for debug
+        window.closeViewModal = function() {
+            addLog('🔴 closeViewModal called', 'info');
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    const modalContainer = document.getElementById('modalContainer');
+                    if (modalContainer) {
+                        modalContainer.innerHTML = '';
+                    }
+                    addLog('✅ Modal closed and cleaned up', 'success');
+                }, 300);
+            }
+        };
+    </script>
+</body>
+</html>

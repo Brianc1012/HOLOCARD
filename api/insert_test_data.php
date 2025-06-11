@@ -27,10 +27,9 @@ try {
     $stmt->execute();
     $cardId = $pdo->lastInsertId();
     echo "✅ HoloCard created with ID: $cardId\n";
-    
-    // Insert personal data for the card
+      // Insert personal data for the card
     echo "Creating personal data...\n";
-    $stmt = $pdo->prepare("INSERT INTO Personal (HoloCardID, FirstName, LastName, MiddleName, Suffix) VALUES (?, 'John', 'Doe', 'Middle', '')");
+    $stmt = $pdo->prepare("INSERT INTO Personal (HoloCardID, FirstName, LastName, Suffix) VALUES (?, 'John', 'Doe', '')");
     $stmt->execute([$cardId]);
     echo "✅ Personal data created\n";
     
@@ -40,10 +39,9 @@ try {
     $stmt->execute();
     $corpCardId = $pdo->lastInsertId();
     echo "✅ Corporate HoloCard created with ID: $corpCardId\n";
-    
-    // Insert company data
+      // Insert company data
     echo "Creating company data...\n";
-    $stmt = $pdo->prepare("INSERT INTO Company (HoloCardID, CompanyName, CompanyEmail, CompanyContact) VALUES (?, 'Test Corporation', 'contact@testcorp.com', '555-0456')");
+    $stmt = $pdo->prepare("INSERT INTO Company (HoloCardID, CompanyName, ContactPerson_FirstName, ContactPerson_LastName, Position) VALUES (?, 'Test Corporation', 'Jane', 'Smith', 'Manager')");
     $stmt->execute([$corpCardId]);
     echo "✅ Company data created\n";
     

@@ -16,8 +16,7 @@ try {
     $uid = isset($_GET['uid']) ? intval($_GET['uid']) : null;
     if (!$uid) {
         throw new Exception('User ID is required');
-    }
-    // Get all cards for the user
+    }    // Get all cards for the user with detailed information
     $stmt = $pdo->prepare("
         SELECT 
             h.HoloCardID,
@@ -34,19 +33,44 @@ try {
             CASE 
                 WHEN h.CardType = 0 THEN 'Personal'
                 ELSE 'Corporate'
-            END as CardTypeText
+            END as CardTypeText,
+            -- Personal fields
+            p.FirstName,
+            p.LastName,
+            p.Suffix,
+            p.Profession,
+            -- Company fields  
+            c.CompanyName,
+            c.ContactPerson_FirstName,
+            c.ContactPerson_LastName,
+            c.Position
         FROM HoloCard h
         LEFT JOIN Personal p ON h.HoloCardID = p.HoloCardID
         LEFT JOIN Company c ON h.HoloCardID = c.HoloCardID
         WHERE h.UID = ? AND h.isDeleted = FALSE
         ORDER BY h.HoloCardID DESC
-    ");
-    $stmt->execute([$uid]);
+    ");    $stmt->execute([$uid]);
     $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // Convert QR codes to base64 for frontend
+    
+    // Process and enhance card data for frontend compatibility
     foreach ($cards as &$card) {
+        // Convert QR codes to base64 for frontend
         if (isset($card['QRCode']) && $card['QRCode']) {
             $card['QRCode'] = base64_encode($card['QRCode']);
+        }
+        
+        // Add computed fields for compatibility
+        if ($card['CardType'] == 0) { // Personal
+            $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
+        } else { // Corporate
+            $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
+        }
+        
+        // Clean up null values
+        foreach ($card as $key => $value) {
+            if ($value === null) {
+                $card[$key] = '';
+            }
         }
     }
     $response['success'] = true;

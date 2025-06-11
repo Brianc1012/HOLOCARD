@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Fix Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .log {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-success { background: #d4edda; color: #155724; }
+        .log-error { background: #f8d7da; color: #721c24; }
+        .log-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Modal Fix Test</h1>
+        <p>Testing the fixes for ViewCard modal initialization and close button issues.</p>
+        
+        <button class="test-btn" onclick="testModalLoad()">🚀 Test Modal Load</button>
+        <button class="test-btn" onclick="testScriptExecution()">⚡ Test Script Execution</button>
+        <button class="test-btn" onclick="testDataPopulation()">📋 Test Data Population</button>
+        <button class="test-btn" onclick="clearLog()">🧹 Clear Log</button>
+        
+        <div id="log" class="log">
+            <div class="log-entry log-info">🎯 Test ready. Click buttons above to test modal functionality.</div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script>
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '<div class="log-entry log-info">🧹 Log cleared.</div>';
+        }
+
+        async function testModalLoad() {
+            addLog('🚀 Testing modal load...', 'info');
+            
+            try {
+                const modalContainer = document.getElementById('modalContainer');
+                if (!modalContainer) {
+                    addLog('❌ Modal container not found!', 'error');
+                    return;
+                }
+                addLog('✅ Modal container found', 'success');
+
+                // Fetch modal HTML
+                addLog('📡 Fetching modal HTML...', 'info');
+                const res = await fetch('modals/viewCard.html');
+                if (!res.ok) {
+                    addLog(`❌ Failed to fetch: ${res.status} ${res.statusText}`, 'error');
+                    return;
+                }
+                addLog('✅ Modal HTML fetched', 'success');
+
+                // Parse HTML
+                const html = await res.text();
+                addLog(`📄 HTML length: ${html.length} chars`, 'info');
+                
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    addLog('❌ .modal-overlay not found', 'error');
+                    return;
+                }
+                addLog('✅ Modal overlay found', 'success');
+
+                // Inject into DOM
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                addLog('✅ Modal injected into DOM', 'success');
+
+                // Check for scripts
+                const scripts = modal.querySelectorAll('script');
+                addLog(`📜 Found ${scripts.length} script tags`, 'info');
+
+                // Check for close button
+                const closeBtn = modal.querySelector('.close-btn');
+                if (closeBtn) {
+                    addLog('✅ Close button found', 'success');
+                    addLog(`🔍 Close button HTML: ${closeBtn.outerHTML.substring(0, 100)}...`, 'info');
+                } else {
+                    addLog('❌ Close button not found!', 'error');
+                }
+
+                // Activate modal
+                modal.classList.add('active');
+                addLog('✅ Modal activated', 'success');
+
+                return modal;
+            } catch (error) {
+                addLog(`💥 Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testScriptExecution() {
+            addLog('⚡ Testing script execution...', 'info');
+            
+            const modal = await testModalLoad();
+            if (!modal) {
+                addLog('❌ Modal load failed, cannot test scripts', 'error');
+                return;
+            }
+
+            // Execute scripts
+            const scripts = modal.querySelectorAll('script');
+            if (scripts.length > 0) {
+                scripts.forEach((script, index) => {
+                    try {
+                        addLog(`⚡ Executing script ${index + 1}...`, 'info');
+                        const newScript = document.createElement('script');
+                        newScript.textContent = script.textContent;
+                        document.head.appendChild(newScript);
+                        document.head.removeChild(newScript);
+                        addLog(`✅ Script ${index + 1} executed`, 'success');
+                    } catch (error) {
+                        addLog(`❌ Script ${index + 1} error: ${error.message}`, 'error');
+                    }
+                });
+                
+                // Check if functions are available
+                setTimeout(() => {
+                    if (window.populateViewCard) {
+                        addLog('✅ window.populateViewCard available', 'success');
+                    } else {
+                        addLog('❌ window.populateViewCard NOT available', 'error');
+                    }
+                    
+                    if (window.closeViewModal) {
+                        addLog('✅ window.closeViewModal available', 'success');
+                    } else {
+                        addLog('❌ window.closeViewModal NOT available', 'error');
+                    }
+                }, 100);
+            } else {
+                addLog('❌ No scripts found', 'error');
+            }
+        }
+
+        async function testDataPopulation() {
+            addLog('📋 Testing data population...', 'info');
+            
+            const modal = await testModalLoad();
+            if (!modal) {
+                addLog('❌ Modal load failed, cannot test data population', 'error');
+                return;
+            }
+
+            // Execute scripts first
+            const scripts = modal.querySelectorAll('script');
+            scripts.forEach((script, index) => {
+                try {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.head.appendChild(newScript);
+                    document.head.removeChild(newScript);
+                } catch (error) {
+                    addLog(`❌ Script execution error: ${error.message}`, 'error');
+                }
+            });
+
+            // Test data
+            const testData = {
+                HoloCardID: "test-123",
+                CardName: "Test User",
+                CardTypeText: "Personal",
+                Email: "test@example.com",
+                ContactNo: "555-TEST",
+                Address: "123 Test Street",
+                BirthDate: "1990-01-01"
+            };
+
+            setTimeout(() => {
+                if (window.populateViewCard) {
+                    try {
+                        addLog('📋 Calling populateViewCard...', 'info');
+                        window.populateViewCard(testData);
+                        addLog('✅ Data population successful', 'success');
+                        
+                        // Check if data was actually populated
+                        const nameField = document.getElementById('detailFullName');
+                        if (nameField && nameField.textContent === testData.CardName) {
+                            addLog('✅ Data correctly displayed in modal', 'success');
+                        } else {
+                            addLog('⚠️ Data may not be correctly displayed', 'error');
+                        }
+                    } catch (error) {
+                        addLog(`❌ Data population error: ${error.message}`, 'error');
+                    }
+                } else {
+                    addLog('❌ populateViewCard function not available', 'error');
+                }
+            }, 200);
+        }
+
+        // Global close function for testing
+        window.closeViewModal = function() {
+            addLog('🔴 Global closeViewModal called', 'info');
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    const modalContainer = document.getElementById('modalContainer');
+                    if (modalContainer) {
+                        modalContainer.innerHTML = '';
+                    }
+                    addLog('✅ Modal closed', 'success');
+                }, 300);
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!-- Simple ViewCard Modal - Basic Working Version -->
+<div class="modal-overlay">
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .view-card-modal {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .view-card-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-card-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .view-card-content {
+            padding: 30px;
+            background: white;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .card-type-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .card-details {
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #212529;
+            font-weight: 500;
+        }
+
+        .qr-section {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #6c757d;
+        }
+    </style>
+    
+    <div class="view-card-modal">
+        <div class="view-card-header">
+            <h1 class="view-card-title">Card Details</h1>
+            <button class="close-btn" onclick="closeViewModal()">×</button>
+        </div>
+
+        <div class="view-card-content">
+            <div id="cardTypeBadge" class="card-type-badge">
+                Personal Card
+            </div>
+
+            <div class="card-details">
+                <div class="detail-item">
+                    <div class="detail-label">Name</div>
+                    <div class="detail-value" id="detailName">—</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value" id="detailEmail">—</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Contact</div>
+                    <div class="detail-value" id="detailContact">—</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="detail-label">Address</div>
+                    <div class="detail-value" id="detailAddress">—</div>
+                </div>
+            </div>
+
+            <div class="qr-section">
+                <h3>QR Code</h3>
+                <div class="qr-placeholder" id="qrContainer">
+                    QR Code
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closeViewModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    const modalContainer = document.getElementById('modalContainer');
+                    if (modalContainer) {
+                        modalContainer.innerHTML = '';
+                    }
+                }, 300);
+            }
+        }
+
+        function populateViewCard(cardData) {
+            console.log('📋 Populating simple view card with data:', cardData);
+            
+            // Update badge
+            const badge = document.getElementById('cardTypeBadge');
+            if (badge) {
+                badge.textContent = (cardData.CardTypeText || 'Unknown') + ' Card';
+            }
+
+            // Set field values
+            const setField = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value || '—';
+                }
+            };
+
+            setField('detailName', cardData.CardName);
+            setField('detailEmail', cardData.Email);
+            setField('detailContact', cardData.ContactNo);
+            setField('detailAddress', cardData.Address);
+
+            // Simple QR placeholder
+            const qrContainer = document.getElementById('qrContainer');
+            if (qrContainer) {
+                qrContainer.innerHTML = `<div>Card ID: ${cardData.HoloCardID}</div>`;
+            }
+        }
+
+        // Handle escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeViewModal();
+            }
+        });
+
+        // Handle click outside
+        document.querySelector('.modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeViewModal();
+            }
+        });
+
+        // Make functions globally accessible
+        window.populateViewCard = populateViewCard;
+        window.closeViewModal = closeViewModal;
+    </script>
+</div>

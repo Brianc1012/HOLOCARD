@@ -113,12 +113,23 @@ async function refreshCardList() {
     if (!data.cards.length) {
       list.innerHTML = '<div class="empty">No cards found.</div>';
       return;
-    }
-
-    data.cards.forEach(card => {
+    }    data.cards.forEach(card => {
       list.insertAdjacentHTML(
         'beforeend',
-        `<div class="card" data-id="${card.HoloCardID}">
+        `<div class="card" data-id="${card.HoloCardID}"
+             data-card-name="${card.CardName || ''}"
+             data-card-type="${card.CardTypeText || ''}"
+             data-first-name="${card.FirstName || ''}"
+             data-last-name="${card.LastName || ''}"
+             data-middle-name="${card.MiddleName || ''}"
+             data-suffix="${card.Suffix || ''}"
+             data-email="${card.Email || ''}"
+             data-contact="${card.ContactNo || ''}"
+             data-address="${card.Address || ''}"
+             data-birth-date="${card.BirthDate || ''}"
+             data-company-name="${card.CompanyName || ''}"
+             data-company-email="${card.CompanyEmail || ''}"
+             data-company-contact="${card.CompanyContact || ''}">
           <div class="card-header">
             <h5 class="card-title">${card.CardName || '-'} </h5>
             <p class="card-type">Type: <span class="type-label">${card.CardTypeText || '-'} </span></p>
@@ -129,115 +140,34 @@ async function refreshCardList() {
           </div>
         </div>`
       );
-    });
-
-    // Add click listeners to cards to view them
+    });    // Add click listeners to cards to view them
     document.querySelectorAll('.card').forEach(cardEl => {
       cardEl.addEventListener('click', async function(e) {
         // Don't open if clicking on edit/delete buttons
         if (e.target.closest('.editBtn') || e.target.closest('.deleteBtn')) return;
         
-        const cardId = this.getAttribute('data-id');
-        const card = data.cards.find(c => c.HoloCardID == cardId);
-        if (!card) return;
-        
-        // Open cardGenerated modal
-        const res = await fetch('../modals/cardGenerated.html');
-        const html = await res.text();
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        const modal = doc.querySelector('.modal-overlay');
-        if (!modal) return;
-        
-        const modalContainer = document.getElementById('modalContainer');
-        modalContainer.innerHTML = '';
-        modalContainer.appendChild(modal);
-        modal.classList.add('active');
-        
-        // Populate the modal with card data
-        const isPersonal = card.CardTypeText === 'Personal';
-        modal.querySelector('.personalDetails').style.display = isPersonal ? 'block' : 'none';
-        modal.querySelector('.corporateDetails').style.display = isPersonal ? 'none' : 'block';
-        
-        // Set the data
-        const setField = (id, value) => {
-          const el = modal.querySelector('#' + id);
-          if (el) el.textContent = value || '—';
+        const cardId = this.getAttribute('data-id');        const cardData = {
+          HoloCardID: cardId,
+          CardName: this.getAttribute('data-card-name'),
+          CardTypeText: this.getAttribute('data-card-type'),
+          FirstName: this.getAttribute('data-first-name'),
+          LastName: this.getAttribute('data-last-name'),
+          MiddleName: this.getAttribute('data-middle-name'),
+          Suffix: this.getAttribute('data-suffix'),
+          Email: this.getAttribute('data-email'),
+          ContactNo: this.getAttribute('data-contact'),
+          Address: this.getAttribute('data-address'),
+          BirthDate: this.getAttribute('data-birth-date'),
+          CompanyName: this.getAttribute('data-company-name'),
+          CompanyEmail: this.getAttribute('data-company-email'),
+          CompanyContact: this.getAttribute('data-company-contact')
         };
         
-        setField('detailCardName', card.CardName);
-        setField('detailCardType', card.CardTypeText);
-        setField('detailFirstName', card.CardName?.split(' ')[0] || '');
-        setField('detailLastName', card.CardName?.split(' ')[1] || '');
-        setField('detailEmail', card.Email);
-        setField('detailContact', card.ContactNo);
-        setField('detailAddress', card.Address);
-        setField('detailBdate', card.BirthDate);
-          // Generate enhanced AR-ready QR code
-        const qrContainer = modal.querySelector('.qr-placeholder');
-        if (qrContainer) {
-          qrContainer.innerHTML = '';
-          
-          // Use the enhanced QR generation function if available
-          if (window.generateHoloCardQR) {
-            // Wait a bit for modal to be fully rendered
-            setTimeout(() => {
-              window.generateHoloCardQR(card);
-            }, 100);
-          } else {
-            // Fallback to enhanced manual generation
-            try {
-              const arData = {
-                type: "holocard-ar",
-                version: "1.0",
-                cardId: card.HoloCardID,
-                profile: {
-                  name: card.CardName,
-                  cardType: card.CardTypeText,
-                  email: card.Email,
-                  contact: card.ContactNo,
-                  address: card.Address,
-                  birthDate: card.BirthDate
-                },
-                ar: {
-                  markerType: "qr",
-                  markerSize: 0.1,
-                  trackingMode: "stable",
-                  renderDistance: 2.0
-                },
-                webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${card.HoloCardID}`,
-                generated: new Date().toISOString()
-              };
-
-              new QRCode(qrContainer, {
-                text: JSON.stringify(arData),
-                width: 200,
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H,
-                margin: 2
-              });
-
-              console.log('✅ Enhanced QR code generated for card:', card.HoloCardID);
-            } catch(e) {
-              console.error('❌ QR generation failed:', e);
-              qrContainer.innerHTML = '<p style="color: red;">QR Generation Failed</p>';
-            }
-          }
-        }
+        console.log('📋 Card data extracted:', cardData);
+        console.log('📋 Card element attributes:', this.getAttributeNames());
         
-        // Ensure close button works
-        const closeBtn = modal.querySelector('.close-btn');
-        if (closeBtn) {
-          closeBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            modal.classList.remove('active');
-            setTimeout(() => {
-              modalContainer.innerHTML = '';
-            }, 300);
-          });
-        }
+        // Use the enhanced ViewCard modal function
+        await window.openViewCardModal(cardData);
       });
     });
 
@@ -441,3 +371,488 @@ document.addEventListener("DOMContentLoaded", () => {
   refreshCardList();
 });
 window.refreshCardList = refreshCardList;
+
+/* =========================================================================
+   Global ViewCard Modal Functions - Enhanced Integration
+   =========================================================================*/
+
+// Global function to open ViewCard modal (can be called from anywhere)
+window.openViewCardModal = async function(cardData) {
+  console.log('🔍 Opening ViewCard modal for card:', cardData.HoloCardID);
+  
+  try {
+    const modalContainer = document.getElementById('modalContainer');
+    if (!modalContainer) {
+      throw new Error('Modal container not found');
+    }
+    
+    // Close any existing modals
+    const existingModal = document.querySelector('.modal-overlay.active');
+    if (existingModal) {
+      existingModal.classList.remove('active');
+      setTimeout(() => modalContainer.innerHTML = '', 100);
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    const res = await fetch('../modals/viewCard.html');
+    if (!res.ok) throw new Error('Failed to load ViewCard modal');
+    
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const modal = doc.querySelector('.modal-overlay');
+    if (!modal) throw new Error('Modal structure not found');
+    
+    modalContainer.innerHTML = '';
+    modalContainer.appendChild(modal);
+    
+    // Add enhanced animations
+    modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.9)';
+    modal.classList.add('active');
+    
+    // Smooth entrance animation
+    requestAnimationFrame(() => {
+      modal.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+      modal.style.opacity = '1';
+      modal.style.transform = 'scale(1)';
+    });    // Populate with enhanced error handling
+    setTimeout(() => {
+      try {
+        console.log('🔍 Attempting to populate ViewCard with:', cardData);
+        
+        // Execute modal scripts first to make functions available
+        const scripts = modal.querySelectorAll('script');
+        console.log(`📜 Found ${scripts.length} script tags in modal`);
+        
+        if (scripts.length > 0) {
+          scripts.forEach((script, index) => {
+            try {
+              console.log(`⚡ Executing script ${index + 1}...`);
+              // Create a new script element and execute it
+              const newScript = document.createElement('script');
+              newScript.textContent = script.textContent;
+              document.head.appendChild(newScript);
+              document.head.removeChild(newScript);
+              console.log(`✅ Script ${index + 1} executed successfully`);
+            } catch (scriptError) {
+              console.error(`❌ Script ${index + 1} execution error:`, scriptError);
+            }
+          });
+          
+          // Give scripts time to execute and register functions
+          setTimeout(() => {
+            console.log('🔍 Checking if populateViewCard is available:', typeof window.populateViewCard);
+            
+            if (window.populateViewCard) {
+              window.populateViewCard(cardData);
+              console.log('✅ ViewCard populated successfully');
+            } else {
+              console.error('❌ populateViewCard still not available after script execution');
+              showViewCardError(modal, 'Failed to initialize card view functions');
+            }
+          }, 100);
+        } else {
+          console.error('❌ No scripts found in modal');
+          showViewCardError(modal, 'Modal script not found');
+        }
+      } catch (error) {
+        console.error('❌ Error during ViewCard initialization:', error);
+        showViewCardError(modal, 'Failed to initialize card view: ' + error.message);
+      }
+    }, 200);
+    
+    console.log('✅ ViewCard modal opened successfully');
+    
+  } catch (error) {
+    console.error('❌ ViewCard modal error:', error);
+    if (window.Swal) {
+      Swal.fire('Error', 'Failed to open card details: ' + error.message, 'error');
+    } else {
+      alert('Failed to open card details: ' + error.message);
+    }
+  }
+};
+
+// Enhanced data population with validation
+function populateViewCardData(modal, cardData) {
+  if (!cardData || !cardData.HoloCardID) {
+    throw new Error('Invalid card data provided');
+  }
+  
+  console.log('📋 Populating ViewCard with validated data:', cardData);
+  
+  const isPersonal = cardData.CardTypeText === 'Personal';
+  
+  // Update card type badge with animation
+  const badge = modal.querySelector('#cardTypeBadge');
+  if (badge) {
+    badge.style.opacity = '0';
+    badge.textContent = cardData.CardTypeText + ' Card';
+    badge.className = `card-type-badge ${isPersonal ? 'card-type-personal' : 'card-type-corporate'}`;
+    setTimeout(() => { badge.style.opacity = '1'; }, 200);
+  }
+
+  // Enhanced section switching with fade effect
+  const personalSection = modal.querySelector('.personalDetails');
+  const corporateSection = modal.querySelector('.corporateDetails');
+  
+  if (personalSection && corporateSection) {
+    personalSection.style.opacity = '0';
+    corporateSection.style.opacity = '0';
+    
+    setTimeout(() => {
+      personalSection.style.display = isPersonal ? 'block' : 'none';
+      corporateSection.style.display = isPersonal ? 'none' : 'block';
+      
+      const activeSection = isPersonal ? personalSection : corporateSection;
+      activeSection.style.opacity = '1';
+    }, 100);
+  }
+
+  // Enhanced field population with validation
+  const setFieldWithValidation = (id, value, formatter = null) => {
+    const element = modal.querySelector('#' + id);
+    if (element) {
+      let displayValue = value;
+      
+      // Apply formatting if provided
+      if (formatter && value) {
+        displayValue = formatter(value);
+      }
+      
+      element.textContent = displayValue || '—';
+      element.className = displayValue ? 'detail-value' : 'detail-value empty-field';
+      
+      // Add subtle entrance animation
+      element.style.opacity = '0';
+      setTimeout(() => { 
+        element.style.transition = 'opacity 0.3s ease';
+        element.style.opacity = '1'; 
+      }, 150);
+    }
+  };
+
+  // Format functions
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatPhone = (phone) => {
+    if (!phone) return null;
+    // Simple phone formatting
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0,3)}) ${cleaned.slice(3,6)}-${cleaned.slice(6)}`;
+    }
+    return phone;
+  };
+
+  if (isPersonal) {
+    // Personal card fields with formatting
+    setFieldWithValidation('detailFullName', cardData.CardName);
+    setFieldWithValidation('detailEmail', cardData.Email);
+    setFieldWithValidation('detailContact', cardData.ContactNo, formatPhone);
+    setFieldWithValidation('detailBirthDate', cardData.BirthDate, formatDate);
+    setFieldWithValidation('detailAddress', cardData.Address);
+  } else {
+    // Corporate card fields
+    setFieldWithValidation('detailCompanyName', cardData.CardName);
+    setFieldWithValidation('detailContactPerson', cardData.ContactPerson || 'Not specified');
+    setFieldWithValidation('detailCompanyEmail', cardData.Email);
+    setFieldWithValidation('detailCompanyContact', cardData.ContactNo, formatPhone);
+    setFieldWithValidation('detailCompanyAddress', cardData.Address);
+  }
+
+  // Generate enhanced QR code with loading state
+  generateEnhancedQRCode(modal, cardData);
+  
+  // Setup enhanced close handlers
+  setupViewCardCloseHandlers(modal);
+  
+  // Setup action button handlers
+  setupViewCardActionHandlers(modal, cardData);
+}
+
+// Enhanced QR code generation
+function generateEnhancedQRCode(modal, cardData) {
+  const qrContainer = modal.querySelector('#qrCodeContainer');
+  if (!qrContainer) return;
+  
+  // Show loading state
+  qrContainer.innerHTML = `
+    <div class="qr-loading">
+      <div class="loading-spinner"></div>
+      <div>Generating AR-Ready QR Code...</div>
+    </div>
+  `;
+  
+  setTimeout(() => {
+    try {
+      // Enhanced AR data structure
+      const arData = {
+        type: "holocard-ar",
+        version: "2.0",
+        cardId: cardData.HoloCardID,
+        profile: {
+          name: cardData.CardName,
+          cardType: cardData.CardTypeText,
+          email: cardData.Email,
+          contact: cardData.ContactNo,
+          address: cardData.Address,
+          birthDate: cardData.BirthDate
+        },
+        ar: {
+          markerType: "qr",
+          markerSize: 0.1,
+          trackingMode: "stable",
+          renderDistance: 2.0,
+          effects: ["glow", "float", "rotate"],
+          animations: ["entrance", "idle", "selection"]
+        },
+        metadata: {
+          webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`,
+          generated: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          platform: navigator.platform
+        }
+      };
+
+      qrContainer.innerHTML = '';
+      
+      // Check if qrcode library is available
+      if (typeof qrcode !== 'undefined') {
+        // Use qrcode-generator library
+        const qr = qrcode(0, 'M');
+        qr.addData(JSON.stringify(arData));
+        qr.make();
+        
+        // Create QR code as image
+        const qrImage = qr.createImgTag(4, 10);
+        qrContainer.innerHTML = qrImage;
+        
+        // Style the image
+        const img = qrContainer.querySelector('img');
+        if (img) {
+          img.style.width = '200px';
+          img.style.height = '200px';
+          img.style.border = '10px solid white';
+          img.style.borderRadius = '8px';
+          img.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+        }
+      } else {
+        // Fallback: create a simple QR placeholder
+        qrContainer.innerHTML = `
+          <div style="width: 200px; height: 200px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #f9f9f9;">
+            <i class="ri-qr-code-line" style="font-size: 48px; color: #666; margin-bottom: 10px;"></i>
+            <div style="color: #666; text-align: center;">QR Code<br>Ready for AR</div>
+            <small style="color: #999; margin-top: 5px;">Card ID: ${cardData.HoloCardID}</small>
+          </div>
+        `;
+      }
+
+      console.log('✅ Enhanced QR code generated for card:', cardData.HoloCardID);
+      
+    } catch (error) {
+      console.error('❌ QR generation failed:', error);
+      qrContainer.innerHTML = `
+        <div class="qr-error">
+          <i class="ri-error-warning-line"></i>
+          <div>Failed to generate QR code</div>
+          <small>${error.message}</small>
+          <button onclick="generateEnhancedQRCode(document.querySelector('.modal-overlay'), ${JSON.stringify(cardData).replace(/"/g, '&quot;')})" 
+                  style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Retry
+          </button>
+        </div>
+      `;
+    }
+  }, 500);
+}
+
+// Enhanced close handlers
+function setupViewCardCloseHandlers(modal) {
+  const closeModal = () => {
+    modal.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.9)';
+    
+    setTimeout(() => {
+      modal.classList.remove('active');
+      const modalContainer = document.getElementById('modalContainer');
+      if (modalContainer) {
+        modalContainer.innerHTML = '';
+      }
+    }, 300);
+  };
+
+  // Close button
+  const closeBtn = modal.querySelector('.close-btn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeModal();
+    });
+  }
+
+  // Escape key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeModal();
+      document.removeEventListener('keydown', handleKeyDown);
+    }
+  };
+  document.addEventListener('keydown', handleKeyDown);
+
+  // Click outside
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+}
+
+// Enhanced action button handlers
+function setupViewCardActionHandlers(modal, cardData) {
+  // Edit button
+  const editBtn = modal.querySelector('.edit-btn');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      // Close current modal first
+      modal.classList.remove('active');
+      setTimeout(() => {
+        const modalContainer = document.getElementById('modalContainer');
+        if (modalContainer) modalContainer.innerHTML = '';
+        
+        // Trigger edit modal
+        const editButton = document.querySelector(`[data-id="${cardData.HoloCardID}"].editBtn`);
+        if (editButton) {
+          editButton.click();
+        }
+      }, 300);
+    });
+  }
+
+  // Download button
+  const downloadBtn = modal.querySelector('.download-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      const canvas = modal.querySelector('#qrCodeContainer canvas');
+      if (canvas) {
+        try {
+          const link = document.createElement('a');
+          link.download = `holocard-qr-${cardData.HoloCardID}-${new Date().getTime()}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+          
+          if (window.Swal) {
+            Swal.fire('Success', 'QR code downloaded successfully!', 'success');
+          }
+        } catch (error) {
+          console.error('Download failed:', error);
+          if (window.Swal) {
+            Swal.fire('Error', 'Failed to download QR code', 'error');
+          }
+        }
+      }
+    });
+  }
+
+  // Share button
+  const shareBtn = modal.querySelector('.share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const shareData = {
+        title: `${cardData.CardName} - HoloCard`,
+        text: `Check out my HoloCard: ${cardData.CardName}`,
+        url: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`
+      };
+
+      if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        try {
+          await navigator.share(shareData);
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            console.error('Share failed:', error);
+            fallbackShare(shareData.url);
+          }
+        }
+      } else {
+        fallbackShare(shareData.url);
+      }
+    });
+  }
+}
+
+// Fallback share function
+function fallbackShare(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    if (window.Swal) {
+      Swal.fire('Copied!', 'Share link copied to clipboard', 'success');
+    } else {
+      alert('Share link copied to clipboard');
+    }
+  }).catch(() => {
+    // Manual copy fallback
+    const textArea = document.createElement('textarea');
+    textArea.value = url;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    if (window.Swal) {
+      Swal.fire('Copied!', 'Share link copied to clipboard', 'success');
+    } else {
+      alert('Share link copied to clipboard');
+    }
+  });
+}
+
+// Error display function
+function showViewCardError(modal, message) {
+  const content = modal.querySelector('.view-card-content');
+  if (content) {
+    // Preserve the header, only replace the content area
+    content.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #dc3545;">
+        <i class="ri-error-warning-line" style="font-size: 48px; margin-bottom: 20px;"></i>
+        <h3>Error Loading Card</h3>
+        <p>${message}</p>
+        <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; margin-top: 20px; cursor: pointer;">
+          Reload Page
+        </button>
+      </div>
+    `;
+  }
+  
+  // Ensure close button is visible and functional
+  const closeBtn = modal.querySelector('.close-btn');
+  if (closeBtn) {
+    closeBtn.style.display = 'flex';
+    closeBtn.style.visibility = 'visible';
+    closeBtn.onclick = function() {
+      modal.classList.remove('active');
+      setTimeout(() => {
+        const modalContainer = document.getElementById('modalContainer');
+        if (modalContainer) modalContainer.innerHTML = '';
+      }, 300);
+    };
+  }
+}
+
+// Make functions globally available
+window.populateViewCardData = populateViewCardData;
+window.generateEnhancedQRCode = generateEnhancedQRCode;
+window.setupViewCardCloseHandlers = setupViewCardCloseHandlers;
+window.setupViewCardActionHandlers = setupViewCardActionHandlers;

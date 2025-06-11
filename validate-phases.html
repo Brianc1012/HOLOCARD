@@ -433,6 +433,56 @@
             }
         }
 
+        async function testViewCardModal() {
+            log('🔍 Testing new ViewCard modal...', 'info');
+            
+            try {
+                // Test modal loading
+                const response = await fetch('./modals/viewCard.html');
+                if (!response.ok) {
+                    throw new Error('ViewCard modal file not found');
+                }
+                
+                const html = await response.text();
+                
+                // Test modal structure
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    throw new Error('Modal overlay not found');
+                }
+                
+                // Test essential elements
+                const tests = [
+                    { selector: '.close-btn', name: 'Close button' },
+                    { selector: '#cardTypeBadge', name: 'Card type badge' },
+                    { selector: '.card-details-grid', name: 'Details grid' },
+                    { selector: '#qrCodeContainer', name: 'QR container' },
+                    { selector: '.action-buttons', name: 'Action buttons' },
+                    { selector: '.personalDetails', name: 'Personal fields' },
+                    { selector: '.corporateDetails', name: 'Corporate fields' }
+                ];
+                
+                for (const test of tests) {
+                    if (!doc.querySelector(test.selector)) {
+                        throw new Error(`${test.name} not found`);
+                    }
+                }
+                
+                // Test open functionality
+                window.open('./test-viewcard-modal.html', '_blank');
+                
+                log('✅ ViewCard modal structure validated', 'success');
+                log('✅ ViewCard modal opened in new tab for testing', 'success');
+                log('🎯 Test close button, field display, and QR generation', 'info');
+                
+            } catch (error) {
+                log(`❌ ViewCard modal test failed: ${error.message}`, 'error');
+            }
+        }
+
         async function runAllTests() {
             log('🚀 Starting comprehensive test suite...', 'info');
             clearResults();
@@ -445,6 +495,7 @@
             await testAddCardModal();
             await testEndToEnd();
             await validateCleanup();
+            await testViewCardModal();
             
             log('🎯 Comprehensive test suite completed!', 'success');
             
