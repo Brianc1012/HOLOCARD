@@ -414,47 +414,98 @@ window.openViewCardModal = async function(cardData) {
     requestAnimationFrame(() => {
       modal.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
       modal.style.opacity = '1';
-      modal.style.transform = 'scale(1)';
-    });    // Populate with enhanced error handling
+      modal.style.transform = 'scale(1)';    });    // Populate with enhanced error handling
     setTimeout(() => {
       try {
         console.log('🔍 Attempting to populate ViewCard with:', cardData);
         
-        // Execute modal scripts first to make functions available
-        const scripts = modal.querySelectorAll('script');
-        console.log(`📜 Found ${scripts.length} script tags in modal`);
+        // Instead of executing modal scripts, define functions directly here
+        console.log('📜 Defining ViewCard functions directly...');
         
-        if (scripts.length > 0) {
-          scripts.forEach((script, index) => {
-            try {
-              console.log(`⚡ Executing script ${index + 1}...`);
-              // Create a new script element and execute it
-              const newScript = document.createElement('script');
-              newScript.textContent = script.textContent;
-              document.head.appendChild(newScript);
-              document.head.removeChild(newScript);
-              console.log(`✅ Script ${index + 1} executed successfully`);
-            } catch (scriptError) {
-              console.error(`❌ Script ${index + 1} execution error:`, scriptError);
-            }
-          });
+        // Define the populateViewCard function
+        window.populateViewCard = function(cardData) {
+          console.log('📋 Populating view card with data:', cardData);
           
-          // Give scripts time to execute and register functions
-          setTimeout(() => {
-            console.log('🔍 Checking if populateViewCard is available:', typeof window.populateViewCard);
-            
-            if (window.populateViewCard) {
-              window.populateViewCard(cardData);
-              console.log('✅ ViewCard populated successfully');
-            } else {
-              console.error('❌ populateViewCard still not available after script execution');
-              showViewCardError(modal, 'Failed to initialize card view functions');
+          // Update badge
+          const badge = document.getElementById('cardTypeBadge');
+          if (badge) {
+            badge.textContent = (cardData.CardTypeText || 'Unknown') + ' Card';
+          }
+
+          // Set field values
+          const setField = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+              element.textContent = value || '—';
             }
-          }, 100);
-        } else {
-          console.error('❌ No scripts found in modal');
-          showViewCardError(modal, 'Modal script not found');
+          };
+          
+          setField('detailName', cardData.CardName);
+          setField('detailEmail', cardData.Email);
+          setField('detailContact', cardData.ContactNo);
+          setField('detailAddress', cardData.Address);
+
+          // Generate QR code using the global utility
+          const qrContainer = document.getElementById('qrContainer');
+          if (qrContainer && window.HoloCardQR) {
+            console.log('🔍 Generating QR code for ViewCard...');
+            window.HoloCardQR.generateHoloCardQR(qrContainer, cardData)
+              .then(() => {
+                console.log('✅ ViewCard QR Code generated successfully');
+              })
+              .catch((error) => {
+                console.error('❌ ViewCard QR generation failed:', error);
+                qrContainer.innerHTML = `
+                  <div style="color: #dc3545; text-align: center; padding: 20px;">
+                    QR Generation Failed<br>
+                    <small>${error.message}</small>
+                  </div>
+                `;
+              });
+          }
+        };
+        
+        // Define the closeViewModal function
+        window.closeViewModal = function() {
+          const modal = document.querySelector('.modal-overlay');
+          if (modal) {
+            modal.classList.remove('active');
+            setTimeout(() => {
+              const modalContainer = document.getElementById('modalContainer');
+              if (modalContainer) {
+                modalContainer.innerHTML = '';
+              }
+            }, 300);
+          }
+        };
+        
+        // Set up event listeners
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+          closeBtn.onclick = window.closeViewModal;
         }
+        
+        // Handle escape key
+        const handleEscape = function(e) {
+          if (e.key === 'Escape') {
+            window.closeViewModal();
+            document.removeEventListener('keydown', handleEscape);
+          }
+        };
+        document.addEventListener('keydown', handleEscape);
+
+        // Handle click outside
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            window.closeViewModal();
+          }
+        });
+        
+        // Now populate the card
+        console.log('✅ ViewCard functions defined, populating card...');
+        window.populateViewCard(cardData);
+        console.log('✅ ViewCard populated successfully');
+        
       } catch (error) {
         console.error('❌ Error during ViewCard initialization:', error);
         showViewCardError(modal, 'Failed to initialize card view: ' + error.message);
@@ -677,6 +728,101 @@ function generateEnhancedQRCode(modal, cardData) {
     }
   }, 500);
 }
+
+/**
+ * Global QR Code Generation Utility
+ * Ensures QR library is loaded and provides consistent QR generation
+ */
+window.HoloCardQR = {
+  // Check if QR library is loaded
+  isLibraryLoaded() {
+    return typeof QRCode !== 'undefined';
+  },
+
+  // Load QR library dynamically if not available
+  async ensureLibraryLoaded() {
+    if (this.isLibraryLoaded()) {
+      return true;
+    }
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      script.onload = () => {
+        console.log('✅ QR library loaded dynamically');
+        resolve(true);
+      };
+      script.onerror = () => {
+        console.error('❌ Failed to load QR library');
+        reject(false);
+      };
+      document.head.appendChild(script);
+    });
+  },
+
+  // Generate QR code with HoloCard format
+  async generateHoloCardQR(container, cardData) {
+    try {
+      // Ensure library is loaded
+      await this.ensureLibraryLoaded();
+
+      if (!container) {
+        throw new Error('Container element not found');
+      }
+
+      // Clear existing content
+      container.innerHTML = '';
+
+      // Create AR-ready data structure
+      const arData = {
+        type: "holocard-ar",
+        version: "1.0",
+        cardId: cardData.HoloCardID || cardData.id || Date.now(),
+        profile: {
+          name: cardData.CardName,
+          cardType: cardData.CardTypeText || 'Personal',
+          email: cardData.Email || '',
+          contact: cardData.ContactNo || '',
+          address: cardData.Address || '',
+          birthDate: cardData.BirthDate || ''
+        },
+        ar: {
+          markerType: "qr",
+          markerSize: 0.1,
+          trackingMode: "stable",
+          renderDistance: 2.0
+        },
+        webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`,
+        generated: new Date().toISOString()
+      };
+
+      // Generate QR code
+      const qrInstance = new QRCode(container, {
+        text: JSON.stringify(arData),
+        width: 150,
+        height: 150,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      console.log('✅ HoloCard QR Code generated successfully');
+      return qrInstance;
+
+    } catch (error) {
+      console.error('❌ QR generation failed:', error);
+      if (container) {
+        container.innerHTML = `
+          <div style="color: #dc3545; text-align: center; padding: 20px;">
+            QR Generation Failed<br>
+            <small>${error.message}</small>
+          </div>
+        `;
+      }
+      throw error;
+    }
+  }
+};
 
 // Enhanced close handlers
 function setupViewCardCloseHandlers(modal) {

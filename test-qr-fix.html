@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Generation Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <h1>QR Generation Test</h1>
+    <div id="qrTest" style="margin: 20px;"></div>
+    <button onclick="testQR()">Test QR Generation</button>
+    
+    <script>
+        function testQR() {
+            const container = document.getElementById('qrTest');
+            container.innerHTML = '';
+            
+            if (typeof QRCode === 'undefined') {
+                container.innerHTML = 'QRCode library not loaded!';
+                return;
+            }
+            
+            try {
+                const testData = {
+                    type: "holocard-ar",
+                    version: "1.0",
+                    cardId: "test123",
+                    profile: {
+                        name: "Test User",
+                        email: "test@example.com"
+                    }
+                };
+                
+                new QRCode(container, {
+                    text: JSON.stringify(testData),
+                    width: 150,
+                    height: 150,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                console.log('✅ QR Code generated successfully');
+            } catch (error) {
+                container.innerHTML = 'Error: ' + error.message;
+                console.error('❌ QR generation failed:', error);
+            }
+        }
+        
+        // Auto-test on load
+        window.onload = testQR;
+    </script>
+</body>
+</html>

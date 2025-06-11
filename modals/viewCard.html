@@ -1,7 +1,6 @@
-<!-- ViewCard Modal - Self-contained with inline styles -->
+<!-- Simple ViewCard Modal - Basic Working Version -->
 <div class="modal-overlay">
     <style>
-        /* Unified View Card Modal Styling */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -9,14 +8,10 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
         }
 
         .modal-overlay.active {
@@ -27,24 +22,19 @@
         .view-card-modal {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
+            max-width: 600px;
             width: 90%;
-            max-height: 90vh;
+            max-height: 80vh;
             overflow-y: auto;
-            position: relative;
-            padding: 0;
         }
 
         .view-card-header {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 20px 30px;
+            padding: 20px;
             border-radius: 20px 20px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .view-card-title {
@@ -52,73 +42,17 @@
             font-size: 24px;
             font-weight: 600;
             margin: 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }        .close-btn {
+        }
+
+        .close-btn {
             background: rgba(255, 255, 255, 0.2);
             border: none;
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
             color: white;
             font-size: 18px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(90deg);
-        }        /* Fallback for close button if icons don't load */
-        .close-btn:empty::before {
-            content: '×';
-            font-size: 24px;
-            font-weight: bold;
-            line-height: 1;
-        }
-        
-        /* Ensure close button is always visible */
-        .close-btn {
-            display: flex !important;
-            visibility: visible !important;
-        }
-        
-        /* Ensure icon is visible */
-        .close-btn i {
-            font-size: 18px;
-            line-height: 1;
-        }
-        
-        /* If icon doesn't load, show fallback */
-        .close-btn:not(:has(i))::before,
-        .close-btn i:empty::before {
-            content: '×';
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        /* Ensure close button is always visible */
-        .close-btn {
-            display: flex !important;
-            visibility: visible !important;
-        }
-        
-        /* Ensure icon is visible */
-        .close-btn i {
-            font-size: 18px;
-            line-height: 1;
-        }
-        
-        /* If icon doesn't load, show fallback */
-        .close-btn:not(:has(i))::before,
-        .close-btn i:empty::before {
-            content: '×';
-            font-size: 20px;
-            font-weight: bold;
+            cursor: pointer;
         }
 
         .view-card-content {
@@ -133,32 +67,20 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            text-transform: uppercase;
             margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-
-        .card-type-personal {
-            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
         }
 
-        .card-type-corporate {
-            background: linear-gradient(45deg, #4ECDC4, #44A08D);
-            color: white;
-        }
-
-        .card-details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+        .card-details {
+            margin-bottom: 20px;
         }
 
         .detail-item {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 10px;
+            margin-bottom: 15px;
             border-left: 4px solid #667eea;
         }
 
@@ -167,7 +89,6 @@
             color: #6c757d;
             text-transform: uppercase;
             font-weight: 600;
-            letter-spacing: 0.5px;
             margin-bottom: 5px;
         }
 
@@ -175,673 +96,67 @@
             font-size: 16px;
             color: #212529;
             font-weight: 500;
-            word-break: break-word;
         }
 
         .qr-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 25px;
+            background: #f5f7fa;
+            padding: 20px;
             border-radius: 15px;
             text-align: center;
             margin-top: 20px;
-            position: relative;
-            overflow: hidden;
         }
 
-        .qr-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .qr-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .qr-container {
-            display: inline-block;
-            padding: 20px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 1;
-        }
-
-        .ar-corners {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .ar-corner {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #667eea;
-            animation: pulse-corner 2s infinite;
-        }
-
-        .ar-corner.top-left {
-            top: 0;
-            left: 0;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        .ar-corner.top-right {
-            top: 0;
-            right: 0;
-            border-left: none;
-            border-bottom: none;
-        }
-
-        .ar-corner.bottom-left {
-            bottom: 0;
-            left: 0;
-            border-right: none;
-            border-top: none;
-        }
-
-        .ar-corner.bottom-right {
-            bottom: 0;
-            right: 0;
-            border-left: none;
-            border-top: none;
-        }
-
-        @keyframes pulse-corner {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 25px;
-        }
-
-        .action-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .edit-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .edit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .download-btn {
-            background: linear-gradient(45deg, #11998e, #38ef7d);
-            color: white;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(17, 153, 142, 0.4);
-        }
-
-        .share-btn {
-            background: linear-gradient(45deg, #ff9a56, #ff6b95);
-            color: white;
-        }
-
-        .share-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 154, 86, 0.4);
-        }
-
-        .empty-field {
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .card-details-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .view-card-modal {
-                width: 95%;
-                margin: 20px;
-            }
-
-            .view-card-header {
-                padding: 15px 20px;
-            }
-
-            .view-card-content {
-                padding: 20px;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        /* Loading State */
-        .qr-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            padding: 40px 20px;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }        /* Error State */
-        .qr-error {
-            color: #dc3545;
-            text-align: center;
-            padding: 20px;
-            background: #f8d7da;
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #e9ecef;
             border-radius: 10px;
-            border: 1px solid #f5c6cb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            color: #6c757d;
         }
     </style>
     
-    <div class="modalContent view-card-modal">
-            <div class="view-card-header">
-                <h1 class="view-card-title">
-                    <i class="ri-eye-line"></i>
-                    Card Details
-                </h1>                <button class="close-btn" onclick="closeViewModal()" title="Close">
-                    <i class="ri-close-line"></i>
-                    <span class="close-fallback">×</span>
-                </button>
+    <div class="view-card-modal">
+        <div class="view-card-header">
+            <h1 class="view-card-title">Card Details</h1>
+            <button class="close-btn" onclick="closeViewModal()">×</button>
+        </div>
+
+        <div class="view-card-content">
+            <div id="cardTypeBadge" class="card-type-badge">
+                Personal Card
             </div>
 
-            <div class="view-card-content">
-                <!-- Card Type Badge -->
-                <div id="cardTypeBadge" class="card-type-badge card-type-personal">
-                    Personal Card
+            <div class="card-details">
+                <div class="detail-item">
+                    <div class="detail-label">Name</div>
+                    <div class="detail-value" id="detailName">—</div>
                 </div>
 
-                <!-- Card Details Grid -->
-                <div class="card-details-grid">
-                    <!-- Personal Card Fields -->
-                    <div class="personalDetails">
-                        <div class="detail-item">
-                            <div class="detail-label">Full Name</div>
-                            <div class="detail-value" id="detailFullName">—</div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-label">Email Address</div>
-                            <div class="detail-value" id="detailEmail">—</div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-label">Contact Number</div>
-                            <div class="detail-value" id="detailContact">—</div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-label">Birth Date</div>
-                            <div class="detail-value" id="detailBirthDate">—</div>
-                        </div>
-
-                        <div class="detail-item" style="grid-column: 1 / -1;">
-                            <div class="detail-label">Address</div>
-                            <div class="detail-value" id="detailAddress">—</div>
-                        </div>
-                    </div>
-
-                    <!-- Corporate Card Fields -->
-                    <div class="corporateDetails" style="display: none;">
-                        <div class="detail-item">
-                            <div class="detail-label">Company Name</div>
-                            <div class="detail-value" id="detailCompanyName">—</div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-label">Contact Person</div>
-                            <div class="detail-value" id="detailContactPerson">—</div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-label">Company Email</div>
-                            <div class="detail-value" id="detailCompanyEmail">—</div>
-                        </div>
-
-                        <div class="detail-item">
-                            <div class="detail-label">Company Contact</div>
-                            <div class="detail-value" id="detailCompanyContact">—</div>
-                        </div>
-
-                        <div class="detail-item" style="grid-column: 1 / -1;">
-                            <div class="detail-label">Company Address</div>
-                            <div class="detail-value" id="detailCompanyAddress">—</div>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value" id="detailEmail">—</div>
                 </div>
 
-                <!-- AR-Ready QR Code Section -->
-                <div class="qr-section">
-                    <div class="qr-title">
-                        <i class="ri-qr-code-line"></i>
-                        AR-Ready QR Code
-                    </div>
-                    <div class="qr-container">
-                        <div class="ar-corners">
-                            <div class="ar-corner top-left"></div>
-                            <div class="ar-corner top-right"></div>
-                            <div class="ar-corner bottom-left"></div>
-                            <div class="ar-corner bottom-right"></div>
-                        </div>
-                        <div id="qrCodeContainer" class="qr-loading">
-                            <div class="loading-spinner"></div>
-                            <div>Generating AR-Ready QR Code...</div>
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <div class="detail-label">Contact</div>
+                    <div class="detail-value" id="detailContact">—</div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button class="action-btn edit-btn" onclick="editCurrentCard()">
-                        <i class="ri-edit-line"></i>
-                        Edit Card
-                    </button>
-                    <button class="action-btn download-btn" onclick="downloadQRCode()">
-                        <i class="ri-download-line"></i>
-                        Download QR
-                    </button>                    <button class="action-btn share-btn" onclick="shareCard()">
-                        <i class="ri-share-line"></i>
-                        Share
-                    </button>
+                <div class="detail-item">
+                    <div class="detail-label">Address</div>
+                    <div class="detail-value" id="detailAddress">—</div>
                 </div>
             </div>
-        </div>        <script>
-        // IMMEDIATE EXECUTION - ViewCard Modal Functions
-        (function() {
-            console.log('🚀 ViewCard modal script executing immediately...');
-            
-            // Global variable to store current card data
-            let currentCardData = null;
-            
-            // Close modal function - available immediately
-            window.closeViewModal = function() {
-                console.log('🔴 Closing ViewCard modal');
-                const modal = document.querySelector('.modal-overlay');
-                if (modal) {
-                    modal.classList.remove('active');
-                    setTimeout(() => {
-                        const modalContainer = document.getElementById('modalContainer');
-                        if (modalContainer) {
-                            modalContainer.innerHTML = '';
-                        }
-                    }, 300);
-                }
-            };
-        
-            // Load QR code library if not already loaded
-            if (typeof qrcode === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
-                script.onload = function() {
-                    console.log('✅ QR code library loaded');
-                };
-                document.head.appendChild(script);
-            }
 
-            // Close modal function (legacy - keeping for compatibility)
-            function closeViewModal() {
-                window.closeViewModal();
-            }// Populate card details - available immediately  
-        window.populateViewCard = function(cardData) {
-            console.log('📋 Populating view card with data:', cardData);
-            if (!cardData) {
-                console.error('❌ No card data provided to populateViewCard');
-                return;
-            }
-            
-            try {
-                currentCardData = cardData;
-                const isPersonal = cardData.CardTypeText === 'Personal';
-                
-                // Update card type badge
-                const badge = document.getElementById('cardTypeBadge');
-                if (badge) {
-                    badge.textContent = cardData.CardTypeText + ' Card';
-                    badge.className = `card-type-badge ${isPersonal ? 'card-type-personal' : 'card-type-corporate'}`;
-                }
-
-                // Show/hide appropriate sections
-                const personalSection = document.querySelector('.personalDetails');
-                const corporateSection = document.querySelector('.corporateDetails');
-                
-                if (personalSection) personalSection.style.display = isPersonal ? 'block' : 'none';
-                if (corporateSection) corporateSection.style.display = isPersonal ? 'none' : 'block';
-
-                // Helper function to set field value
-                const setField = (id, value) => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.textContent = value || '—';
-                        if (!value) element.classList.add('empty-field');
-                        else element.classList.remove('empty-field');
-                    }
-                };
-
-                if (isPersonal) {
-                    // Personal card fields
-                    setField('detailFullName', cardData.CardName);
-                    setField('detailEmail', cardData.Email);
-                    setField('detailContact', cardData.ContactNo);
-                    setField('detailBirthDate', cardData.BirthDate);
-                    setField('detailAddress', cardData.Address);
-                } else {
-                    // Corporate card fields
-                    setField('detailCompanyName', cardData.CardName);
-                    setField('detailContactPerson', cardData.ContactPerson || 'Not specified');
-                    setField('detailCompanyEmail', cardData.Email);
-                    setField('detailCompanyContact', cardData.ContactNo);
-                    setField('detailCompanyAddress', cardData.Address);
-                }
-
-                // Generate AR-ready QR code
-                generateViewCardQR(cardData);
-                console.log('✅ ViewCard populated successfully');
-            } catch (error) {
-                console.error('❌ Error in populateViewCard:', error);
-                throw error;
-            }
-        };
-
-        // Legacy function for compatibility
-        function populateViewCard(cardData) {
-            window.populateViewCard(cardData);
-        }// Generate enhanced AR-ready QR code
-        function generateViewCardQR(cardData) {
-            const qrContainer = document.getElementById('qrCodeContainer');
-            if (!qrContainer) {
-                console.error('❌ QR container not found');
-                return;
-            }
-
-            // Show loading state
-            qrContainer.innerHTML = `
-                <div class="qr-loading">
-                    <div class="loading-spinner"></div>
-                    <div>Generating AR-Ready QR Code...</div>
-                </div>
-            `;
-
-            // Function to actually generate the QR code
-            const doGenerate = () => {
-                try {
-                    // Create AR-ready data structure
-                    const arData = {
-                        type: "holocard-ar",
-                        version: "2.0",
-                        cardId: cardData.HoloCardID,
-                        profile: {
-                            name: cardData.CardName,
-                            cardType: cardData.CardTypeText,
-                            email: cardData.Email,
-                            contact: cardData.ContactNo,
-                            address: cardData.Address,
-                            birthDate: cardData.BirthDate
-                        },
-                        ar: {
-                            markerType: "qr",
-                            markerSize: 0.1,
-                            trackingMode: "stable",
-                            renderDistance: 2.0,
-                            effects: ["glow", "float", "rotate"]
-                        },
-                        webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`,
-                        generated: new Date().toISOString()
-                    };
-
-                    // Clear loading state
-                    qrContainer.innerHTML = '';
-
-                    if (typeof qrcode !== 'undefined') {
-                        // Use qrcode-generator library
-                        const qr = qrcode(0, 'M');
-                        qr.addData(JSON.stringify(arData));
-                        qr.make();
-                        
-                        // Create QR code as image
-                        const qrImage = qr.createImgTag(4, 10);
-                        qrContainer.innerHTML = qrImage;
-                        
-                        // Style the image
-                        const img = qrContainer.querySelector('img');
-                        if (img) {
-                            img.style.width = '200px';
-                            img.style.height = '200px';
-                            img.style.border = '10px solid white';
-                            img.style.borderRadius = '8px';
-                            img.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                        }
-                        console.log('✅ Enhanced QR code generated for card:', cardData.HoloCardID);
-                    } else {
-                        // Fallback: create a styled placeholder
-                        qrContainer.innerHTML = `
-                            <div style="width: 200px; height: 200px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; border: 10px solid white; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-                                <i class="ri-qr-code-line" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                <div style="font-size: 14px; font-weight: bold;">AR QR Code</div>
-                                <div style="font-size: 12px; opacity: 0.8;">Card #${cardData.HoloCardID}</div>
-                            </div>
-                        `;
-                        console.log('✅ QR placeholder created for card:', cardData.HoloCardID);
-                    }
-                } catch (error) {
-                    console.error('❌ QR generation failed:', error);
-                    qrContainer.innerHTML = `
-                        <div class="qr-error">
-                            <i class="ri-error-warning-line"></i>
-                            <div>Failed to generate QR code</div>
-                            <small>${error.message}</small>
-                        </div>
-                    `;
-                }
-            };
-
-            // Check if qrcode library is available, if not wait for it
-            if (typeof qrcode !== 'undefined') {
-                doGenerate();
-            } else {
-                // Wait for library to load
-                let attempts = 0;
-                const checkLibrary = setInterval(() => {
-                    attempts++;
-                    if (typeof qrcode !== 'undefined' || attempts > 30) {
-                        clearInterval(checkLibrary);
-                        doGenerate();
-                    }
-                }, 100);
-            }
-        }
-
-        // Edit current card
-        function editCurrentCard() {
-            if (!currentCardData) return;
-            
-            closeViewModal();
-            
-            // Wait for modal to close, then open edit modal
-            setTimeout(() => {
-                // Trigger edit functionality from main script
-                if (window.parent && window.parent.document) {
-                    const editBtn = window.parent.document.querySelector(`[data-id="${currentCardData.HoloCardID}"].editBtn`);
-                    if (editBtn) {
-                        editBtn.click();
-                    }
-                }
-            }, 300);
-        }        // Download QR code
-        function downloadQRCode() {
-            const qrImage = document.querySelector('#qrCodeContainer img');
-            if (qrImage) {
-                try {
-                    // Create a canvas to convert image to downloadable format
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    canvas.width = 200;
-                    canvas.height = 200;
-                    
-                    // Draw the QR image to canvas
-                    ctx.drawImage(qrImage, 0, 0, 200, 200);
-                    
-                    // Create download link
-                    const link = document.createElement('a');
-                    link.download = `holocard-qr-${currentCardData.HoloCardID}-${new Date().getTime()}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    
-                    if (window.Swal) {
-                        Swal.fire('Success', 'QR code downloaded successfully!', 'success');
-                    }
-                } catch (error) {
-                    console.error('Download failed:', error);
-                    if (window.Swal) {
-                        Swal.fire('Error', 'Failed to download QR code', 'error');
-                    }
-                }
-            } else {
-                // Fallback: try to download the QR data as text
-                if (currentCardData) {
-                    const qrData = JSON.stringify({
-                        type: "holocard-ar",
-                        version: "2.0",
-                        cardId: currentCardData.HoloCardID,
-                        profile: {
-                            name: currentCardData.CardName,
-                            cardType: currentCardData.CardTypeText,
-                            email: currentCardData.Email,
-                            contact: currentCardData.ContactNo,
-                            address: currentCardData.Address,
-                            birthDate: currentCardData.BirthDate
-                        }
-                    }, null, 2);
-                    
-                    const blob = new Blob([qrData], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `holocard-data-${currentCardData.HoloCardID}.json`;
-                    link.href = url;
-                    link.click();
-                    URL.revokeObjectURL(url);
-                }
-            }
-        }
-
-        // Share card
-        function shareCard() {
-            if (!currentCardData) return;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: `${currentCardData.CardName} - HoloCard`,
-                    text: `Check out my HoloCard: ${currentCardData.CardName}`,
-                    url: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${currentCardData.HoloCardID}`
-                });
-            } else {
-                // Fallback: copy to clipboard
-                const shareUrl = `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${currentCardData.HoloCardID}`;
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    if (window.Swal) {
-                        Swal.fire('Copied!', 'Share link copied to clipboard', 'success');
-                    } else {
-                        alert('Share link copied to clipboard');
-                    }
-                });
-            }
-        }        // Handle escape key to close modal
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                window.closeViewModal();
-            }
-        });
-
-        // Handle click outside modal to close
-        setTimeout(() => {
-            const modalOverlay = document.querySelector('.modal-overlay');
-            if (modalOverlay) {
-                modalOverlay.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        window.closeViewModal();
-                    }
-                });
-            }
-        }, 100);
-
-        // Ensure close button works even if onclick fails
-        setTimeout(() => {
-            const closeBtn = document.querySelector('.close-btn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.closeViewModal();
-                });
-                console.log('✅ Close button event listener attached');
-            }
-        }, 100);        // Make functions globally accessible
-        window.populateViewCard = window.populateViewCard;
-        window.generateViewCardQR = generateViewCardQR;
-        window.closeViewModal = window.closeViewModal;
-        window.editCurrentCard = editCurrentCard;
-        window.downloadQRCode = downloadQRCode;
-        window.shareCard = shareCard;
-        
-        // Execute immediately to ensure availability
-        console.log('✅ All ViewCard functions registered globally');
-        })(); // End of immediate execution function
-    </script>
+            <div class="qr-section">
+                <h3>QR Code</h3>
+                <div class="qr-placeholder" id="qrContainer">
+                    QR Code
+                </div>            </div>
+        </div>
+    </div>
 </div>
