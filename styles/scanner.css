@@ -68,16 +68,19 @@ body {
         align-items: center;
         justify-content: flex-start;
         margin-top: 0rem;
-        padding: 1.5rem;
+        padding: 1.5rem 2vw;
         border-radius: 1rem;
         overflow: auto;
         gap: 1.5rem;
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
     }
 
     .camScanner {
         width: 100%;
-        max-width: 700px;
-        margin: 0 auto;
+        max-width: none;
+        margin: 0;
         height: auto;
         border-radius: 10px;
         background-color: #3109a0cc;
@@ -86,10 +89,11 @@ body {
         overflow: hidden;
         justify-content: flex-start;
         align-items: center;
-        padding: 2rem;
+        padding: 2rem 0;
         border: #4a14b5 solid 0.2rem;
         color: white;
         gap: 1.5rem;
+        box-sizing: border-box;
     }
 
     .camera {
@@ -202,7 +206,7 @@ video {
   width: 100%;
   height: 640px;
   min-height: 400px;
-  max-width: 900px;
+  max-width: 100%;
   margin: 0 auto;
   background: #181a3a;
   border-radius: 1rem;
@@ -214,10 +218,149 @@ video {
   justify-content: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .arSceneContainer {
     height: 400px;
     min-height: 220px;
-    max-width: 100vw;
   }
+  .camScanner {
+    padding: 1rem 0;
+  }
+  .scannerContainer {
+    padding: 1rem 0.5vw;
+  }
+}
+
+/* Modern AR overlay business card style - landscape, readable, modern */
+#ar-overlay {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: none  !important;
+  border: none !important;
+  box-shadow: none  !important;
+  padding: 0;
+  min-width: unset;
+  min-height: unset;
+  max-width: unset;
+  max-height: unset;
+  pointer-events: none;
+}
+.ar-lshape-parent {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  align-content: flex-start;
+  gap: 0;
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+}
+.ar-lshape-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: none;
+  border: none;
+  outline: none;
+}
+.ar-business-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 4px 16px #5e17eb22;
+  border: 2.5px solid #5E17EB;
+  padding: 1.1rem 1.2rem 0.7rem 1.2rem;
+  margin-bottom: 0.5rem;
+  min-width: 260px;
+  max-width: 260px;
+  min-height: 180px;
+  max-height: 220px;
+  width: 260px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+.ar-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  width: 100%;
+}
+.ar-card-watermark-container {
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  outline: none;
+}
+.ar-card-watermark {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  opacity: 0.85;
+  pointer-events: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0001;
+}
+.ar-lshape-logo-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+  height: 370px;
+  min-height: 370px;
+  max-height: 370px;
+  background: none;
+  border: none;
+  outline: none;
+  margin-left: 0.5rem;
+}
+.ar-card-holocard-logo {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px #0001;
+}
+@media (max-width: 700px) {
+  .ar-lshape-parent {
+    flex-direction: column;
+  }
+  .ar-lshape-logo-col, .ar-lshape-col, .ar-business-card, .ar-card-watermark-container {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .ar-lshape-logo-col {
+    height: 180px !important;
+    min-height: 180px !important;
+    max-height: 180px !important;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}
+#ar-overlay h2,
+#ar-overlay .ar-card-type,
+#ar-overlay .ar-card-row,
+#ar-overlay .ar-card-label,
+#ar-overlay .ar-card-value {
+  color: #23223a !important;
+}
+#ar-overlay .ar-card-label {
+  color: #5E17EB !important;
 }

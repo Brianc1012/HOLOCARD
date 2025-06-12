@@ -37,7 +37,8 @@
 
   /* ---------- events ------------------------------------------------- */
   catSel.addEventListener("change", e => {
-    clearForm();
+    console.log('[addCard.js] Card type changed to:', e.target.value);
+    // clearForm(); // REMOVE THIS LINE to prevent resetting the select
     updateVisibility(e.target.value === "Personal");
   });
 
@@ -278,3 +279,14 @@
     }
   }
 })();
+
+document.addEventListener('DOMContentLoaded', function() {
+  const modal     = document.querySelector(".modal-overlay");
+  const form      = modal?.querySelector("#addCardForm");
+  const catSel    = modal?.querySelector("#cardCategory");
+  if (!modal || !form || !catSel) return;
+
+  catSel.addEventListener("change", e => {
+    updateVisibility(e.target.value === "Personal");
+  });
+});

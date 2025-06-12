@@ -154,14 +154,33 @@ function showARCard(data, qrLocation, qrCorners) {
                    getValue(data.CompanyName, data.companyName) || 'Unknown';
   
   const cardType = getValue(data.CardTypeText, data.cardType, data.type) || 'Unknown';
-    arOverlay.innerHTML = `    <h2 style="margin:0 0 0.5rem 0;color:#2d3748;font-weight:bold;">${esc(cardName)}</h2>
-    <div style="font-size:1.1rem;color:#6a11cb;margin-bottom:0.5rem;font-weight:600;">${esc(cardType)}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Company:</strong> ${esc(getValue(data.CompanyName, data.company, data.companyName) || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Email:</strong> ${esc(getValue(data.Email, data.email, data.personalEmail, data.companyEmail) || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Contact:</strong> ${esc(getValue(data.ContactNo, data.contact, data.contactNo, data.phone) || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Birth Date:</strong> ${esc(getValue(data.BirthDate, data.birthDate, data.bday) || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Address:</strong> ${esc(getValue(data.Address, data.address) || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Card ID:</strong> ${esc(getValue(data.HoloCardID, data.cardId, data.id) || 'None')}</div>
+    const logoImg = data.ProfilePicture && data.ProfilePicture.startsWith('data:image/')
+    ? data.ProfilePicture
+    : (data.CompanyLogo && data.CompanyLogo.startsWith('data:image/')
+      ? data.CompanyLogo
+      : '../public/images/holocardLogo.svg');
+  arOverlay.innerHTML = `
+    <div class="ar-lshape-parent">
+      <div class="ar-lshape-col">
+        <div class="ar-business-card">
+          <div class="ar-card-content">
+            <h2>${esc(cardName)}</h2>
+            <div class="ar-card-type">${esc(cardType)}</div>
+            <div class="ar-card-row"><span class="ar-card-label">Company:</span><span class="ar-card-value">${esc(getValue(data.CompanyName, data.company, data.companyName) || 'None')}</span></div>
+            <div class="ar-card-row"><span class="ar-card-label">Email:</span><span class="ar-card-value">${esc(getValue(data.Email, data.email, data.personalEmail, data.companyEmail) || 'None')}</span></div>
+            <div class="ar-card-row"><span class="ar-card-label">Contact:</span><span class="ar-card-value">${esc(getValue(data.ContactNo, data.contact, data.contactNo, data.phone) || 'None')}</span></div>
+            <div class="ar-card-row"><span class="ar-card-label">Birth Date:</span><span class="ar-card-value">${esc(getValue(data.BirthDate, data.birthDate, data.bday) || 'None')}</span></div>
+            <div class="ar-card-row"><span class="ar-card-label">Address:</span><span class="ar-card-value">${esc(getValue(data.Address, data.address) || 'None')}</span></div>
+          </div>
+        </div>
+        <div class="ar-card-watermark-container">
+          <img src="../public/images/WATERMARK.png" alt="Watermark" class="ar-card-watermark" />
+        </div>
+      </div>
+      <div class="ar-lshape-logo-col">
+        <img src="../public/images/holocardLogo.svg" alt="HoloCard Logo" class="ar-card-holocard-logo" />
+      </div>
+    </div>
   `;
   if (qrCorners) {
     // Calculate center and angle of QR code
@@ -614,6 +633,22 @@ window.addEventListener('DOMContentLoaded', () => {
     };
     document.body.appendChild(script);
   }
+  // Copy to clipboard for scanned details
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const targetId = btn.getAttribute('data-copy-target');
+      const field = document.getElementById(targetId);
+      if (field) {
+        // Remove the button text from the copied value
+        const text = field.childNodes[0].nodeValue.trim();
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = '✔';
+          setTimeout(() => { btn.textContent = '📋'; }, 1000);
+        });
+      }
+    });
+  });
 });
 
 // Error handling for invalid QR
