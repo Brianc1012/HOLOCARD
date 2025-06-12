@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Debug - API Call Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 15px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error { color: #ff4444; }
+        .success { color: #44ff44; }
+        .warning { color: #ffaa44; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Scanner API Debug Test</h1>
+        <p>Testing the exact fetchCardDataById function that's causing issues</p>
+        
+        <button onclick="testDirectAPI()">Test API Direct Call</button>
+        <button onclick="testFetchCardDataById()">Test fetchCardDataById Function</button>
+        <button onclick="testShowARCard()">Test showARCard Function</button>
+        <button onclick="clearLog()">Clear Log</button>
+        
+        <div id="console" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, className = '') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const span = document.createElement('div');
+            span.innerHTML = `[${timestamp}] ${message}`;
+            if (className) span.className = className;
+            console.appendChild(span);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('console').innerHTML = '';
+        }
+
+        // Test direct API call
+        async function testDirectAPI() {
+            log('=== TESTING DIRECT API CALL ===', 'warning');
+            
+            try {
+                const response = await fetch('api/get_cards.php?id=17');
+                log(`API Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Raw API Response:', 'success');
+                    log(JSON.stringify(data, null, 2), 'success');
+                    
+                    // Test the parsing logic
+                    let card = null;
+                    if (data.success && data.card) {
+                        card = data.card;
+                        log('✅ Successfully extracted card from response', 'success');
+                        log('Card data: ' + JSON.stringify(card, null, 2), 'success');
+                    } else {
+                        log('❌ Failed to extract card from response', 'error');
+                    }
+                } else {
+                    log('❌ API call failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Copy of the exact fetchCardDataById function from scanner.js
+        function fetchCardDataById(cardId, qrLocation = null, qrCorners = null) {
+            log(`=== TESTING fetchCardDataById('${cardId}') ===`, 'warning');
+            
+            // Use correct API path based on current location
+            const currentPath = window.location.pathname;
+            let apiPath;
+            if (currentPath.includes('/pages/')) {
+                apiPath = `../api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            } else {
+                apiPath = `api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            }
+            
+            log(`[API] Current path: ${currentPath}`);
+            log(`[API] Using API path: ${apiPath}`);
+            
+            fetch(apiPath)
+                .then(res => {
+                    log(`[API] Response received: ${res.status} ${res.statusText}`);
+                    log(`[API] Response headers: ${JSON.stringify(Object.fromEntries(res.headers.entries()))}`);
+                    if (!res.ok) {
+                        const altPath = currentPath.includes('/pages/') ? 
+                            `../api/get_cards.php?id=${encodeURIComponent(cardId)}` : 
+                            `/holocard_nonext/api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+                        log(`[API] Trying alternative path: ${altPath}`);
+                        return fetch(altPath);
+                    }
+                    return res;
+                })
+                .then(res => {
+                    log(`[API] Final response: ${res.status} ${res.statusText}`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    return res.json();
+                })
+                .then(data => {
+                    log(`[API] Raw response: ${JSON.stringify(data, null, 2)}`);
+                    
+                    // Handle the updated API response format
+                    let card = null;
+                    if (data.success && data.card) {
+                        card = data.card;
+                        log('[API] Using single card response format', 'success');
+                    } else if (data.success && data.cards && data.cards.length > 0) {
+                        card = data.cards[0];
+                        log('[API] Using array response format', 'success');
+                    } else if (Array.isArray(data)) {
+                        card = data[0] || null;
+                        log('[API] Using direct array format', 'success');
+                    } else if (typeof data === 'object' && data !== null && !data.success) {
+                        card = data;
+                        log('[API] Using direct object format', 'success');
+                    }
+                    
+                    if (!card) {
+                        throw new Error(`Card not found. Response: ${JSON.stringify(data)}`);
+                    }
+                    
+                    log(`[API] Final card data to display: ${JSON.stringify(card, null, 2)}`, 'success');
+                    
+                    // This is where showARCard should be called with the actual card object
+                    log('🎯 CALLING showARCard with:', 'warning');
+                    log(`typeof card: ${typeof card}`, 'warning');
+                    log(`card content: ${JSON.stringify(card, null, 2)}`, 'warning');
+                    
+                    // Call showARCard
+                    showARCard(card, qrLocation, qrCorners);
+                })
+                .catch(err => {
+                    log(`[API] Failed to fetch card data: ${err.message}`, 'error');
+                });
+        }
+
+        // Copy of showARCard function to test
+        function showARCard(data, qrLocation = null, qrCorners = null) {
+            log(`🎨 showARCard called with:`, 'warning');
+            log(`typeof data: ${typeof data}`, 'warning');
+            log(`data content: ${JSON.stringify(data, null, 2)}`, 'warning');
+            
+            // Test field extraction
+            const cardName = data.CardName || data.cardName || 
+                           `${data.FirstName || ''} ${data.LastName || ''}`.trim() ||
+                           data.CompanyName || data.companyName || 'Unknown';
+            
+            const cardType = data.CardTypeText || data.cardType || data.type || 'Unknown';
+            
+            log(`Extracted cardName: ${cardName}`, 'success');
+            log(`Extracted cardType: ${cardType}`, 'success');
+            log(`Extracted Email: ${data.Email || 'None'}`, 'success');
+            log(`Extracted ContactNo: ${data.ContactNo || 'None'}`, 'success');
+            log(`Extracted Address: ${data.Address || 'None'}`, 'success');
+        }
+
+        function testShowARCard() {
+            log('=== TESTING showARCard WITH MOCK DATA ===', 'warning');
+            
+            const mockCard = {
+                HoloCardID: 17,
+                CardType: 0,
+                Address: "vmkkv",
+                ContactNo: "vhkv", 
+                BirthDate: "2025-06-12",
+                Email: "dfhd@gmail.com",
+                CardName: "frdtijjjjj fgkfg",
+                CardTypeText: "Personal",
+                FirstName: "frdtijjjjj",
+                LastName: "fgkfg"
+            };
+            
+            showARCard(mockCard);
+        }
+
+        // Auto-start first test
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Scanner API Debug Test Ready', 'success');
+            log('Click buttons above to run tests', 'success');
+        });
+    </script>
+</body>
+</html>

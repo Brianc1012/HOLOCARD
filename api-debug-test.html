@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 API Debug Test</h1>
+    
+    <button onclick="testAPI()">Test API Call</button>
+    <button onclick="testAlternativePaths()">Test Alternative Paths</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        async function testAPI() {
+            log('🧪 Testing API from scanner.js logic...', 'info');
+            
+            const cardId = 17;
+            const currentPath = window.location.pathname;
+            let apiPath;
+            
+            if (currentPath.includes('/pages/')) {
+                apiPath = `../api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            } else {
+                apiPath = `api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            }
+            
+            log(`Current path: ${currentPath}`, 'info');
+            log(`API path: ${apiPath}`, 'info');
+            
+            try {
+                const response = await fetch(apiPath);
+                log(`Response status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log('✅ API call successful!', 'success');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+                
+                // Test the same parsing logic as scanner.js
+                let card = null;
+                if (data.success && data.card) {
+                    card = data.card;
+                    log('✅ Card data extracted successfully using single card format', 'success');
+                } else if (data.success && data.cards && data.cards.length > 0) {
+                    card = data.cards[0];
+                    log('✅ Card data extracted successfully using array format', 'success');
+                } else if (Array.isArray(data)) {
+                    card = data[0] || null;
+                    log('✅ Card data extracted successfully using direct array format', 'success');
+                } else if (typeof data === 'object' && data !== null && !data.success) {
+                    card = data;
+                    log('✅ Card data extracted successfully using direct object format', 'success');
+                }
+                
+                if (card) {
+                    log(`<strong>Card Details:</strong><br>
+                         ID: ${card.HoloCardID}<br>
+                         Name: ${card.CardName || card.FirstName + ' ' + card.LastName}<br>
+                         Type: ${card.CardTypeText}<br>
+                         Email: ${card.Email}<br>
+                         Contact: ${card.ContactNo}`, 'success');
+                } else {
+                    log('❌ Failed to extract card data', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ API call failed: ${error.message}`, 'error');
+                console.error('API Test Error:', error);
+            }
+        }
+
+        async function testAlternativePaths() {
+            log('🧪 Testing alternative API paths...', 'info');
+            
+            const cardId = 17;
+            const paths = [
+                `api/get_cards.php?id=${cardId}`,
+                `../api/get_cards.php?id=${cardId}`,
+                `/holocard_nonext/api/get_cards.php?id=${cardId}`,
+                `./api/get_cards.php?id=${cardId}`,
+                `http://localhost/holocard_nonext/api/get_cards.php?id=${cardId}`
+            ];
+            
+            for (const path of paths) {
+                try {
+                    log(`Testing: ${path}`, 'info');
+                    const response = await fetch(path);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ SUCCESS: ${path}`, 'success');
+                        break;
+                    } else {
+                        log(`❌ FAILED: ${path} - ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ ERROR: ${path} - ${error.message}`, 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

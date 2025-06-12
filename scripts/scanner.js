@@ -5,6 +5,21 @@ let video = null;
 let canvas = null;
 let ctx = null;
 let scanning = false;
+let arOverlay = null;
+let lastCardData = null;
+let lastCardId = null;
+let lastOverlayVisible = false;
+
+// Enhanced scanning state management
+let scanningState = 'idle'; // 'idle', 'scanning', 'fetching', 'displaying', 'cooldown'
+let lastScanTime = 0;
+let scanCooldownPeriod = 3000; // 3 seconds cooldown after successful scan
+let noQrCounter = 0;
+let noQrThreshold = 150; // ~5 seconds at 30fps (150 frames)
+let currentCardDisplayed = null;
+let displayTimeout = null;
+let noQRTimeout = null;
+let currentDisplayedCardId = null;
 
 function esc(str) {
   return String(str).replace(/[&<>"']/g, s => ({
@@ -12,109 +27,566 @@ function esc(str) {
   })[s]);
 }
 
-function showARCard(data, qrLocation) {
-  // Overlay card info on top of the video, centered or near QR code if available
-  let arOverlay = document.getElementById('ar-overlay');
+function injectARCardInfo(profile) {
+  console.log('[AR] injectARCardInfo called with profile:', profile);
+  // Remove previous children
+  const arCardInfo = document.getElementById('arCardInfo');
+  if (!arCardInfo) {
+    console.warn('[AR] arCardInfo entity not found!');
+    return;
+  }
+  while (arCardInfo.firstChild) arCardInfo.removeChild(arCardInfo.firstChild);
+
+  // Format fields for AR overlay using correct API field names
+  let name = profile.CardName || profile.name || profile.cardName || 
+             `${profile.FirstName || ''} ${profile.LastName || ''}`.trim() || '';
+  let company = profile.CompanyName || profile.company || profile.companyName || '';
+  let email = profile.Email || profile.email || '';
+  let contact = profile.ContactNo || profile.contact || '';
+  let cardType = profile.CardTypeText || profile.cardType || '';
+
+  let y = 0.2;
+  if (cardType === 'Corporate') {
+    if (company) {
+      const companyText = document.createElement('a-text');
+      companyText.setAttribute('value', company);
+      companyText.setAttribute('color', '#FFD700');
+      companyText.setAttribute('position', `0 ${y} 0`);
+      companyText.setAttribute('align', 'center');
+      companyText.setAttribute('scale', '0.7 0.7 0.7');
+      arCardInfo.appendChild(companyText);
+      y -= 0.15;
+      console.log('[AR] Injected company:', company);
+    }
+  }
+  if (name) {
+    const nameText = document.createElement('a-text');
+    nameText.setAttribute('value', name);
+    nameText.setAttribute('color', '#00d0ff');
+    nameText.setAttribute('position', `0 ${y} 0`);
+    nameText.setAttribute('align', 'center');
+    nameText.setAttribute('scale', '0.6 0.6 0.6');
+    arCardInfo.appendChild(nameText);
+    y -= 0.13;
+    console.log('[AR] Injected name:', name);
+  }
+  if (email) {
+    const emailText = document.createElement('a-text');
+    emailText.setAttribute('value', email);
+    emailText.setAttribute('color', '#fff');
+    emailText.setAttribute('position', `0 ${y} 0`);
+    emailText.setAttribute('align', 'center');
+    emailText.setAttribute('scale', '0.4 0.4 0.4');
+    arCardInfo.appendChild(emailText);
+    y -= 0.11;
+    console.log('[AR] Injected email:', email);
+  }
+  if (contact) {
+    const contactText = document.createElement('a-text');
+    contactText.setAttribute('value', contact);
+    contactText.setAttribute('color', '#fff');
+    contactText.setAttribute('position', `0 ${y} 0`);
+    contactText.setAttribute('align', 'center');
+    contactText.setAttribute('scale', '0.4 0.4 0.4');
+    arCardInfo.appendChild(contactText);
+    y -= 0.11;
+    console.log('[AR] Injected contact:', contact);
+  }
+  console.log('[AR] AR card info injection complete.');
+}
+
+function setScanStatus(msg, color) {
+  const el = document.getElementById('scanStatus');
+  if (el) {
+    el.textContent = msg;
+    if (color) el.style.color = color;
+    else el.style.color = '#fff';
+  }
+}
+
+function showARCard(data, qrLocation, qrCorners) {
+  console.log('[DISPLAY] === STARTING showARCard ===');
+  console.log('[DISPLAY] typeof data:', typeof data);
+  console.log('[DISPLAY] data content:', data);
+  console.log('[DISPLAY] JSON.stringify(data):', JSON.stringify(data));
+  
+  if (typeof data === 'string') {
+    console.error('[DISPLAY] ERROR: showARCard called with string instead of object!');
+    console.error('[DISPLAY] This should never happen - check the calling code');
+    return;
+  }
+  
+  console.log('[DISPLAY] showARCard called with data:', data);
+  lastCardData = data;
+
+  // --- AR OVERLAY: Floating HTML overlay that tracks QR code ---
   if (!arOverlay) {
     arOverlay = document.createElement('div');
     arOverlay.id = 'ar-overlay';
-    arOverlay.style.position = 'absolute';
-    arOverlay.style.top = '50%';
-    arOverlay.style.left = '50%';
-    arOverlay.style.transform = 'translate(-50%, -50%)';
-    arOverlay.style.background = 'rgba(255,255,255,0.95)';
+    arOverlay.style.position = 'absolute';    arOverlay.style.background = 'rgba(255,255,255,0.98)';
+    arOverlay.style.border = '2px solid #667eea';
     arOverlay.style.borderRadius = '18px';
-    arOverlay.style.boxShadow = '0 2px 24px rgba(0,0,0,0.13)';
+    arOverlay.style.boxShadow = '0 8px 32px rgba(0,0,0,0.25), 0 4px 16px rgba(102,126,234,0.15)';
     arOverlay.style.padding = '1.5rem 2rem';
     arOverlay.style.zIndex = '10';
-    arOverlay.style.minWidth = '220px';
+    arOverlay.style.minWidth = '280px';
+    arOverlay.style.maxWidth = '400px';
     arOverlay.style.textAlign = 'center';
     arOverlay.style.pointerEvents = 'none';
-    document.querySelector('.camScanner').appendChild(arOverlay);
-  }
-  arOverlay.innerHTML = `
-    <h2 style="margin:0 0 0.5rem 0;">${esc(data.cardName || (data.firstName || '') + ' ' + (data.lastName || ''))}</h2>
-    <div style="font-size:1.1rem;color:#6a11cb;margin-bottom:0.5rem;">${esc(data.cardType || 'None')}</div>
-    <div><strong>Company:</strong> ${esc(data.company || 'None')}</div>
-    <div><strong>Email:</strong> ${esc(data.personalEmail || data.companyEmail || 'None')}</div>
-    <div><strong>Contact:</strong> ${esc(data.contact || 'None')}</div>
-    <div><strong>Birth Date:</strong> ${esc(data.birthDate || 'None')}</div>
-    <div><strong>Address:</strong> ${esc(data.address || 'None')}</div>
+    arOverlay.style.transition = 'transform 0.08s linear, left 0.08s linear, top 0.08s linear';
+    arOverlay.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+    arOverlay.style.fontSize = '14px';
+    arOverlay.style.lineHeight = '1.4';
+    document.querySelector('.camScanner').appendChild(arOverlay);  }
+  arOverlay.style.display = '';
+  lastOverlayVisible = true; // Mark overlay as visible
+  
+  // Build the card display content using correct API field names
+  const cardName = data.CardName || data.cardName || 
+                   `${data.FirstName || data.firstName || ''} ${data.LastName || data.lastName || ''}`.trim() ||
+                   data.CompanyName || data.companyName || 'Unknown';
+  
+  const cardType = data.CardTypeText || data.cardType || data.type || 'Unknown';
+    arOverlay.innerHTML = `
+    <h2 style="margin:0 0 0.5rem 0;color:#2d3748;font-weight:bold;">${esc(cardName)}</h2>
+    <div style="font-size:1.1rem;color:#6a11cb;margin-bottom:0.5rem;font-weight:600;">${esc(cardType)}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Company:</strong> ${esc(data.CompanyName || data.company || data.companyName || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Email:</strong> ${esc(data.Email || data.email || data.personalEmail || data.companyEmail || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Contact:</strong> ${esc(data.ContactNo || data.contact || data.contactNo || data.phone || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Birth Date:</strong> ${esc(data.BirthDate || data.birthDate || data.bday || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Address:</strong> ${esc(data.Address || data.address || 'None')}</div>
   `;
-  // Optionally, position overlay near QR code if qrLocation is available
-  if (qrLocation) {
-    arOverlay.style.top = `${qrLocation.top}px`;
+  if (qrCorners) {
+    // Calculate center and angle of QR code
+    const cx = (qrCorners.topLeftCorner.x + qrCorners.bottomRightCorner.x) / 2;
+    const cy = (qrCorners.topLeftCorner.y + qrCorners.bottomRightCorner.y) / 2;
+    // Calculate rotation angle (in degrees) from topLeft to topRight
+    const dx = qrCorners.topRightCorner.x - qrCorners.topLeftCorner.x;
+    const dy = qrCorners.topRightCorner.y - qrCorners.topLeftCorner.y;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    // Position overlay at center, rotate to match QR code
+    arOverlay.style.left = `${cx}px`;
+    arOverlay.style.top = `${cy}px`;
+    arOverlay.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+  } else if (qrLocation) {
     arOverlay.style.left = `${qrLocation.left}px`;
+    arOverlay.style.top = `${qrLocation.top}px`;
     arOverlay.style.transform = 'translate(-50%, -50%)';
+  } else {
+    arOverlay.style.left = '50%';
+    arOverlay.style.top = '50%';
+    arOverlay.style.transform = 'translate(-50%, -50%)';
+  }
+  // --- AR.js/A-Frame overlay (optional, still present for marker-based AR) ---
+  const profile = data.profile || data;
+  injectARCardInfo(profile);
+
+  // --- Update scanned details panel ---
+  console.log('[DISPLAY] Updating details panel with data:', data);
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = val || 'None';
+      console.log(`[DISPLAY] Set ${id} = ${val || 'None'}`);
+    } else {
+      console.warn(`[DISPLAY] Element ${id} not found`);
+    }
+  };  
+  // Use the correct field names from the API response
+  set('cardType', data.CardTypeText || data.cardType || data.type || 'None');
+  set('company', data.CompanyName || data.company || data.companyName || 'None');
+  set('name', data.CardName || data.cardName || `${data.FirstName || ''} ${data.LastName || ''}`.trim() || 'None');
+  set('email', data.Email || data.email || data.personalEmail || data.companyEmail || 'None');  set('contact', data.ContactNo || data.contact || data.contactNo || data.phone || 'None');
+  set('birthDate', data.BirthDate || data.birthDate || data.bday || 'None');
+  set('address', data.Address || data.address || 'None');
+  
+  // Don't set scan status here - let state management handle it
+  console.log('[DISPLAY] Card data displayed successfully');
+}
+
+function updateOverlayPosition(qrCorners) {
+  if (!arOverlay || arOverlay.style.display === 'none') return;
+  
+  if (qrCorners) {
+    const cx = (qrCorners.topLeftCorner.x + qrCorners.bottomRightCorner.x) / 2;
+    const cy = (qrCorners.topLeftCorner.y + qrCorners.bottomRightCorner.y) / 2;
+    const dx = qrCorners.topRightCorner.x - qrCorners.topLeftCorner.x;
+    const dy = qrCorners.topRightCorner.y - qrCorners.topLeftCorner.y;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    
+    // Smooth position updates
+    arOverlay.style.left = `${cx}px`;
+    arOverlay.style.top = `${cy}px`;
+    arOverlay.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+    arOverlay.style.display = '';
+    
+    console.log(`[OVERLAY] Position updated: (${cx.toFixed(1)}, ${cy.toFixed(1)}) angle: ${angle.toFixed(1)}°`);
   }
 }
 
 function startCamera() {
+  console.log('[CAM] Starting camera...');
   video = document.createElement('video');
   canvas = document.createElement('canvas');
-  ctx = canvas.getContext('2d');
+  // Use willReadFrequently for better performance in QR scanning
+  ctx = canvas.getContext('2d', { willReadFrequently: true });
   scanning = true;
 
-  const videoContainer = document.querySelector('.camScanner');
+  const videoContainer = document.querySelector('.arSceneContainer');
   video.setAttribute('autoplay', '');
   video.setAttribute('playsinline', '');
   video.style.width = '100%';
-  video.style.borderRadius = '12px';
-  videoContainer.appendChild(video);
-
+  video.style.height = '100%';
+  video.style.objectFit = 'cover';
+  video.style.position = 'absolute';
+  video.style.top = '0';
+  video.style.left = '0';
+  video.style.zIndex = '1';
+  video.style.borderRadius = '12px';  videoContainer.appendChild(video);
+  
+  // AR.js will automatically access the camera, but we also need our own stream for QR scanning
   navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
     .then(stream => {
+      console.log('[CAM] Camera stream started.');
       video.srcObject = stream;
+      
+      // Wait for video to be ready before starting scan loop
+      video.addEventListener('loadeddata', () => {
+        console.log('[CAM] Video loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          console.log('[CAM] Starting scanner...');
+          setScanningState('idle');
+          requestAnimationFrame(tick);
+        }
+      });
+      
+      // Fallback: start after play event if loadeddata doesn't fire
+      video.addEventListener('play', () => {
+        setTimeout(() => {
+          if (video.readyState >= 2 && video.videoWidth > 0) {
+            console.log('[CAM] Video playing, scanner ready...');
+            if (scanningState === 'idle') { // Don't restart if already running
+              setScanningState('idle');
+              requestAnimationFrame(tick);
+            }
+          }
+        }, 500);
+      });
+      
       video.play();
-      requestAnimationFrame(tick);
     })
     .catch(err => {
+      console.error('[CAM] Camera access denied or not available.', err);
+      setScanStatus('Camera access denied', '#ff4e4e');
       alert('Camera access denied or not available.');
     });
 }
 
 function tick() {
-  if (!scanning) return;
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+  if (!video || !canvas || !ctx || !scanning) return;
+  
+  // Check if video is ready and has valid dimensions
+  if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+    // Video not ready yet, try again in next frame
+    requestAnimationFrame(tick);
+    return;
+  }
+  
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+    try {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    let code = null;
     if (window.jsQR) {
-      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+      code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+    }
       if (code) {
-        scanning = false;
-        try {
-          const cardData = JSON.parse(code.data);
-          // Calculate QR code center for AR overlay
-          const loc = code.location;
-          let qrLocation = null;
-          if (loc) {
-            const top = (loc.topLeftCorner.y + loc.bottomRightCorner.y) / 2;
-            const left = (loc.topLeftCorner.x + loc.bottomRightCorner.x) / 2;
-            qrLocation = { top, left };
-          }
-          showARCard(cardData, qrLocation);
-        } catch (e) {
-          alert('Invalid QR code data.');
-          scanning = true;
-          requestAnimationFrame(tick);
+      console.log('[QR] Raw QR data:', code.data);
+      
+      // Parse QR code data
+      let cardData = null;
+      let isIdOnly = false;
+      let cardId = null;
+      
+      try {
+        // Try to parse as JSON first
+        cardData = JSON.parse(code.data);
+        console.log('[QR] Parsed as JSON:', cardData);
+        
+        // Check if it's a simple ID object like {"id": "17"}
+        if (typeof cardData === 'object' && cardData !== null && Object.keys(cardData).length === 1 && cardData.id) {
+          isIdOnly = true;
+          cardId = cardData.id.toString();
+          console.log('[QR] Detected ID-only JSON format:', cardId);
         }
-        return;
+      } catch (e) {
+        // Not JSON, treat as simple string ID
+        if (typeof code.data === 'string' && code.data.trim().length > 0) {
+          const trimmedData = code.data.trim();
+          // Check if it's a simple number/ID
+          if (/^\d+$/.test(trimmedData)) {
+            isIdOnly = true;
+            cardId = trimmedData;
+            console.log('[QR] Detected simple ID format:', cardId);
+          } else {
+            console.log('[QR] Not a simple ID, treating as complex data');
+            // Could be complex JSON that we couldn't parse, skip for now
+          }
+        }
+      }
+      
+      const loc = code.location;
+      let qrLocation = null;
+      let qrCorners = null;
+      if (loc) {
+        const top = (loc.topLeftCorner.y + loc.bottomRightCorner.y) / 2;
+        const left = (loc.topLeftCorner.x + loc.bottomRightCorner.x) / 2;
+        qrLocation = { top, left };
+        qrCorners = loc;
+      }      // Enhanced QR detection with improved state management
+      if (isIdOnly && cardId) {
+        // Don't re-scan the same card during cooldown
+        if (currentCardDisplayed === cardId && (scanningState === 'displaying' || scanningState === 'cooldown')) {
+          console.log('[QR] Same card detected during cooldown/display, updating position only');
+          updateOverlayPosition(qrCorners);
+          lastOverlayVisible = true;
+          // Reset no-QR counter since we can see the QR code
+          noQrCounter = 0;
+          requestAnimationFrame(tick);
+          return;
+        }
+        
+        // Only scan new cards if we're in idle state or enough time has passed
+        if (scanningState === 'idle' || shouldResumeScanning()) {
+          console.log('[QR] Fetching data for card ID:', cardId);
+          lastCardId = cardId;
+          fetchCardDataById(cardId, qrLocation, qrCorners);
+          requestAnimationFrame(tick);
+          return; // Stop here, fetchCardDataById will handle the rest
+        } else {
+          // Still in cooldown for different card, just update position if we have overlay
+          updateOverlayPosition(qrCorners);
+          lastOverlayVisible = true;
+        }
+      } else if (cardData && !isIdOnly) {
+        // Handle complex embedded card data
+        if (scanningState === 'idle' || shouldResumeScanning()) {
+          console.log('[QR] Using embedded card data');
+          lastCardId = null;
+          lastCardData = cardData;
+          showARCard(cardData, qrLocation, qrCorners);
+          setScanningState('displaying');
+          lastOverlayVisible = true;
+        } else {
+          updateOverlayPosition(qrCorners);
+          lastOverlayVisible = true;
+        }
+      } else {
+        console.log('[QR] Invalid QR code format, ignoring');
+        setScanStatus('Invalid QR code', '#ff4e4e');
+      }
+      
+      // Reset no-QR counter since we found a QR code
+      noQrCounter = 0;    } else {
+      // No QR code detected
+      noQrCounter++;
+      
+      // If we have an overlay visible and no QR code for threshold frames, hide it and resume
+      if (lastOverlayVisible && noQrCounter > noQrThreshold) {
+        console.log('[QR] No QR code detected for 5 seconds, resuming scanning');
+        hideAROverlay();
+        setScanningState('idle');
+        noQrCounter = 0;
+      }
+      
+      // Hide overlay if no QR code and not in displaying/cooldown state
+      if (!lastOverlayVisible && (scanningState === 'idle' || scanningState === 'scanning')) {
+        if (arOverlay) {
+          arOverlay.style.display = 'none';
+        }
+        setScanStatus('Scanning...', '#fff');
       }
     }
+    
+  } catch (error) {
+    console.error('[SCANNER] Error in tick function:', error);
+    setScanStatus('Scanner error', '#ff4e4e');
   }
+  
   requestAnimationFrame(tick);
+}
+
+// Fetch card data by ID from backend and display AR overlay
+function fetchCardDataById(cardId, qrLocation, qrCorners) {
+  console.log('[API] === STARTING fetchCardDataById ===');
+  console.log('[API] cardId:', cardId, 'type:', typeof cardId);
+  
+  // Set state to fetching
+  setScanningState('fetching');
+  
+  // Use correct API path based on current location
+  const currentPath = window.location.pathname;
+  let apiPath;
+  if (currentPath.includes('/pages/')) {
+    // We're in pages directory, go up one level
+    apiPath = `../api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+  } else {
+    // We're in root directory
+    apiPath = `api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+  }
+  
+  console.log('[API] Fetching card data for ID:', cardId, 'URL:', apiPath);fetch(apiPath)
+    .then(res => {
+      console.log('[API] Response received:', res.status, res.statusText);
+      console.log('[API] Response headers:', Object.fromEntries(res.headers.entries()));
+      if (!res.ok) {
+        // Try alternative path if first fails
+        const altPath = currentPath.includes('/pages/') ? 
+          `../api/get_cards.php?id=${encodeURIComponent(cardId)}` : 
+          `/holocard_nonext/api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+        console.log('[API] Trying alternative path:', altPath);
+        return fetch(altPath);
+      }
+      return res;
+    })
+    .then(res => {
+      console.log('[API] Final response:', res.status, res.statusText);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    })
+    .then(data => {
+      console.log('[API] Raw response:', data);
+      
+      // Handle the updated API response format
+      let card = null;
+      if (data.success && data.card) {
+        // Single card response (new format)
+        card = data.card;
+        console.log('[API] Using single card response format');
+      } else if (data.success && data.cards && data.cards.length > 0) {
+        // Array response (fallback)
+        card = data.cards[0];
+        console.log('[API] Using array response format');
+      } else if (Array.isArray(data)) {
+        // Direct array response (legacy)
+        card = data[0] || null;
+        console.log('[API] Using direct array format');
+      } else if (typeof data === 'object' && data !== null && !data.success) {
+        // Direct object response (legacy)
+        card = data;
+        console.log('[API] Using direct object format');
+      }      
+      if (!card) {
+        throw new Error(`Card not found. Response: ${JSON.stringify(data)}`);
+      }
+      
+      console.log('[API] Final card data to display:', card);
+      currentCardDisplayed = cardId;
+      showARCard(card, qrLocation, qrCorners);
+      
+      // Set state to displaying (will automatically set cooldown after timeout)
+      setScanningState('displaying');
+    })
+    .catch(err => {
+      console.error('[API] Failed to fetch card data:', err);
+      setScanStatus(`Error: ${err.message}`, '#ff4e4e');
+      
+      // Resume scanning on error after a short delay
+      setTimeout(() => {
+        setScanningState('idle');
+      }, 2000);
+    });
+}
+
+// Enhanced scanning state management functions
+function setScanningState(newState) {
+  console.log(`[STATE] Changing from ${scanningState} to ${newState}`);
+  const oldState = scanningState;
+  scanningState = newState;
+  
+  // Clear any existing timeouts
+  clearTimeout(displayTimeout);
+  clearTimeout(noQRTimeout);
+  
+  switch (newState) {
+    case 'idle':
+      scanning = true;
+      setScanStatus('Scanning...', '#fff');
+      currentCardDisplayed = null;
+      console.log('[STATE] Scanner ready for new QR codes');
+      break;
+    case 'scanning':
+      scanning = true;
+      setScanStatus('Scanning...', '#fff');
+      break;
+    case 'fetching':
+      scanning = true; // Keep scanning while fetching so we can track QR movement
+      setScanStatus('Fetching card data...', '#00ffae');
+      break;
+    case 'displaying':
+      scanning = true; // Keep scanning to track QR movement
+      setScanStatus('Scanned!', '#00ffae');
+      lastScanTime = Date.now();
+      lastOverlayVisible = true;
+      // Set timeout to go to cooldown state
+      displayTimeout = setTimeout(() => {
+        if (scanningState === 'displaying') {
+          setScanningState('cooldown');
+        }
+      }, scanCooldownPeriod);
+      break;
+    case 'cooldown':
+      scanning = true; // Keep scanning to track QR movement and detect removal
+      setScanStatus('Scan complete - Point away to scan another', '#ffaa00');
+      noQrCounter = 0; // Reset counter when entering cooldown
+      break;
+  }
+}
+
+function shouldResumeScanning() {
+  const timeSinceLastScan = Date.now() - lastScanTime;
+  return timeSinceLastScan > scanCooldownPeriod && scanningState !== 'fetching';
+}
+
+function hideAROverlay() {
+  if (arOverlay) {
+    arOverlay.style.display = 'none';
+    console.log('[OVERLAY] Hidden');
+  }
+  lastOverlayVisible = false;
+  lastCardId = null;
+  lastCardData = null;
+  currentCardDisplayed = null;
+  
+  // Clear the details panel
+  const detailElements = ['cardType', 'company', 'name', 'email', 'contact', 'birthDate', 'address'];
+  detailElements.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = 'None';
+    }
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   // Only start camera if jsQR is loaded
   if (window.jsQR) {
+    console.log('[INIT] jsQR loaded, starting camera.');
     startCamera();
   } else {
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/jsqr/dist/jsQR.js';
-    script.onload = startCamera;
+    script.onload = () => {
+      console.log('[INIT] jsQR script loaded, starting camera.');
+      startCamera();
+    };
     document.body.appendChild(script);
   }
 });
+
+// Error handling for invalid QR
+function handleInvalidQR() {
+  setScanStatus('Cannot scan: Invalid QR code', '#ff4e4e');
+}

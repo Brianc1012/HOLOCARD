@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Isolated Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .test-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            border: 2px solid #333;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+            font-size: 18px;
+        }
+        .ar-overlay {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.98);
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 25px;
+            font-family: 'Segoe UI', sans-serif;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            max-width: 350px;
+            z-index: 1000;
+            display: none;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+        }
+        .success { background: linear-gradient(45deg, #00d2ff, #3a7bd5); }
+        .error { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
+        .info { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+        .warning { background: linear-gradient(45deg, #f093fb, #f5576c); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 HoloCard Scanner Isolated Test</h1>
+        <p>This test isolates each component of the scanner to identify where the issue lies.</p>
+        
+        <div class="test-section">
+            <h2>📡 API Connection Test</h2>
+            <button onclick="testAPIConnection()">Test API Connection</button>
+            <button onclick="testSpecificCard()">Test Card ID 17</button>
+            <button onclick="testNonExistentCard()">Test Non-existent Card</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 QR Processing Test</h2>
+            <button onclick="testQRProcessing('17')">Test Simple ID "17"</button>
+            <button onclick="testQRProcessing('{\"id\":\"17\"}')">Test JSON {"id":"17"}</button>
+            <button onclick="testQRProcessing('invaliddata')">Test Invalid QR</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Full Scanner Simulation</h2>
+            <button onclick="fullScannerTest()">Run Complete Scanner Test</button>
+            <button onclick="clearAll()">Clear All</button>
+        </div>
+        
+        <div id="status" class="status info">Ready to test...</div>
+        <div id="console" class="log"></div>
+        <div id="arOverlay" class="ar-overlay"></div>
+    </div>
+
+    <script>
+        // Scanner state variables
+        let scanningState = 'idle';
+        let currentCardDisplayed = null;
+        let lastScanTime = 0;
+        let lastOverlayVisible = false;
+        let arOverlay = null;
+        
+        const scanCooldownPeriod = 5000;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            console.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function setStatus(message, className = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${className}`;
+            log(message, className);
+        }
+
+        function setScanningState(newState) {
+            log(`State transition: ${scanningState} → ${newState}`, 'info');
+            scanningState = newState;
+            
+            switch (newState) {
+                case 'idle':
+                    setStatus('🔍 Ready to scan...', 'info');
+                    currentCardDisplayed = null;
+                    break;
+                case 'fetching':
+                    setStatus('📡 Fetching card data...', 'info');
+                    break;
+                case 'displaying':
+                    setStatus('✅ Card data loaded!', 'success');
+                    lastScanTime = Date.now();
+                    lastOverlayVisible = true;
+                    break;
+                case 'error':
+                    setStatus('❌ Error occurred', 'error');
+                    break;
+            }
+        }
+
+        function esc(str) {
+            if (str == null) return '';
+            return String(str).replace(/[&<>"']/g, function(match) {
+                const escapes = {
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;',
+                    '"': '&quot;', "'": '&#x27;'
+                };
+                return escapes[match];
+            });
+        }
+
+        function showARCard(data) {
+            log('🎨 Displaying AR card overlay', 'success');
+            
+            if (!arOverlay) {
+                arOverlay = document.getElementById('arOverlay');
+            }
+            
+            const cardName = data.CardName || 'Unknown';
+            const cardType = data.CardTypeText || 'Unknown';
+            
+            arOverlay.innerHTML = `
+                <h2 style="color:#2d3748;font-weight:bold;margin:0 0 12px 0;font-size:20px;">
+                    ${esc(cardName)}
+                </h2>
+                <div style="color:#6a11cb;font-weight:600;margin-bottom:15px;font-size:16px;">
+                    ${esc(cardType)}
+                </div>
+                <div style="color:#4a5568;margin:6px 0;font-size:14px;">
+                    <strong style="color:#2d3748;">📧 Email:</strong> ${esc(data.Email)}
+                </div>
+                <div style="color:#4a5568;margin:6px 0;font-size:14px;">
+                    <strong style="color:#2d3748;">📞 Contact:</strong> ${esc(data.ContactNo)}
+                </div>
+                <div style="color:#4a5568;margin:6px 0;font-size:14px;">
+                    <strong style="color:#2d3748;">🏠 Address:</strong> ${esc(data.Address)}
+                </div>
+                <div style="margin-top:15px;">
+                    <button onclick="hideARCard()" style="background:#6a11cb;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">
+                        Close
+                    </button>
+                </div>
+            `;
+            
+            arOverlay.style.display = 'block';
+            log('AR overlay shown successfully', 'success');
+        }
+
+        function hideARCard() {
+            if (arOverlay) {
+                arOverlay.style.display = 'none';
+                log('AR overlay hidden', 'info');
+            }
+        }
+
+        async function testAPIConnection() {
+            log('🔧 Testing basic API connection...', 'info');
+            setScanningState('fetching');
+            
+            try {
+                const response = await fetch('api/get_cards.php?id=1');
+                log(`Response status: ${response.status} ${response.statusText}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ API connection successful!', 'success');
+                    log(`Response: ${JSON.stringify(data, null, 2)}`, 'info');
+                    setStatus('✅ API Connection: SUCCESS', 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ API connection failed: ${error.message}`, 'error');
+                setStatus('❌ API Connection: FAILED', 'error');
+            }
+        }
+
+        async function testSpecificCard() {
+            log('🃏 Testing specific card fetch (ID: 17)...', 'info');
+            await fetchCardDataById('17');
+        }
+
+        async function testNonExistentCard() {
+            log('🚫 Testing non-existent card (ID: 999)...', 'info');
+            await fetchCardDataById('999');
+        }
+
+        async function fetchCardDataById(cardId) {
+            log(`📡 Fetching card data for ID: ${cardId}`, 'info');
+            setScanningState('fetching');
+            
+            // Use correct API path based on current location
+            const currentPath = window.location.pathname;
+            let apiPath;
+            
+            if (currentPath.includes('/pages/')) {
+                apiPath = `../api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            } else {
+                apiPath = `api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            }
+            
+            log(`Current path: ${currentPath}`, 'info');
+            log(`API path: ${apiPath}`, 'info');
+            
+            try {
+                log('Making initial fetch request...', 'info');
+                let response = await fetch(apiPath);
+                log(`Initial response: ${response.status} ${response.statusText}`, 'info');
+                
+                if (!response.ok) {
+                    const altPath = currentPath.includes('/pages/') ? 
+                        `../api/get_cards.php?id=${encodeURIComponent(cardId)}` : 
+                        `/holocard_nonext/api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+                    
+                    log(`Trying alternative path: ${altPath}`, 'warning');
+                    response = await fetch(altPath);
+                    log(`Alternative response: ${response.status} ${response.statusText}`, 'info');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log('Raw API response received:', 'info');
+                log(JSON.stringify(data, null, 2), 'info');
+                
+                // Process response using scanner.js logic
+                let card = null;
+                if (data.success && data.card) {
+                    card = data.card;
+                    log('✅ Using single card response format', 'success');
+                } else if (data.success && data.cards && data.cards.length > 0) {
+                    card = data.cards[0];
+                    log('✅ Using array response format', 'success');
+                } else if (Array.isArray(data)) {
+                    card = data[0] || null;
+                    log('✅ Using direct array format', 'success');
+                } else if (typeof data === 'object' && data !== null && !data.success) {
+                    card = data;
+                    log('✅ Using direct object format', 'success');
+                }
+                
+                if (!card) {
+                    throw new Error(`Card not found. Response: ${JSON.stringify(data)}`);
+                }
+                
+                log('Final processed card data:', 'success');
+                log(JSON.stringify(card, null, 2), 'success');
+                
+                currentCardDisplayed = cardId;
+                showARCard(card);
+                setScanningState('displaying');
+                
+            } catch (error) {
+                log(`❌ Fetch failed: ${error.message}`, 'error');
+                setScanningState('error');
+                setTimeout(() => setScanningState('idle'), 2000);
+            }
+        }
+
+        function testQRProcessing(qrData) {
+            log(`🔍 Testing QR processing for: "${qrData}"`, 'info');
+            
+            let cardData = null;
+            let isIdOnly = false;
+            let cardId = null;
+            
+            try {
+                cardData = JSON.parse(qrData);
+                log(`Parsed as JSON: ${JSON.stringify(cardData)}`, 'info');
+                
+                if (typeof cardData === 'object' && cardData !== null && Object.keys(cardData).length === 1 && cardData.id) {
+                    isIdOnly = true;
+                    cardId = cardData.id.toString();
+                    log(`✅ Detected ID-only JSON format: ${cardId}`, 'success');
+                }
+            } catch (e) {
+                if (typeof qrData === 'string' && qrData.trim().length > 0) {
+                    const trimmedData = qrData.trim();
+                    if (/^\d+$/.test(trimmedData)) {
+                        isIdOnly = true;
+                        cardId = trimmedData;
+                        log(`✅ Detected simple ID format: ${cardId}`, 'success');
+                    } else {
+                        log(`⚠️ Not a simple ID format`, 'warning');
+                    }
+                }
+            }
+            
+            if (isIdOnly && cardId) {
+                log(`🚀 Would fetch card data for ID: ${cardId}`, 'success');
+                fetchCardDataById(cardId);
+            } else {
+                log(`❌ Invalid QR code format`, 'error');
+                setStatus('❌ Invalid QR code format', 'error');
+            }
+        }
+
+        async function fullScannerTest() {
+            log('\n🚀 RUNNING COMPLETE SCANNER TEST', 'info');
+            log('=' * 50, 'info');
+            
+            // Test 1: API Connection
+            log('Test 1: API Connection', 'info');
+            await testAPIConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test 2: QR Processing
+            log('Test 2: QR Code Processing', 'info');
+            testQRProcessing('17');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Test 3: Full workflow
+            log('Test 3: Complete Card Fetch', 'info');
+            await testSpecificCard();
+            
+            log('🏁 COMPLETE SCANNER TEST FINISHED', 'success');
+        }
+
+        function clearAll() {
+            document.getElementById('console').textContent = '';
+            hideARCard();
+            setScanningState('idle');
+            currentCardDisplayed = null;
+            lastOverlayVisible = false;
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🎯 Scanner isolated test ready', 'success');
+            setScanningState('idle');
+        });
+    </script>
+</body>
+</html>

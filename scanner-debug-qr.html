@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Debug with Fake QR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .ar-overlay {
+            position: fixed;
+            background: rgba(255,255,255,0.98);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Segoe UI', sans-serif;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+            z-index: 1000;
+            display: none;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+        }
+        .qr-test {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scanner Debug with Mock QR Detection</h1>
+        <p>This simulates QR code detection and tests the exact scanner.js fetch logic.</p>
+        
+        <div class="qr-test">
+            <h3>QR Code Simulation</h3>
+            <button onclick="simulateQRDetection('17')">Simulate QR with ID "17"</button>
+            <button onclick="simulateQRDetection('{\"id\":\"17\"}')">Simulate QR with JSON {"id":"17"}</button>
+            <button onclick="simulateQRDetection('999')">Simulate QR with ID "999" (Non-existent)</button>
+            <button onclick="clearAll()">Clear All</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        <div id="console" class="log"></div>
+        <div id="arOverlay" class="ar-overlay"></div>
+    </div>
+
+    <script>
+        // Import ALL variables and functions from scanner.js logic
+        let scanningState = 'idle';
+        let currentCardDisplayed = null;
+        let lastScanTime = 0;
+        let lastOverlayVisible = false;
+        let noQrCounter = 0;
+        let arOverlay = null;
+        
+        const scanCooldownPeriod = 5000; // 5 seconds
+        const noQrThreshold = 60; // frames (about 5 seconds at 12fps)
+
+        function log(message) {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            console.textContent += `[${timestamp}] ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function setScanStatus(message, color) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.backgroundColor = color;
+            status.style.color = color === '#fff' ? '#000' : '#fff';
+            log(`[STATUS] ${message}`);
+        }
+
+        function setScanningState(newState) {
+            log(`[STATE] Changing from ${scanningState} to ${newState}`);
+            const oldState = scanningState;
+            scanningState = newState;
+            
+            switch (newState) {
+                case 'idle':
+                    setScanStatus('Scanning...', '#fff');
+                    currentCardDisplayed = null;
+                    break;
+                case 'scanning':
+                    setScanStatus('Scanning...', '#fff');
+                    break;
+                case 'fetching':
+                    setScanStatus('Fetching card data...', '#00ffae');
+                    break;
+                case 'displaying':
+                    setScanStatus('Scanned!', '#00ffae');
+                    lastScanTime = Date.now();
+                    lastOverlayVisible = true;
+                    break;
+                case 'cooldown':
+                    setScanStatus('Scan complete - Point away to scan another', '#ffaa00');
+                    noQrCounter = 0;
+                    break;
+            }
+        }
+
+        function esc(str) {
+            if (str == null) return '';
+            return String(str).replace(/[&<>"']/g, function(match) {
+                const escapes = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#x27;'
+                };
+                return escapes[match];
+            });
+        }
+
+        function showARCard(data, qrLocation = null, qrCorners = null) {
+            log('[OVERLAY] Showing AR card with data:');
+            log(JSON.stringify(data, null, 2));
+            
+            if (!arOverlay) {
+                arOverlay = document.getElementById('arOverlay');
+            }
+            
+            const cardName = data.CardName || 'Unknown';
+            const cardType = data.CardTypeText || 'Unknown';
+            
+            arOverlay.innerHTML = `
+                <h2 style="color:#2d3748;font-weight:bold;margin:0 0 8px 0;font-size:18px;">${esc(cardName)}</h2>
+                <div style="color:#6a11cb;font-weight:600;margin-bottom:12px;font-size:14px;">${esc(cardType)}</div>
+                <div style="color:#4a5568;margin:4px 0;font-size:13px;"><strong style="color:#2d3748;">Email:</strong> ${esc(data.Email)}</div>
+                <div style="color:#4a5568;margin:4px 0;font-size:13px;"><strong style="color:#2d3748;">Contact:</strong> ${esc(data.ContactNo)}</div>
+                <div style="color:#4a5568;margin:4px 0;font-size:13px;"><strong style="color:#2d3748;">Address:</strong> ${esc(data.Address)}</div>
+            `;
+            
+            arOverlay.style.display = 'block';
+            log('[OVERLAY] AR overlay displayed successfully');
+            
+            // Update details panel too
+            updateDetailsPanel(data);
+        }
+
+        function updateDetailsPanel(data) {
+            const updates = {
+                'cardType': data.CardTypeText || 'Unknown',
+                'company': data.CompanyName || 'None',
+                'name': data.CardName || 'Unknown',
+                'email': data.Email || 'None',
+                'contact': data.ContactNo || 'None',
+                'birthDate': data.BirthDate || 'None',
+                'address': data.Address || 'None'
+            };
+            
+            Object.entries(updates).forEach(([id, value]) => {
+                log(`[DETAILS] ${id}: ${value}`);
+            });
+        }
+
+        // EXACT copy of fetchCardDataById from scanner.js
+        function fetchCardDataById(cardId, qrLocation = null, qrCorners = null) {
+            log(`[API] Starting fetch for card ID: ${cardId}`);
+            
+            // Set state to fetching
+            setScanningState('fetching');
+            
+            // Use correct API path based on current location
+            const currentPath = window.location.pathname;
+            let apiPath;
+            if (currentPath.includes('/pages/')) {
+                // We're in pages directory, go up one level
+                apiPath = `../api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            } else {
+                // We're in root directory
+                apiPath = `api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+            }
+            
+            log(`[API] Current path: ${currentPath}`);
+            log(`[API] Using API path: ${apiPath}`);
+            
+            fetch(apiPath)
+                .then(res => {
+                    log(`[API] Response status: ${res.status} ${res.statusText}`);
+                    log(`[API] Response headers: ${JSON.stringify(Object.fromEntries(res.headers.entries()))}`);
+                    if (!res.ok) {
+                        // Try alternative path if first fails
+                        const altPath = currentPath.includes('/pages/') ? 
+                            `../api/get_cards.php?id=${encodeURIComponent(cardId)}` : 
+                            `/holocard_nonext/api/get_cards.php?id=${encodeURIComponent(cardId)}`;
+                        log(`[API] Trying alternative path: ${altPath}`);
+                        return fetch(altPath);
+                    }
+                    return res;
+                })
+                .then(res => {
+                    log(`[API] Final response status: ${res.status} ${res.statusText}`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    return res.json();
+                })
+                .then(data => {
+                    log(`[API] Raw response received:`);
+                    log(JSON.stringify(data, null, 2));
+                    
+                    // Handle the updated API response format
+                    let card = null;
+                    if (data.success && data.card) {
+                        // Single card response (new format)
+                        card = data.card;
+                        log('[API] Using single card response format');
+                    } else if (data.success && data.cards && data.cards.length > 0) {
+                        // Array response (fallback)
+                        card = data.cards[0];
+                        log('[API] Using array response format');
+                    } else if (Array.isArray(data)) {
+                        // Direct array response (legacy)
+                        card = data[0] || null;
+                        log('[API] Using direct array format');
+                    } else if (typeof data === 'object' && data !== null && !data.success) {
+                        // Direct object response (legacy)
+                        card = data;
+                        log('[API] Using direct object format');
+                    }      
+                    
+                    if (!card) {
+                        throw new Error(`Card not found. Response: ${JSON.stringify(data)}`);
+                    }
+                    
+                    log(`[API] Final card data to display:`);
+                    log(JSON.stringify(card, null, 2));
+                    
+                    currentCardDisplayed = cardId;
+                    showARCard(card, qrLocation, qrCorners);
+                    
+                    // Set state to displaying
+                    setScanningState('displaying');
+                })
+                .catch(err => {
+                    log(`[API] ERROR: ${err.message}`);
+                    log(`[API] Error stack: ${err.stack}`);
+                    setScanStatus(`Error: ${err.message}`, '#ff4e4e');
+                    
+                    // Resume scanning on error after a short delay
+                    setTimeout(() => {
+                        setScanningState('idle');
+                    }, 2000);
+                });
+        }
+
+        function simulateQRDetection(qrData) {
+            log(`\n=== SIMULATING QR CODE DETECTION ===`);
+            log(`[QR] Raw QR data: ${qrData}`);
+            
+            // Parse QR code data (exact logic from scanner.js)
+            let cardData = null;
+            let isIdOnly = false;
+            let cardId = null;
+            
+            try {
+                // Try to parse as JSON first
+                cardData = JSON.parse(qrData);
+                log(`[QR] Parsed as JSON: ${JSON.stringify(cardData)}`);
+                
+                // Check if it's a simple ID object like {"id": "17"}
+                if (typeof cardData === 'object' && cardData !== null && Object.keys(cardData).length === 1 && cardData.id) {
+                    isIdOnly = true;
+                    cardId = cardData.id.toString();
+                    log(`[QR] Detected ID-only JSON format: ${cardId}`);
+                }
+            } catch (e) {
+                // Not JSON, treat as simple string ID
+                if (typeof qrData === 'string' && qrData.trim().length > 0) {
+                    const trimmedData = qrData.trim();
+                    // Check if it's a simple number/ID
+                    if (/^\d+$/.test(trimmedData)) {
+                        isIdOnly = true;
+                        cardId = trimmedData;
+                        log(`[QR] Detected simple ID format: ${cardId}`);
+                    } else {
+                        log(`[QR] Not a simple ID, treating as complex data`);
+                    }
+                }
+            }
+            
+            if (isIdOnly && cardId) {
+                // Don't re-scan the same card during cooldown
+                if (currentCardDisplayed === cardId && (scanningState === 'displaying' || scanningState === 'cooldown')) {
+                    log(`[QR] Same card detected during cooldown/display, would update position only`);
+                    return;
+                }
+                
+                // Only scan new cards if we're in idle state
+                if (scanningState === 'idle') {
+                    log(`[QR] Fetching data for card ID: ${cardId}`);
+                    fetchCardDataById(cardId);
+                } else {
+                    log(`[QR] Scanner not in idle state (${scanningState}), ignoring scan`);
+                }
+            } else {
+                log(`[QR] Invalid QR code format, ignoring`);
+                setScanStatus('Invalid QR code', '#ff4e4e');
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('console').textContent = '';
+            const overlay = document.getElementById('arOverlay');
+            overlay.style.display = 'none';
+            setScanningState('idle');
+            currentCardDisplayed = null;
+            lastOverlayVisible = false;
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Scanner debug simulation ready');
+            setScanningState('idle');
+        });
+    </script>
+</body>
+</html>

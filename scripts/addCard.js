@@ -57,10 +57,10 @@
   /* ---------- SUBMIT → Swal → injected generated modal -------------- */
   form.addEventListener("submit", async e => {
     e.preventDefault();    // collect data before SweetAlert closes the form
-    const isPersonal = catSel.value === "Personal";
-    const data = {
+    const isPersonal = catSel.value === "Personal";    const data = {
       cardType        : catSel.value, // Personal | Corporate
       company         : form.querySelector("#company")?.value || "",
+      companyName     : form.querySelector("#company")?.value || "", // For API compatibility
       firstName       : form.querySelector(isPersonal ? "#FName"  : "#CFName")?.value || "",
       lastName        : form.querySelector(isPersonal ? "#Lname"  : "#CLname")?.value || "",
       middleName      : form.querySelector(isPersonal ? "#Mname"  : "#CMname")?.value || "",
@@ -74,7 +74,11 @@
       qrCode          : '', // Will be set below
       // Add proper email fields for modal mapping
       personalEmail   : isPersonal ? form.querySelector("#email")?.value || "" : "",
-      companyEmail    : !isPersonal ? form.querySelector("#companyEmail")?.value || "" : ""
+      companyEmail    : !isPersonal ? form.querySelector("#companyEmail")?.value || "" : "",
+      // Add corporate contact person fields for API
+      contactFirstName: !isPersonal ? form.querySelector("#CFName")?.value || "" : "",
+      contactLastName : !isPersonal ? form.querySelector("#CLname")?.value || "" : "",
+      contactSuffix   : !isPersonal ? form.querySelector("#CnameSuffix")?.value || "" : ""
     };
 
     // Generate QR code data as base64 for backend
@@ -97,9 +101,7 @@
       allowOutsideClick: false,
       allowEscapeKey: false
     });
-    if (!result.isConfirmed) return;
-
-    // POST to API
+    if (!result.isConfirmed) return;    // POST to API
     try {
       const res = await fetch('../api/add_card.php', {
         method: 'POST',
@@ -108,55 +110,147 @@
       });
       const apiResult = await res.json();
       if (!apiResult.success) throw new Error(apiResult.error || 'Failed to add card');
-      // Success: close modal, show QR, refresh card list
+      
+      console.log('✅ Card added successfully, API result:', apiResult);
+        // Success: close modal, refresh card list, then show the viewCard modal
       modal.classList.remove("active");
       if (window.refreshCardList) window.refreshCardList();
-      // Optionally show QR modal here (existing logic)
+      
+      // Use the actual card ID returned from the database
+      const actualCardId = apiResult.holocardId;
+      console.log('🔍 Using actual card ID from database:', actualCardId);
+      
+      // Show success message first
+      await Swal.fire({
+        icon: 'success',
+        title: 'Card Added Successfully!',
+        text: 'Your new card has been created.',
+        showConfirmButton: true,
+        confirmButtonText: 'View Card',
+        timer: 3000,
+        timerProgressBar: true
+      });
+        // Show the viewCard modal with the newly created card data
+      await showViewCardModal(data, actualCardId);
+      
     } catch (err) {
       Swal.fire({ icon: 'error', title: 'Error', text: err.message });
       return;
     }
-
-    // Close the addCard modal before opening the cardGenerated modal
-    modal.classList.remove("active");    // Show the cardGenerated modal and QR code
-    fetch("../modals/cardGenerated.html")
-      .then(r => r.text())
-      .then(async html => {
-        // Create modal container and inject directly into DOM (not shadow DOM)
-        const modalContainer = document.getElementById('modalContainer') || document.body;
-        modalContainer.innerHTML = html;
-        
-        const genModal = modalContainer.querySelector(".modal-overlay");
-        if (!genModal) throw new Error("modal-overlay missing in cardGenerated.html");
-        
-        // Create card data structure for the enhanced generator
-        const cardData = {
-          HoloCardID: Date.now(),
-          CardName: data.cardName,
-          CardTypeText: data.cardType,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          middleName: data.middleName,
-          suffix: data.suffix,
-          Email: data.email,
-          ContactNo: data.contactNo,
-          Address: data.address,
-          BirthDate: data.birthDate,
-          CompanyName: data.company,
-          CompanyEmail: !isPersonal ? data.email : ''
-        };
-
-        // Show the modal
-        genModal.classList.add("active");
-          // Use the enhanced QR generator
-        setTimeout(() => {
-          if (typeof window.generateHoloCardQR === 'function') {
-            window.generateHoloCardQR(cardData);
-          } else {
-            console.error('Enhanced QR generator not available');
-          }
-        }, 100);
-      })
-      .catch(err => console.error("❌ Card-Generated modal error:", err));
   });
+
+  // Function to show the viewCard modal with the newly created card data
+  async function showViewCardModal(formData, holocardId) {
+    console.log('🔍 Showing viewCard modal with ID:', holocardId);
+    
+    try {
+      // Fetch the viewCard modal
+      const response = await fetch("../modals/viewCard.html");
+      const html = await response.text();
+      
+      // Create modal container and inject directly into DOM
+      const modalContainer = document.getElementById('modalContainer') || document.body;
+      modalContainer.innerHTML = html;
+      
+      const viewModal = modalContainer.querySelector(".modal-overlay");
+      if (!viewModal) throw new Error("modal-overlay missing in viewCard.html");
+      
+      // Create card data structure with the actual database ID for the viewCard modal
+      const cardData = {
+        HoloCardID: holocardId, // Use the actual ID from database
+        CardName: formData.cardName,
+        CardTypeText: formData.cardType,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        middleName: formData.middleName,
+        suffix: formData.suffix,
+        Email: formData.email,
+        ContactNo: formData.contactNo,
+        Address: formData.address,
+        BirthDate: formData.birthDate,
+        CompanyName: formData.company,
+        CompanyEmail: formData.cardType !== 'Personal' ? formData.email : ''
+      };
+
+      console.log('📋 ViewCard data structure:', cardData);
+
+      // Show the modal
+      viewModal.classList.add("active");
+
+      // Wait for modal to be visible, then initialize it using the global viewCard functions
+      setTimeout(() => {
+        // Define global functions if they don't exist (similar to how it's done in holocard.js)
+        if (!window.closeViewModal) {
+          window.closeViewModal = function() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) {
+              modal.classList.remove('active');
+              setTimeout(() => {
+                const modalContainer = document.getElementById('modalContainer');
+                if (modalContainer) modalContainer.innerHTML = '';
+              }, 300);
+            }
+          };
+        }
+
+        if (!window.populateViewCard) {
+          window.populateViewCard = function(cardData) {
+            console.log('📋 Populating view card with data:', cardData);
+            
+            const isPersonal = cardData.CardTypeText === 'Personal';
+            
+            // Update badge
+            const badge = document.getElementById('cardTypeBadge');
+            if (badge) {
+              badge.textContent = (cardData.CardTypeText || 'Unknown') + ' Card';
+            }
+
+            // Helper function to set field value
+            const setField = (id, value) => {
+              const element = document.getElementById(id);
+              if (element) {
+                element.textContent = value || '—';
+              }
+            };
+
+            // Populate fields based on card type
+            setField('detailName', cardData.CardName);
+            setField('detailEmail', cardData.Email);
+            setField('detailContact', cardData.ContactNo);
+            setField('detailAddress', cardData.Address);            // Generate simple QR code with just the card ID for easy scanning
+            const qrContainer = document.getElementById('qrContainer');
+            if (qrContainer && window.QRCode) {
+              try {
+                qrContainer.innerHTML = ''; // Clear existing content
+                // Simple card ID for fastest scanning
+                new QRCode(qrContainer, {
+                  text: cardData.HoloCardID.toString(),
+                  width: 150,
+                  height: 150,
+                  correctLevel: QRCode.CorrectLevel.M, // Medium correction for simple data
+                  margin: 3 // Better margin for scanning
+                });
+                console.log('✅ Simple QR Code generated with ID:', cardData.HoloCardID);
+              } catch (error) {
+                console.error('QR generation failed:', error);
+                qrContainer.innerHTML = `<div style="color: #999;">QR Code Generation Failed</div>`;
+              }
+            } else if (qrContainer) {
+              qrContainer.innerHTML = `<div style="color: #999;">Card ID: ${cardData.HoloCardID}</div>`;
+            }
+          };
+        }
+
+        // Now populate the card with the new data
+        console.log('✅ ViewCard functions defined, populating card...');
+        window.populateViewCard(cardData);
+        console.log('✅ ViewCard populated successfully with new card data');
+        
+      }, 100);
+
+    } catch (error) {
+      console.error('❌ Error showing viewCard modal:', error);
+      Swal.fire('Error', 'Failed to show card details: ' + error.message, 'error');
+    }
+  }
 })();

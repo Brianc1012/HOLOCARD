@@ -117,8 +117,7 @@ class HoloCardQRGenerator {
     this.qrInstance = null;
     this.cardData = null;
     this.qrContainer = document.querySelector('.qr-placeholder');
-  }
-  // Generate enhanced AR-ready QR code
+  }  // Generate enhanced AR-ready QR code
   generateARQR(cardData) {
     this.cardData = cardData;
     
@@ -130,21 +129,12 @@ class HoloCardQRGenerator {
     // Clear existing QR code and markers
     this.qrContainer.innerHTML = '';
 
-    // Create AR-ready QR data
+    // Create simple card ID QR for easy scanning
     const qrData = this.createARData(cardData);
     
     try {
-      // Validate QR data size (QR codes have size limits)
-      if (qrData.length > 2953) {
-        console.warn('⚠️ QR data size is large, reducing detail...');
-        const reducedData = this.createReducedARData(cardData);
-        this.generateQRCode(reducedData);
-      } else {
-        this.generateQRCode(qrData);
-      }
-
-      console.log('✅ AR-ready QR Code generated');
-      console.log('📊 QR Data structure:', JSON.parse(qrData));
+      this.generateQRCode(qrData);
+      console.log('✅ Simple QR Code generated with card ID:', qrData);
       
       // Setup download functionality
       this.setupDownload();
@@ -157,7 +147,6 @@ class HoloCardQRGenerator {
       this.qrContainer.innerHTML = '<div class="qr-error">QR Generation Failed<br>Please try again</div>';
     }
   }
-
   // Generate the actual QR code
   generateQRCode(data) {
     this.qrInstance = new QRCode(this.qrContainer, {
@@ -166,8 +155,8 @@ class HoloCardQRGenerator {
       height: 200,
       colorDark: "#000000",
       colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H, // High error correction for AR stability
-      margin: 2 // Add margin for better detection
+      correctLevel: QRCode.CorrectLevel.M, // Medium correction for simple data
+      margin: 3 // Add margin for better detection
     });
   }
 
@@ -187,9 +176,24 @@ class HoloCardQRGenerator {
     };
     return JSON.stringify(reducedData);
   }
-
-  // Create structured data for AR detection
+  // Create simple QR data with just card ID for easy scanning
   createARData(cardData) {
+    // Simple format - just the card ID for fastest scanning
+    const cardId = cardData.HoloCardID || cardData.id || Date.now();
+    return cardId.toString();
+  }
+
+  // Alternative: Minimal JSON format (if you need structure)
+  createStructuredARData(cardData) {
+    const cardId = cardData.HoloCardID || cardData.id || Date.now();
+    return JSON.stringify({
+      id: cardId,
+      type: "holocard"
+    });
+  }
+
+  // Legacy: Create full data (for backward compatibility)
+  createFullARData(cardData) {
     const arData = {
       // AR Marker Identification
       type: "holocard-ar",

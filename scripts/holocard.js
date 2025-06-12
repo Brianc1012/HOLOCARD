@@ -620,11 +620,29 @@ function populateViewCardData(modal, cardData) {
     setFieldWithValidation('detailContactPerson', cardData.ContactPerson || 'Not specified');
     setFieldWithValidation('detailCompanyEmail', cardData.Email);
     setFieldWithValidation('detailCompanyContact', cardData.ContactNo, formatPhone);
-    setFieldWithValidation('detailCompanyAddress', cardData.Address);
-  }
+    setFieldWithValidation('detailCompanyAddress', cardData.Address);  }
 
-  // Generate enhanced QR code with loading state
-  generateEnhancedQRCode(modal, cardData);
+  // Generate simple QR code with just card ID for fast scanning
+  const qrContainer = modal.querySelector('#qrContainer');
+  if (qrContainer && window.HoloCardQR) {
+    console.log('🔍 Generating simple QR code for ViewCard...');
+    window.HoloCardQR.generateHoloCardQR(qrContainer, cardData)
+      .then(() => {
+        console.log('✅ ViewCard Simple QR Code generated successfully');
+      })
+      .catch((error) => {
+        console.error('❌ ViewCard QR generation failed:', error);
+        qrContainer.innerHTML = `
+          <div style="color: #dc3545; text-align: center; padding: 20px;">
+            QR Generation Failed<br>
+            <small>${error.message}</small>
+          </div>
+        `;
+      });
+  } else if (qrContainer) {
+    // Fallback: show card ID
+    qrContainer.innerHTML = `<div style="color: #999;">Card ID: ${cardData.HoloCardID}</div>`;
+  }
   
   // Setup enhanced close handlers
   setupViewCardCloseHandlers(modal);
@@ -633,57 +651,45 @@ function populateViewCardData(modal, cardData) {
   setupViewCardActionHandlers(modal, cardData);
 }
 
-// Enhanced QR code generation
+// Enhanced QR code generation (DEPRECATED - Use HoloCardQR.generateHoloCardQR for simple QR codes)
 function generateEnhancedQRCode(modal, cardData) {
-  const qrContainer = modal.querySelector('#qrCodeContainer');
+  const qrContainer = modal.querySelector('#qrCodeContainer') || modal.querySelector('#qrContainer');
   if (!qrContainer) return;
   
   // Show loading state
   qrContainer.innerHTML = `
     <div class="qr-loading">
       <div class="loading-spinner"></div>
-      <div>Generating AR-Ready QR Code...</div>
+      <div>Generating Simple QR Code...</div>
     </div>
   `;
   
   setTimeout(() => {
     try {
-      // Enhanced AR data structure
-      const arData = {
-        type: "holocard-ar",
-        version: "2.0",
-        cardId: cardData.HoloCardID,
-        profile: {
-          name: cardData.CardName,
-          cardType: cardData.CardTypeText,
-          email: cardData.Email,
-          contact: cardData.ContactNo,
-          address: cardData.Address,
-          birthDate: cardData.BirthDate
-        },
-        ar: {
-          markerType: "qr",
-          markerSize: 0.1,
-          trackingMode: "stable",
-          renderDistance: 2.0,
-          effects: ["glow", "float", "rotate"],
-          animations: ["entrance", "idle", "selection"]
-        },
-        metadata: {
-          webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`,
-          generated: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          platform: navigator.platform
-        }
-      };
+      // Use simple QR code (just card ID) for fast scanning
+      const cardId = cardData.HoloCardID || cardData.id || Date.now();
+      const simpleData = cardId.toString();
 
       qrContainer.innerHTML = '';
       
-      // Check if qrcode library is available
-      if (typeof qrcode !== 'undefined') {
-        // Use qrcode-generator library
+      // Check if QRCode library is available
+      if (typeof QRCode !== 'undefined') {
+        // Use QRCode library for simple QR generation
+        new QRCode(qrContainer, {
+          text: simpleData,
+          width: 150,
+          height: 150,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M, // Medium correction for simple data
+          margin: 3 // Better margin for scanning
+        });
+        
+        console.log('✅ Simple QR Code generated with ID:', simpleData);
+      } else if (typeof qrcode !== 'undefined') {
+        // Use qrcode-generator library as fallback
         const qr = qrcode(0, 'M');
-        qr.addData(JSON.stringify(arData));
+        qr.addData(simpleData);
         qr.make();
         
         // Create QR code as image
@@ -693,24 +699,26 @@ function generateEnhancedQRCode(modal, cardData) {
         // Style the image
         const img = qrContainer.querySelector('img');
         if (img) {
-          img.style.width = '200px';
-          img.style.height = '200px';
-          img.style.border = '10px solid white';
+          img.style.width = '150px';
+          img.style.height = '150px';
+          img.style.border = '5px solid white';
           img.style.borderRadius = '8px';
           img.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
         }
+        
+        console.log('✅ Simple QR Code generated with ID:', simpleData);
       } else {
         // Fallback: create a simple QR placeholder
         qrContainer.innerHTML = `
-          <div style="width: 200px; height: 200px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #f9f9f9;">
+          <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #f9f9f9;">
             <i class="ri-qr-code-line" style="font-size: 48px; color: #666; margin-bottom: 10px;"></i>
-            <div style="color: #666; text-align: center;">QR Code<br>Ready for AR</div>
-            <small style="color: #999; margin-top: 5px;">Card ID: ${cardData.HoloCardID}</small>
+            <div style="color: #666; text-align: center;">Simple QR Code<br>Ready for Scanning</div>
+            <small style="color: #999; margin-top: 5px;">Card ID: ${cardId}</small>
           </div>
         `;
       }
 
-      console.log('✅ Enhanced QR code generated for card:', cardData.HoloCardID);
+      console.log('✅ Simple QR code generated for card:', cardId);
       
     } catch (error) {
       console.error('❌ QR generation failed:', error);
@@ -759,7 +767,6 @@ window.HoloCardQR = {
       document.head.appendChild(script);
     });
   },
-
   // Generate QR code with HoloCard format
   async generateHoloCardQR(container, cardData) {
     try {
@@ -773,40 +780,22 @@ window.HoloCardQR = {
       // Clear existing content
       container.innerHTML = '';
 
-      // Create AR-ready data structure
-      const arData = {
-        type: "holocard-ar",
-        version: "1.0",
-        cardId: cardData.HoloCardID || cardData.id || Date.now(),
-        profile: {
-          name: cardData.CardName,
-          cardType: cardData.CardTypeText || 'Personal',
-          email: cardData.Email || '',
-          contact: cardData.ContactNo || '',
-          address: cardData.Address || '',
-          birthDate: cardData.BirthDate || ''
-        },
-        ar: {
-          markerType: "qr",
-          markerSize: 0.1,
-          trackingMode: "stable",
-          renderDistance: 2.0
-        },
-        webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`,
-        generated: new Date().toISOString()
-      };
+      // Generate simple QR with just card ID for fast scanning
+      const cardId = cardData.HoloCardID || cardData.id || Date.now();
+      const simpleData = cardId.toString();
 
       // Generate QR code
       const qrInstance = new QRCode(container, {
-        text: JSON.stringify(arData),
+        text: simpleData,
         width: 150,
         height: 150,
         colorDark: "#000000",
         colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+        correctLevel: QRCode.CorrectLevel.M, // Medium correction for simple data
+        margin: 3 // Better margin for scanning
       });
 
-      console.log('✅ HoloCard QR Code generated successfully');
+      console.log('✅ Simple QR Code generated with ID:', simpleData);
       return qrInstance;
 
     } catch (error) {

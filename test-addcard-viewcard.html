@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AddCard → ViewCard Flow</title>
+    <link rel="stylesheet" href="styles/addCard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="scripts/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .test-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        
+        .test-info {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">
+            <i class="ri-add-circle-line"></i>
+            Test AddCard → ViewCard Flow
+        </h1>
+        
+        <div class="test-info">
+            <h3><i class="ri-information-line"></i> Test Information</h3>
+            <p>This test verifies that after successfully adding a card, the system shows the ViewCard modal instead of the CardGenerated modal.</p>
+            <p><strong>Expected Flow:</strong></p>
+            <ol>
+                <li>Click "Open Add Card Modal" button</li>
+                <li>Fill out the form with test data</li>
+                <li>Submit the form</li>
+                <li>Confirm the data in the SweetAlert dialog</li>
+                <li>See success message</li>
+                <li>ViewCard modal should open showing the newly created card</li>
+            </ol>
+        </div>
+        
+        <div class="status">
+            <h3><i class="ri-information-line"></i> Test Status</h3>
+            <div id="statusInfo" class="status-item info">Ready to test AddCard → ViewCard flow</div>
+            <div id="statusAPI" class="status-item">API Status: <span id="apiStatus">Not tested</span></div>
+            <div id="statusModal" class="status-item">Modal Status: <span id="modalStatus">Not opened</span></div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="test-btn" onclick="testAPI()">
+                <i class="ri-database-line"></i>
+                Test API Connection
+            </button>
+            
+            <button class="test-btn" onclick="openAddModal()">
+                <i class="ri-add-circle-line"></i>
+                Open Add Card Modal
+            </button>
+            
+            <button class="test-btn" onclick="clearModals()">
+                <i class="ri-close-circle-line"></i>
+                Clear Modals
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <script>
+        // Test API connection
+        async function testAPI() {
+            try {
+                document.getElementById('apiStatus').textContent = 'Testing...';
+                
+                const response = await fetch('api/get_cards.php?uid=1');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('apiStatus').textContent = `✅ Connected (${data.cards ? data.cards.length : 0} cards found)`;
+                    document.getElementById('apiStatus').className = 'success';
+                } else {
+                    document.getElementById('apiStatus').textContent = '⚠️ API responded but with error: ' + data.error;
+                    document.getElementById('apiStatus').className = 'error';
+                }
+            } catch (error) {
+                document.getElementById('apiStatus').textContent = '❌ API connection failed: ' + error.message;
+                document.getElementById('apiStatus').className = 'error';
+            }
+        }
+
+        // Open Add Card Modal
+        async function openAddModal() {
+            try {
+                document.getElementById('modalStatus').textContent = 'Loading add card modal...';
+                
+                const modalContainer = document.getElementById('modalContainer');
+                const res = await fetch('modals/addCard.html');
+                
+                if (!res.ok) {
+                    throw new Error('Failed to fetch addCard.html');
+                }
+                
+                const html = await res.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const modal = doc.querySelector('.modal-overlay');
+                
+                if (!modal) {
+                    throw new Error('Modal structure not found in addCard.html');
+                }
+                
+                modalContainer.innerHTML = '';
+                modalContainer.appendChild(modal);
+                modal.classList.add('active');
+                
+                document.getElementById('modalStatus').textContent = '✅ Add card modal opened successfully';
+                document.getElementById('modalStatus').className = 'success';
+                
+                // Load the addCard.js script
+                const script = document.createElement('script');
+                script.src = 'scripts/addCard.js';
+                script.onload = () => {
+                    console.log('✅ addCard.js loaded successfully');
+                    
+                    // Pre-fill form with test data for easier testing
+                    setTimeout(() => {
+                        fillTestData();
+                    }, 500);
+                };
+                script.onerror = (err) => {
+                    console.error('❌ Failed to load addCard.js', err);
+                    document.getElementById('modalStatus').textContent = '❌ Failed to load addCard.js';
+                    document.getElementById('modalStatus').className = 'error';
+                };
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                console.error('Error opening add modal:', error);
+                document.getElementById('modalStatus').textContent = '❌ Error: ' + error.message;
+                document.getElementById('modalStatus').className = 'error';
+            }
+        }
+
+        // Fill form with test data
+        function fillTestData() {
+            const modal = document.querySelector('.modal-overlay.active');
+            if (!modal) return;
+            
+            // Fill personal card data
+            const fnameField = modal.querySelector('#FName');
+            const lnameField = modal.querySelector('#Lname');
+            const emailField = modal.querySelector('#email');
+            const contactField = modal.querySelector('#contact');
+            const addressField = modal.querySelector('#address');
+            
+            if (fnameField) fnameField.value = 'Test';
+            if (lnameField) lnameField.value = 'User';
+            if (emailField) emailField.value = 'test@example.com';
+            if (contactField) contactField.value = '555-0123';
+            if (addressField) addressField.value = '123 Test Street, Test City, TC 12345';
+            
+            console.log('✅ Test data filled in form');
+        }
+
+        // Clear all modals
+        function clearModals() {
+            const modalContainer = document.getElementById('modalContainer');
+            if (modalContainer) {
+                modalContainer.innerHTML = '';
+                document.getElementById('modalStatus').textContent = 'Modals cleared';
+                document.getElementById('modalStatus').className = 'info';
+            }
+        }
+
+        // Global refresh function for card list (required by addCard.js)
+        window.refreshCardList = function() {
+            console.log('🔄 Card list refresh requested (mock function)');
+        };
+
+        // Test API on page load
+        window.addEventListener('load', () => {
+            testAPI();
+        });
+    </script>
+</body>
+</html>

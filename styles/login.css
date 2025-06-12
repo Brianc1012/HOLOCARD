@@ -2,7 +2,7 @@ body {
     display: flex; /* Ensures the body uses flexbox for centering */
     justify-content: center;
     align-items: center;
-    background-image: url("../public/images/bg1.jpg"); /* Corrected syntax */
+    background-image: url("../public/images/bg2.png"); /* Corrected syntax */
     background-size: cover; /* Ensures the background image covers the entire viewport */
     background-position: center; /* Centers the background image */
     margin: 0; /* Removes default body margin */
@@ -18,7 +18,7 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 0;
-  background: url('../public/images/bg1.jpg') center center/cover no-repeat;
+  background: url('../public/images/bg2.png') center center/cover no-repeat;
   filter: blur(2px) brightness(0.8);
 }
 

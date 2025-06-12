@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 QR Tracking & State Fix Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .fix-banner {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .test-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .qr-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .fix-list {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .fix-list h4 {
+            color: #2d5a2d;
+            margin-top: 0;
+        }
+        
+        .fix-list ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .test-instructions {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 QR Tracking & State Management Fix</h1>
+            <p>Testing the improved scanner behavior and QR code tracking</p>
+        </div>
+
+        <div class="fix-banner">
+            ✅ FIXED: QR Tracking + State Management Issues
+        </div>
+
+        <div class="fix-list">
+            <h4>🚀 Issues Fixed:</h4>
+            <ul>
+                <li>✅ <strong>QR Code Tracking:</strong> AR overlay now smoothly follows QR code movement</li>
+                <li>✅ <strong>State Management:</strong> Scanner no longer gets stuck in "scan complete" state</li>
+                <li>✅ <strong>Overlay Visibility:</strong> AR overlay properly shows/hides when QR code appears/disappears</li>
+                <li>✅ <strong>Continuous Scanning:</strong> Scanner keeps running during all states for smooth tracking</li>
+                <li>✅ <strong>Auto Resume:</strong> Automatically resumes scanning after 5 seconds of no QR code</li>
+                <li>✅ <strong>Details Panel:</strong> Clears "Scanned Details" when no card is visible</li>
+            </ul>
+        </div>
+
+        <div class="test-grid">
+            <!-- Test Card A -->
+            <div class="test-card">
+                <h3>📱 Test Card A (ID: 17)</h3>
+                <div id="qr-17" class="qr-container"></div>
+                <div style="color: #666; font-size: 14px;">Simple QR: "17"</div>
+            </div>
+
+            <!-- Test Card B -->
+            <div class="test-card">
+                <h3>📱 Test Card B (ID: 15)</h3>
+                <div id="qr-15" class="qr-container"></div>
+                <div style="color: #666; font-size: 14px;">Simple QR: "15"</div>
+            </div>
+
+            <!-- Test Card C -->
+            <div class="test-card">
+                <h3>📱 Test Card C (ID: 1)</h3>
+                <div id="qr-1" class="qr-container"></div>
+                <div style="color: #666; font-size: 14px;">Simple QR: "1"</div>
+            </div>
+
+            <!-- Scanner Access -->
+            <div class="test-card">
+                <h3>📷 Enhanced Scanner</h3>
+                <p>Test the improved tracking behavior</p>
+                <a href="pages/scanner.html" class="test-button" target="_blank">Open Scanner</a>
+                <div style="margin-top: 10px; color: #666; font-size: 12px;">
+                    Open browser console (F12) to see detailed logs
+                </div>
+            </div>
+        </div>
+
+        <div class="test-instructions">
+            <h4>🧪 Testing Instructions:</h4>
+            <ol>
+                <li><strong>Open Scanner:</strong> Click "Open Scanner" above</li>
+                <li><strong>Grant Camera Permission:</strong> Allow camera access when prompted</li>
+                <li><strong>Open Console:</strong> Press F12 → Console tab to see debug messages</li>
+                <li><strong>Test QR Tracking:</strong>
+                    <ul>
+                        <li>Point camera at QR code above</li>
+                        <li>Move the QR code around → AR overlay should follow smoothly</li>
+                        <li>Rotate the QR code → AR overlay should rotate with it</li>
+                    </ul>
+                </li>
+                <li><strong>Test State Management:</strong>
+                    <ul>
+                        <li>Scan a card → Should show "Scanned!" then "Scan complete" after 3 seconds</li>
+                        <li>Keep QR code visible → Should NOT get stuck in "scan complete"</li>
+                        <li>Move camera away → After 5 seconds should return to "Scanning..."</li>
+                    </ul>
+                </li>
+                <li><strong>Test Different Cards:</strong>
+                    <ul>
+                        <li>Scan Card A → Then scan Card B</li>
+                        <li>Should work smoothly without issues</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="test-instructions">
+            <h4>📊 Expected Console Output:</h4>
+            <div style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px;">
+[QR] Raw QR data: 17<br>
+[QR] Fetching data for card ID: 17<br>
+[STATE] Changing from idle to fetching<br>
+[API] Fetching card data for ID: 17<br>
+[STATE] Changing from fetching to displaying<br>
+[OVERLAY] Position updated: (320.5, 240.8) angle: 2.3°<br>
+[STATE] Changing from displaying to cooldown<br>
+[QR] Same card detected during cooldown/display, updating position only<br>
+[OVERLAY] Position updated: (325.1, 245.2) angle: 1.8°<br>
+[QR] No QR code detected for 5 seconds, resuming scanning<br>
+[OVERLAY] Hidden<br>
+[STATE] Changing from cooldown to idle
+            </div>
+        </div>
+
+        <div class="fix-banner">
+            🎉 The scanner now provides smooth QR tracking and proper state management!
+        </div>
+    </div>
+
+    <script>
+        // Generate QR codes for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardIds = [17, 15, 1];
+            
+            cardIds.forEach(id => {
+                try {
+                    new QRCode(document.getElementById(`qr-${id}`), {
+                        text: id.toString(),
+                        width: 150,
+                        height: 150,
+                        correctLevel: QRCode.CorrectLevel.M,
+                        margin: 4
+                    });
+                    console.log(`✅ Generated QR code for Card ID: ${id}`);
+                } catch (error) {
+                    console.error(`❌ Failed to generate QR for Card ${id}:`, error);
+                }
+            });
+            
+            console.log('🧪 QR Tracking Fix test page loaded');
+            console.log('📋 Test Cards:', cardIds);
+            console.log('🎯 Test the enhanced QR tracking and state management');
+        });
+    </script>
+</body>
+</html>
