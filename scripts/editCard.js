@@ -1,5 +1,5 @@
 // editCard.js - logic for Edit Card modal
-(function initEditCardModal(cardData) {
+function initEditCardModal(cardData) {
   const modal = document.querySelector('.modal-overlay');
   const form = modal?.querySelector('#editCardForm');
   const catSel = modal?.querySelector('#editCardCategory');
@@ -62,9 +62,13 @@
   });
 
   // --- Set initial image preview if cardData is provided ---
-  if (cardData && cardData.profileImage) {
-    preview.src = cardData.profileImage;
-    imageBase64 = cardData.profileImage;
+  if (cardData) {
+    // Try all possible image fields for compatibility
+    const imgSrc = cardData.profileImage || cardData.ProfilePicture || cardData.CompanyLogo || '';
+    if (imgSrc) {
+      preview.src = imgSrc;
+      imageBase64 = imgSrc;
+    }
   }
 
   // --- Save Changes (Submit) ---
@@ -128,4 +132,7 @@
     form.querySelector('#editContact').value = cardData.contactNo || '';
     form.querySelector('#editAddress').value = cardData.address || '';
   }
-})();
+}
+
+// Optionally, attach to window for global access
+window.initEditCardModal = initEditCardModal;

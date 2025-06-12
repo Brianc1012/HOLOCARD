@@ -256,7 +256,9 @@ async function refreshCardList() {
           // Set profile picture/company logo preview if available
           const previewImg = modal.querySelector('#editPhotoPreview');
           if (previewImg) {
-            if (card.ProfilePicture && card.ProfilePicture.startsWith('data:image/')) {
+            if (card.profileImage && card.profileImage.startsWith('data:image/')) {
+              previewImg.src = card.profileImage;
+            } else if (card.ProfilePicture && card.ProfilePicture.startsWith('data:image/')) {
               previewImg.src = card.ProfilePicture;
             } else if (card.CompanyLogo && card.CompanyLogo.startsWith('data:image/')) {
               previewImg.src = card.CompanyLogo;
@@ -365,6 +367,11 @@ async function refreshCardList() {
             });
           } else {
             console.error('Save button not found!');
+          }
+          
+          // Ensure Save button text is always 'Save'
+          if (modal.querySelector('#editCardButton')) {
+            modal.querySelector('#editCardButton').textContent = 'Save';
           }
         } catch (err) {
           console.error('Error loading edit modal:', err);

@@ -1,4 +1,11 @@
 <?php
+function getImageMimeType($imageData) {
+    $finfo = finfo_open();
+    $mimeType = finfo_buffer($finfo, $imageData, FILEINFO_MIME_TYPE);
+    finfo_close($finfo);
+    return $mimeType;
+}
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
@@ -83,9 +90,15 @@ try {
         
         // Add profile picture or company logo as base64 data URL
         if ($card['CardType'] == 0 && isset($card['ProfilePicture']) && $card['ProfilePicture']) {
-            $card['ProfilePicture'] = 'data:image/jpeg;base64,' . base64_encode($card['ProfilePicture']);
+            $mime = getImageMimeType($card['ProfilePicture']);
+            $card['ProfilePicture'] = 'data:' . $mime . ';base64,' . base64_encode($card['ProfilePicture']);
+            $card['profileImage'] = $card['ProfilePicture'];
         } elseif ($card['CardType'] == 1 && isset($card['CompanyLogo']) && $card['CompanyLogo']) {
-            $card['CompanyLogo'] = 'data:image/jpeg;base64,' . base64_encode($card['CompanyLogo']);
+            $mime = getImageMimeType($card['CompanyLogo']);
+            $card['CompanyLogo'] = 'data:' . $mime . ';base64,' . base64_encode($card['CompanyLogo']);
+            $card['profileImage'] = $card['CompanyLogo'];
+        } else {
+            $card['profileImage'] = '';
         }
         
         if ($card['CardType'] == 0) { // Personal
@@ -115,9 +128,15 @@ try {
             
             // Add profile picture or company logo as base64 data URL
             if ($card['CardType'] == 0 && isset($card['ProfilePicture']) && $card['ProfilePicture']) {
-                $card['ProfilePicture'] = 'data:image/jpeg;base64,' . base64_encode($card['ProfilePicture']);
+                $mime = getImageMimeType($card['ProfilePicture']);
+                $card['ProfilePicture'] = 'data:' . $mime . ';base64,' . base64_encode($card['ProfilePicture']);
+                $card['profileImage'] = $card['ProfilePicture'];
             } elseif ($card['CardType'] == 1 && isset($card['CompanyLogo']) && $card['CompanyLogo']) {
-                $card['CompanyLogo'] = 'data:image/jpeg;base64,' . base64_encode($card['CompanyLogo']);
+                $mime = getImageMimeType($card['CompanyLogo']);
+                $card['CompanyLogo'] = 'data:' . $mime . ';base64,' . base64_encode($card['CompanyLogo']);
+                $card['profileImage'] = $card['CompanyLogo'];
+            } else {
+                $card['profileImage'] = '';
             }
             
             // Add computed fields for compatibility

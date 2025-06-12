@@ -95,6 +95,27 @@ try {
         $stmt->execute([$cardId]);
     }
     
+    // --- Handle profile image/company logo update ---
+    if ($cardType === 0 && !empty($input['profileImage'])) {
+        // Personal card: update ProfilePicture
+        $base64 = $input['profileImage'];
+        if (strpos($base64, 'base64,') !== false) {
+            $base64 = explode('base64,', $base64, 2)[1];
+        }
+        $imageData = base64_decode($base64);
+        $stmt = $pdo->prepare("UPDATE Personal SET ProfilePicture = ? WHERE HoloCardID = ?");
+        $stmt->execute([$imageData, $cardId]);
+    } elseif ($cardType === 1 && !empty($input['profileImage'])) {
+        // Corporate card: update CompanyLogo
+        $base64 = $input['profileImage'];
+        if (strpos($base64, 'base64,') !== false) {
+            $base64 = explode('base64,', $base64, 2)[1];
+        }
+        $imageData = base64_decode($base64);
+        $stmt = $pdo->prepare("UPDATE Company SET CompanyLogo = ? WHERE HoloCardID = ?");
+        $stmt->execute([$imageData, $cardId]);
+    }
+    
     // Commit transaction
     $pdo->commit();
     

@@ -211,7 +211,7 @@ async function refreshCardList() {
         const cardId = this.getAttribute('data-id');
         const result = await Swal.fire({
           title: 'Are you sure?',
-          text: 'This will remove the card from your list. You can restore it later.',
+          text: 'This will remove the card from your list.',
           icon: 'warning',
           showCancelButton: true,
           confirmButtonText: 'Yes, delete it!',

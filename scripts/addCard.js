@@ -46,14 +46,22 @@
     modal.classList.remove("active");
   });
 
+  let imageBase64 = '';
+
   upload?.addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
       preview.src = ev.target.result;
+      imageBase64 = ev.target.result; // Store the base64 string
     };
     reader.readAsDataURL(file);
+  });
+
+  // Allow clicking the image to trigger file input
+  preview?.addEventListener('click', () => {
+    upload?.click();
   });
 
   /* ---------- SUBMIT → Swal → injected generated modal -------------- */
@@ -87,20 +95,14 @@
     // Generate QR code data as base64 for backend
     data.qrCode = btoa(JSON.stringify(data));
 
-    // Read profile picture or company logo as base64
-    const fileInput = upload;
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      // Await file read as base64
-      const base64 = await new Promise(resolve => {
-        reader.onload = ev => resolve(ev.target.result.split(',')[1]);
-        reader.readAsDataURL(file);
-      });
+    // Attach image as base64 if present
+    if (imageBase64) {
+      // Only send the base64 part, not the data URL prefix
+      const base64Data = imageBase64.split(',')[1] || imageBase64;
       if (isPersonal) {
-        data.profilePicture = base64;
+        data.profilePicture = base64Data;
       } else {
-        data.companyLogo = base64;
+        data.companyLogo = base64Data;
       }
     }
 

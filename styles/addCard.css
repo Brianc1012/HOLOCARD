@@ -7,8 +7,11 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     z-index: 1000; /* Ensure it appears above other elements */
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
+    backdrop-filter: blur(5px); /* Optional: adds a blur effect to the background */
+    flex-direction: column;
+
 }
 
 .modal-overlay.active {
@@ -16,10 +19,11 @@
 }
 
 .modalContent {
-    background-color: #211A6B;
+    background: linear-gradient(135deg, #211A6B 80%, #5E17EB 100%);
     padding: 2rem;
     border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 8px 32px rgba(34, 16, 99, 0.4);
+    border: 1.5px solid #5E17EB;
     width: 90%;
     max-width: 800px;
     height: 90%;
@@ -37,8 +41,11 @@
 }
 
 #modalHeader h1 {
-    font-size: 1.5rem;
+    font-size: 2rem;
+    font-weight: 800;
     color: #fff;
+    letter-spacing: 0.12rem;
+    margin-bottom: 0.5rem;
     margin-left: 0rem;
     font-family: 'INter', sans-serif;
     font-weight: bolder;
@@ -101,10 +108,11 @@
 
 .photoLogoContainer {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 1rem;
     width: 100%;
+    gap: 1.5rem;
 }
 
 .photoPreviewClickable {
@@ -114,6 +122,9 @@
     cursor: pointer;
     border-radius: 8px;
     transition: transform 0.2s ease;
+    border: 2px dashed #A259F7;
+    background: #fff1;
+    box-shadow: 0 2px 8px rgba(162, 89, 247, 0.08);
   }
   
   .photoPreviewClickable:hover {
@@ -128,7 +139,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .inputContainer {
@@ -136,7 +147,7 @@
     flex-direction: column;
     width: 100%;
     margin: 0;
-    gap: 0.2rem;
+    gap: 0.5rem;
 }
 
 .contactPersonDetails, .contactPerson {
@@ -192,11 +203,16 @@
 }
 
 
-#address {
+#address, #editAddress {
     width: 100%;
-    min-height: 80px;
+    min-height: 100px;
     padding: 0.5rem;
+    border: 1.5px solid #5E17EB;
     border-radius: 6px;
+    background: #fff1;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
     resize: vertical;
 }
     label, .contactPerson h2 {
@@ -241,12 +257,20 @@
     width: 100px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     padding: 0.5rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .cancelButton {
-    background-color: #5E17EB;
-    color: #fff;
-    border: none;
+    background: #fff;
+    color: #5E17EB;
+    border: 1.5px solid #5E17EB;
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
@@ -254,20 +278,22 @@
 
 
 .cancelButton:hover {
-    background-color: #4a14b5;
+    background: #f3eaff;
+    color: #211A6B;
     transform: scale(1.05);
 }
 
 .addButton {
-    background-color: none;
+    background: linear-gradient(90deg, #5E17EB 60%, #A259F7 100%);
     color: #fff;
+    box-shadow: 0 2px 8px rgba(94, 23, 235, 0.15);
     border: none;
     border-radius: 0.5rem;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: background 0.2s, transform 0.2s;
 }
 
 .addButton:hover {
-    background-color: none;
-    transform: scale(1.05);
+    background: linear-gradient(90deg, #A259F7 60%, #5E17EB 100%);
+    transform: scale(1.07);
 }
