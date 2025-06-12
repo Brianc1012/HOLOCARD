@@ -189,7 +189,19 @@ function showARCard(data, qrLocation, qrCorners) {
   injectARCardInfo(profile);
   // --- Update scanned details panel ---
   console.log('[DISPLAY] Updating details panel with data:', data);
-  
+
+  // Set profile picture or company logo in .photoLogoContainer img
+  const photoLogoImg = document.querySelector('.photoLogoContainer img');
+  if (photoLogoImg) {
+    let imgSrc = '../public/images/holocardLogo.svg';
+    if (data.ProfilePicture && data.ProfilePicture.startsWith('data:image/')) {
+      imgSrc = data.ProfilePicture;
+    } else if (data.CompanyLogo && data.CompanyLogo.startsWith('data:image/')) {
+      imgSrc = data.CompanyLogo;
+    }
+    photoLogoImg.src = imgSrc;
+  }
+
   const set = (id, val, label) => {
     const el = document.getElementById(id);
     if (el) {

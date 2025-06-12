@@ -50,14 +50,17 @@
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => (preview.src = ev.target.result);
+    reader.onload = ev => {
+      preview.src = ev.target.result;
+    };
     reader.readAsDataURL(file);
   });
 
   /* ---------- SUBMIT → Swal → injected generated modal -------------- */
   form.addEventListener("submit", async e => {
     e.preventDefault();    // collect data before SweetAlert closes the form
-    const isPersonal = catSel.value === "Personal";    const data = {
+    const isPersonal = catSel.value === "Personal";
+    const data = {
       cardType        : catSel.value, // Personal | Corporate
       company         : form.querySelector("#company")?.value || "",
       companyName     : form.querySelector("#company")?.value || "", // For API compatibility
@@ -84,9 +87,28 @@
     // Generate QR code data as base64 for backend
     data.qrCode = btoa(JSON.stringify(data));
 
+    // Read profile picture or company logo as base64
+    const fileInput = upload;
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      // Await file read as base64
+      const base64 = await new Promise(resolve => {
+        reader.onload = ev => resolve(ev.target.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      if (isPersonal) {
+        data.profilePicture = base64;
+      } else {
+        data.companyLogo = base64;
+      }
+    }
+
     // Show confirmation modal with submitted data
     let html = `<ul style='text-align:left;'>`;
     Object.entries(data).forEach(([k, v]) => {
+      // Exclude UID, qrCode, profilePicture, companyLogo from confirmation
+      if (["uid", "qrCode", "profilePicture", "companyLogo"].includes(k)) return;
       html += `<li><b>${k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}:</b> ${v || '-'} </li>`;
     });
     html += `</ul>`;

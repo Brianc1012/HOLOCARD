@@ -43,11 +43,13 @@ try {
             p.LastName,
             p.Suffix,
             p.Profession,
+            p.ProfilePicture,
             -- Company fields  
             c.CompanyName,
             c.ContactPerson_FirstName,
             c.ContactPerson_LastName,
-            c.Position
+            c.Position,
+            c.CompanyLogo
         FROM HoloCard h
         LEFT JOIN Personal p ON h.HoloCardID = p.HoloCardID
         LEFT JOIN Company c ON h.HoloCardID = c.HoloCardID
@@ -79,6 +81,13 @@ try {
             $card['QRCode'] = base64_encode($card['QRCode']);
         }
         
+        // Add profile picture or company logo as base64 data URL
+        if ($card['CardType'] == 0 && isset($card['ProfilePicture']) && $card['ProfilePicture']) {
+            $card['ProfilePicture'] = 'data:image/jpeg;base64,' . base64_encode($card['ProfilePicture']);
+        } elseif ($card['CardType'] == 1 && isset($card['CompanyLogo']) && $card['CompanyLogo']) {
+            $card['CompanyLogo'] = 'data:image/jpeg;base64,' . base64_encode($card['CompanyLogo']);
+        }
+        
         if ($card['CardType'] == 0) { // Personal
             $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
         } else { // Corporate
@@ -102,6 +111,13 @@ try {
             // Convert QR codes to base64 for frontend
             if (isset($card['QRCode']) && $card['QRCode']) {
                 $card['QRCode'] = base64_encode($card['QRCode']);
+            }
+            
+            // Add profile picture or company logo as base64 data URL
+            if ($card['CardType'] == 0 && isset($card['ProfilePicture']) && $card['ProfilePicture']) {
+                $card['ProfilePicture'] = 'data:image/jpeg;base64,' . base64_encode($card['ProfilePicture']);
+            } elseif ($card['CardType'] == 1 && isset($card['CompanyLogo']) && $card['CompanyLogo']) {
+                $card['CompanyLogo'] = 'data:image/jpeg;base64,' . base64_encode($card['CompanyLogo']);
             }
             
             // Add computed fields for compatibility

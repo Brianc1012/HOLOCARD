@@ -253,6 +253,18 @@ async function refreshCardList() {
           if (modal.querySelector('#editCompanyEmail')) modal.querySelector('#editCompanyEmail').value = !isPersonal ? (card.Email || '') : '';
           if (modal.querySelector('#editCompanyContact')) modal.querySelector('#editCompanyContact').value = !isPersonal ? (card.ContactNo || '') : '';
           
+          // Set profile picture/company logo preview if available
+          const previewImg = modal.querySelector('#editPhotoPreview');
+          if (previewImg) {
+            if (card.ProfilePicture && card.ProfilePicture.startsWith('data:image/')) {
+              previewImg.src = card.ProfilePicture;
+            } else if (card.CompanyLogo && card.CompanyLogo.startsWith('data:image/')) {
+              previewImg.src = card.CompanyLogo;
+            } else {
+              previewImg.src = '../public/images/holocardLogo.svg';
+            }
+          }
+          
           // Toggle fields on card type change
           modal.querySelector('#editCardCategory').addEventListener('change', function(e) {
             const isPersonal = e.target.value === 'Personal';

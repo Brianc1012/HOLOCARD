@@ -1,11 +1,13 @@
 // editCard.js - logic for Edit Card modal
-(function initEditCardModal() {
+(function initEditCardModal(cardData) {
   const modal = document.querySelector('.modal-overlay');
   const form = modal?.querySelector('#editCardForm');
   const catSel = modal?.querySelector('#editCardCategory');
   const cancelBtn = modal?.querySelector('.cancelButton');
   const upload = modal?.querySelector('#editPhotoUpload');
   const preview = modal?.querySelector('#editPhotoPreview');
+
+  let imageBase64 = '';
 
   if (!modal || !form || !catSel) return;
 
@@ -47,9 +49,23 @@
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => (preview.src = ev.target.result);
+    reader.onload = ev => {
+      preview.src = ev.target.result;
+      imageBase64 = ev.target.result;
+    };
     reader.readAsDataURL(file);
   });
+
+  // Allow clicking the image to trigger file input
+  preview?.addEventListener('click', () => {
+    upload?.click();
+  });
+
+  // --- Set initial image preview if cardData is provided ---
+  if (cardData && cardData.profileImage) {
+    preview.src = cardData.profileImage;
+    imageBase64 = cardData.profileImage;
+  }
 
   // --- Save Changes (Submit) ---
   form.addEventListener('submit', async function(e) {
@@ -67,7 +83,8 @@
       email: form.querySelector(isPersonal ? '#editEmail' : '#editCompanyEmail')?.value || '',
       contactNo: form.querySelector(isPersonal ? '#editContact' : '#editCompanyContact')?.value || '',
       address: form.querySelector('#editAddress')?.value || '',
-      cardId: modal.dataset.cardId
+      cardId: modal.dataset.cardId,
+      profileImage: imageBase64 // send the image as base64
     };
     // Validate required fields
     if (!data.email || !data.contactNo || !data.cardId) {
@@ -90,4 +107,25 @@
       Swal.fire('Error', err.message, 'error');
     }
   });
+
+  // --- Helper: Populate modal fields with cardData if provided ---
+  if (cardData) {
+    catSel.value = cardData.cardType || 'Personal';
+    updateVisibility(catSel.value === 'Personal');
+    form.querySelector('#editCompany').value = cardData.company || '';
+    form.querySelector('#editCFName').value = cardData.cfName || '';
+    form.querySelector('#editCLname').value = cardData.clName || '';
+    form.querySelector('#editCMname').value = cardData.cmName || '';
+    form.querySelector('#editCnameSuffix').value = cardData.cSuffix || '';
+    form.querySelector('#editCompanyEmail').value = cardData.companyEmail || '';
+    form.querySelector('#editCompanyContact').value = cardData.companyContact || '';
+    form.querySelector('#editFName').value = cardData.fName || '';
+    form.querySelector('#editLname').value = cardData.lName || '';
+    form.querySelector('#editMname').value = cardData.mName || '';
+    form.querySelector('#editNameSuffix').value = cardData.suffix || '';
+    form.querySelector('#editBirthDate').value = cardData.birthDate || '';
+    form.querySelector('#editEmail').value = cardData.email || '';
+    form.querySelector('#editContact').value = cardData.contactNo || '';
+    form.querySelector('#editAddress').value = cardData.address || '';
+  }
 })();
