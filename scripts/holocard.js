@@ -522,7 +522,12 @@ window.openViewCardModal = async function(cardData) {
         
         // Now populate the card
         console.log('✅ ViewCard functions defined, populating card...');
-        window.populateViewCard(cardData);
+        // Use the robust function that attaches the download handler
+        populateViewCardData(modal, cardData);
+        // Also call the simple fallback for basic field population (for compatibility)
+        if (typeof window.populateViewCard === 'function') {
+          window.populateViewCard(cardData);
+        }
         console.log('✅ ViewCard populated successfully');
         
       } catch (error) {
@@ -663,39 +668,55 @@ function populateViewCardData(modal, cardData) {
     qrContainer.innerHTML = `<div style="color: #999;">Card ID: ${cardData.HoloCardID}</div>`;
   }
   
-  // Enable QR code download button
-  setTimeout(() => {
+  // Enable QR code download button robustly
+  let qrDownloadObserver = null;
+  function attachQRDownloadHandler(cardData) {
     const downloadBtn = document.getElementById('downloadQRBtn');
-    const qrContainer = document.getElementById('qrContainer');
-    if (downloadBtn && qrContainer) {
-      downloadBtn.onclick = function() {
-        console.log('🔽 Download QR Code button clicked');
-        // Try to find a canvas or img inside qrContainer
-        let canvas = qrContainer.querySelector('canvas');
-        if (canvas) {
+    const qrCont = document.getElementById('qrContainer');
+    if (!downloadBtn || !qrCont) return;
+    downloadBtn.onclick = function() {
+      let canvas = qrCont.querySelector('canvas');
+      if (canvas) {
+        const link = document.createElement('a');
+        link.download = `holocard-qr-${cardData.HoloCardID || 'card'}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+      } else {
+        let img = qrCont.querySelector('img');
+        if (img && img.src) {
           const link = document.createElement('a');
           link.download = `holocard-qr-${cardData.HoloCardID || 'card'}.png`;
-          link.href = canvas.toDataURL('image/png', 1.0);
+          link.href = img.src;
           link.click();
         } else {
-          // Try to find an img (some QR libraries use <img>)
-          let img = qrContainer.querySelector('img');
-          if (img && img.src) {
-            const link = document.createElement('a');
-            link.download = `holocard-qr-${cardData.HoloCardID || 'card'}.png`;
-            link.href = img.src;
-            link.click();
+          if (window.Swal) {
+            Swal.fire('Error', 'QR code not found for download', 'error');
           } else {
-            if (window.Swal) {
-              Swal.fire('Error', 'QR code not found for download', 'error');
-            } else {
-              alert('QR code not found for download');
-            }
+            alert('QR code not found for download');
           }
         }
+      }
+    };
+  }
+  // Attach handler after QR is rendered, and re-attach if QR is re-rendered
+  attachQRDownloadHandler(cardData);
+  // Also observe for changes in qrContainer (e.g. QR is re-rendered async)
+  const qrCont = document.getElementById('qrContainer');
+  if (qrCont) {
+    if (qrDownloadObserver) qrDownloadObserver.disconnect();
+    qrDownloadObserver = new MutationObserver(() => {
+      attachQRDownloadHandler(cardData);
+    });
+    qrDownloadObserver.observe(qrCont, { childList: true, subtree: true });
+    // Disconnect observer when modal closes
+    if (modal) {
+      const cleanup = function() {
+        if (qrDownloadObserver) qrDownloadObserver.disconnect();
+        modal.removeEventListener('transitionend', cleanup);
       };
+      modal.addEventListener('transitionend', cleanup);
     }
-  }, 700);
+  }
   
   // Setup enhanced close handlers
   setupViewCardCloseHandlers(modal);
