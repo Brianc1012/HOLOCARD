@@ -663,6 +663,40 @@ function populateViewCardData(modal, cardData) {
     qrContainer.innerHTML = `<div style="color: #999;">Card ID: ${cardData.HoloCardID}</div>`;
   }
   
+  // Enable QR code download button
+  setTimeout(() => {
+    const downloadBtn = document.getElementById('downloadQRBtn');
+    const qrContainer = document.getElementById('qrContainer');
+    if (downloadBtn && qrContainer) {
+      downloadBtn.onclick = function() {
+        console.log('🔽 Download QR Code button clicked');
+        // Try to find a canvas or img inside qrContainer
+        let canvas = qrContainer.querySelector('canvas');
+        if (canvas) {
+          const link = document.createElement('a');
+          link.download = `holocard-qr-${cardData.HoloCardID || 'card'}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+        } else {
+          // Try to find an img (some QR libraries use <img>)
+          let img = qrContainer.querySelector('img');
+          if (img && img.src) {
+            const link = document.createElement('a');
+            link.download = `holocard-qr-${cardData.HoloCardID || 'card'}.png`;
+            link.href = img.src;
+            link.click();
+          } else {
+            if (window.Swal) {
+              Swal.fire('Error', 'QR code not found for download', 'error');
+            } else {
+              alert('QR code not found for download');
+            }
+          }
+        }
+      };
+    }
+  }, 700);
+  
   // Setup enhanced close handlers
   setupViewCardCloseHandlers(modal);
   
