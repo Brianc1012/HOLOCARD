@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Fix Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .test-results {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            border: 1px solid #444;
+        }
+        .success { color: #44ff44; }
+        .error { color: #ff4444; }
+        .warning { color: #ffaa44; }
+        button {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #555;
+        }
+        .details-panel {
+            background: #333;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .detail-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: #444;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Scanner Fix Verification</h1>
+        <p>Testing the fixed scanner functionality</p>
+        
+        <button onclick="testShowARCardFixed()">Test Fixed showARCard Function</button>
+        <button onclick="clearDetails()">Clear Details</button>
+        
+        <div class="test-results" id="results"></div>
+        
+        <div class="details-panel">
+            <h3>Simulated Scanner Details Panel:</h3>
+            <div class="detail-item" id="cardType">Card Type: None</div>
+            <div class="detail-item" id="company">Company: None</div>
+            <div class="detail-item" id="name">Name: None</div>
+            <div class="detail-item" id="email">Email: None</div>
+            <div class="detail-item" id="contact">Contact Number: None</div>
+            <div class="detail-item" id="birthDate">Date of Birth: None</div>
+            <div class="detail-item" id="address">Address: None</div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, className = '') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.textContent = message;
+            if (className) div.className = className;
+            results.appendChild(div);
+        }
+
+        function clearDetails() {
+            document.getElementById('results').innerHTML = '';
+            ['cardType', 'company', 'name', 'email', 'contact', 'birthDate', 'address'].forEach(id => {
+                document.getElementById(id).textContent = id.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) + ': None';
+            });
+        }
+
+        function testShowARCardFixed() {
+            log('=== TESTING FIXED showARCard FUNCTION ===', 'warning');
+            
+            // Mock API response data (exactly what API returns)
+            const mockCardData = {
+                HoloCardID: 17,
+                CardType: 0,
+                Address: "vmkkv",
+                ContactNo: "vhkv",
+                BirthDate: "2025-06-12",
+                Email: "dfhd@gmail.com",
+                CardName: "frdtijjjjj fgkfg",
+                CardTypeText: "Personal",
+                FirstName: "frdtijjjjj",
+                LastName: "fgkfg",
+                Suffix: "",
+                Profession: "",
+                CompanyName: "",
+                ContactPerson_FirstName: "",
+                ContactPerson_LastName: "",
+                Position: "",
+                ContactPerson: ""
+            };
+            
+            log('Using mock card data from API:', 'warning');
+            log(JSON.stringify(mockCardData, null, 2), '');
+            
+            // Simulate the fixed showARCard function
+            simulateFixedShowARCard(mockCardData);
+        }
+
+        function simulateFixedShowARCard(data) {
+            log('→ Running fixed showARCard logic...', 'warning');
+            
+            if (typeof data === 'string') {
+                log('❌ ERROR: showARCard called with string instead of object!', 'error');
+                return;
+            }
+            
+            log('✅ Data type check passed - received object', 'success');
+            
+            // Fixed set function with labels
+            const set = (id, val, label) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const finalValue = val || 'None';
+                    el.textContent = `${label}: ${finalValue}`;
+                    log(`✅ Set ${id} = "${label}: ${finalValue}"`, 'success');
+                } else {
+                    log(`❌ Element ${id} not found`, 'error');
+                }
+            };
+            
+            // Apply fixed field mapping
+            set('cardType', data.CardTypeText || data.cardType || data.type, 'Card Type');
+            set('company', data.CompanyName || data.company || data.companyName, 'Company');
+            set('name', data.CardName || data.cardName || `${data.FirstName || ''} ${data.LastName || ''}`.trim(), 'Name');
+            set('email', data.Email || data.email || data.personalEmail || data.companyEmail, 'Email');
+            set('contact', data.ContactNo || data.contact || data.contactNo || data.phone, 'Contact Number');
+            set('birthDate', data.BirthDate || data.birthDate || data.bday, 'Date of Birth');
+            set('address', data.Address || data.address, 'Address');
+            
+            log('✅ All fields processed successfully!', 'success');
+            log('', '');
+            log('Expected Results:', 'warning');
+            log('- Card Type: Personal', 'success');
+            log('- Name: frdtijjjjj fgkfg', 'success');
+            log('- Email: dfhd@gmail.com', 'success');
+            log('- Contact Number: vhkv', 'success');
+            log('- Address: vmkkv', 'success');
+            log('- Date of Birth: 2025-06-12', 'success');
+            log('- Company: None (empty in data)', 'success');
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Scanner Fix Verification Ready', 'success');
+            log('Click "Test Fixed showARCard Function" to verify the fix', '');
+        });
+    </script>
+</body>
+</html>

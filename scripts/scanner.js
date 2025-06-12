@@ -140,21 +140,28 @@ function showARCard(data, qrLocation, qrCorners) {
     document.querySelector('.camScanner').appendChild(arOverlay);  }
   arOverlay.style.display = '';
   lastOverlayVisible = true; // Mark overlay as visible
+    // Build the card display content using correct API field names
+  // Helper function to check for valid non-empty values
+  const getValue = (...values) => {
+    for (const val of values) {
+      if (val && val.toString().trim() !== '') return val.toString().trim();
+    }
+    return null;
+  };
   
-  // Build the card display content using correct API field names
-  const cardName = data.CardName || data.cardName || 
-                   `${data.FirstName || data.firstName || ''} ${data.LastName || data.lastName || ''}`.trim() ||
-                   data.CompanyName || data.companyName || 'Unknown';
+  const cardName = getValue(data.CardName, data.cardName) || 
+                   getValue(`${data.FirstName || ''} ${data.LastName || ''}`.trim()) ||
+                   getValue(data.CompanyName, data.companyName) || 'Unknown';
   
-  const cardType = data.CardTypeText || data.cardType || data.type || 'Unknown';
-    arOverlay.innerHTML = `
-    <h2 style="margin:0 0 0.5rem 0;color:#2d3748;font-weight:bold;">${esc(cardName)}</h2>
+  const cardType = getValue(data.CardTypeText, data.cardType, data.type) || 'Unknown';
+    arOverlay.innerHTML = `    <h2 style="margin:0 0 0.5rem 0;color:#2d3748;font-weight:bold;">${esc(cardName)}</h2>
     <div style="font-size:1.1rem;color:#6a11cb;margin-bottom:0.5rem;font-weight:600;">${esc(cardType)}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Company:</strong> ${esc(data.CompanyName || data.company || data.companyName || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Email:</strong> ${esc(data.Email || data.email || data.personalEmail || data.companyEmail || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Contact:</strong> ${esc(data.ContactNo || data.contact || data.contactNo || data.phone || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Birth Date:</strong> ${esc(data.BirthDate || data.birthDate || data.bday || 'None')}</div>
-    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Address:</strong> ${esc(data.Address || data.address || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Company:</strong> ${esc(getValue(data.CompanyName, data.company, data.companyName) || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Email:</strong> ${esc(getValue(data.Email, data.email, data.personalEmail, data.companyEmail) || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Contact:</strong> ${esc(getValue(data.ContactNo, data.contact, data.contactNo, data.phone) || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Birth Date:</strong> ${esc(getValue(data.BirthDate, data.birthDate, data.bday) || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Address:</strong> ${esc(getValue(data.Address, data.address) || 'None')}</div>
+    <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Card ID:</strong> ${esc(getValue(data.HoloCardID, data.cardId, data.id) || 'None')}</div>
   `;
   if (qrCorners) {
     // Calculate center and angle of QR code
@@ -180,25 +187,29 @@ function showARCard(data, qrLocation, qrCorners) {
   // --- AR.js/A-Frame overlay (optional, still present for marker-based AR) ---
   const profile = data.profile || data;
   injectARCardInfo(profile);
-
   // --- Update scanned details panel ---
   console.log('[DISPLAY] Updating details panel with data:', data);
-  const set = (id, val) => {
+  
+  const set = (id, val, label) => {
     const el = document.getElementById(id);
     if (el) {
-      el.textContent = val || 'None';
-      console.log(`[DISPLAY] Set ${id} = ${val || 'None'}`);
+      const finalValue = val || 'None';
+      el.textContent = `${label}: ${finalValue}`;
+      console.log(`[DISPLAY] Set ${id} = "${label}: ${finalValue}"`);
     } else {
       console.warn(`[DISPLAY] Element ${id} not found`);
     }
-  };  
-  // Use the correct field names from the API response
-  set('cardType', data.CardTypeText || data.cardType || data.type || 'None');
-  set('company', data.CompanyName || data.company || data.companyName || 'None');
-  set('name', data.CardName || data.cardName || `${data.FirstName || ''} ${data.LastName || ''}`.trim() || 'None');
-  set('email', data.Email || data.email || data.personalEmail || data.companyEmail || 'None');  set('contact', data.ContactNo || data.contact || data.contactNo || data.phone || 'None');
-  set('birthDate', data.BirthDate || data.birthDate || data.bday || 'None');
-  set('address', data.Address || data.address || 'None');
+  };
+  
+  // Use the getValue helper function for consistent empty string handling
+  set('cardType', getValue(data.CardTypeText, data.cardType, data.type), 'Card Type');
+  set('company', getValue(data.CompanyName, data.company, data.companyName), 'Company');
+  set('name', getValue(data.CardName, data.cardName) || getValue(`${data.FirstName || ''} ${data.LastName || ''}`.trim()), 'Name');
+  set('email', getValue(data.Email, data.email, data.personalEmail, data.companyEmail), 'Email');
+  set('contact', getValue(data.ContactNo, data.contact, data.contactNo, data.phone), 'Contact Number');
+  set('birthDate', getValue(data.BirthDate, data.birthDate, data.bday), 'Date of Birth');
+  set('address', getValue(data.Address, data.address), 'Address');
+  set('cardId', getValue(data.HoloCardID, data.cardId, data.id), 'Card ID');
   
   // Don't set scan status here - let state management handle it
   console.log('[DISPLAY] Card data displayed successfully');
@@ -314,12 +325,16 @@ function tick() {
         // Try to parse as JSON first
         cardData = JSON.parse(code.data);
         console.log('[QR] Parsed as JSON:', cardData);
-        
         // Check if it's a simple ID object like {"id": "17"}
         if (typeof cardData === 'object' && cardData !== null && Object.keys(cardData).length === 1 && cardData.id) {
           isIdOnly = true;
           cardId = cardData.id.toString();
           console.log('[QR] Detected ID-only JSON format:', cardId);
+        } else if (typeof cardData === 'number' && Number.isInteger(cardData)) {
+          // Accept plain number as card ID
+          isIdOnly = true;
+          cardId = cardData.toString();
+          console.log('[QR] Detected simple number ID format:', cardId);
         }
       } catch (e) {
         // Not JSON, treat as simple string ID
@@ -329,7 +344,7 @@ function tick() {
           if (/^\d+$/.test(trimmedData)) {
             isIdOnly = true;
             cardId = trimmedData;
-            console.log('[QR] Detected simple ID format:', cardId);
+            console.log('[QR] Detected simple string ID format:', cardId);
           } else {
             console.log('[QR] Not a simple ID, treating as complex data');
             // Could be complex JSON that we couldn't parse, skip for now
@@ -370,15 +385,14 @@ function tick() {
           updateOverlayPosition(qrCorners);
           lastOverlayVisible = true;
         }
-      } else if (cardData && !isIdOnly) {
-        // Handle complex embedded card data
+      } else if (cardData && typeof cardData === 'object' && !isIdOnly) {
+        // Handle complex embedded card data ONLY if it's an object
         if (scanningState === 'idle' || shouldResumeScanning()) {
           console.log('[QR] Using embedded card data');
           lastCardId = null;
           lastCardData = cardData;
           showARCard(cardData, qrLocation, qrCorners);
           setScanningState('displaying');
-          lastOverlayVisible = true;
         } else {
           updateOverlayPosition(qrCorners);
           lastOverlayVisible = true;
@@ -485,7 +499,11 @@ function fetchCardDataById(cardId, qrLocation, qrCorners) {
       console.log('[API] Final card data to display:', card);
       currentCardDisplayed = cardId;
       showARCard(card, qrLocation, qrCorners);
-      
+      // Log the full response for debugging
+      console.log('[API][DEBUG] Full response JSON:', data);
+      if (data.debug_fetched) {
+        console.log('[API][DEBUG] debug_fetched from backend:', data.debug_fetched);
+      }
       // Set state to displaying (will automatically set cooldown after timeout)
       setScanningState('displaying');
     })
@@ -561,7 +579,7 @@ function hideAROverlay() {
   currentCardDisplayed = null;
   
   // Clear the details panel
-  const detailElements = ['cardType', 'company', 'name', 'email', 'contact', 'birthDate', 'address'];
+  const detailElements = ['cardType', 'company', 'name', 'email', 'contact', 'birthDate', 'address', 'cardId'];
   detailElements.forEach(id => {
     const el = document.getElementById(id);
     if (el) {

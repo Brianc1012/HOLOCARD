@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Data Flow Debug</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #0a0a0a;
+            color: #00ff00;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .log {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin: 15px 0;
+            border: 1px solid #333;
+            font-size: 12px;
+        }
+        button {
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #555;
+        }
+        .error { color: #ff4444; }
+        .success { color: #44ff44; }
+        .warning { color: #ffaa44; }
+        .info { color: #44aaff; }
+        .panel {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .panel h3 {
+            margin-top: 0;
+            color: #ffaa44;
+        }
+        .details-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .detail-item {
+            background: #333;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Scanner Data Flow Debug</h1>
+        <p>Testing the exact data flow from QR detection to display</p>
+        
+        <div class="panel">
+            <h3>Test Controls</h3>
+            <button onclick="testAPIFetch()">1. Test API Fetch</button>
+            <button onclick="testQRProcessing()">2. Test QR Processing</button>
+            <button onclick="testShowARCard()">3. Test showARCard</button>
+            <button onclick="testFullFlow()">4. Test Full Flow</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="panel">
+            <h3>Simulated Details Panel</h3>
+            <div class="details-preview">
+                <div class="detail-item">Card Type: <span id="cardType">None</span></div>
+                <div class="detail-item">Company: <span id="company">None</span></div>
+                <div class="detail-item">Name: <span id="name">None</span></div>
+                <div class="detail-item">Email: <span id="email">None</span></div>
+                <div class="detail-item">Contact: <span id="contact">None</span></div>
+                <div class="detail-item">Birth Date: <span id="birthDate">None</span></div>
+                <div class="detail-item">Address: <span id="address">None</span></div>
+            </div>
+        </div>
+        
+        <div id="console" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, className = '') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.textContent = `[${timestamp}] ${message}`;
+            if (className) div.className = className;
+            console.appendChild(div);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('console').innerHTML = '';
+            // Reset details panel
+            ['cardType', 'company', 'name', 'email', 'contact', 'birthDate', 'address'].forEach(id => {
+                document.getElementById(id).textContent = 'None';
+            });
+        }
+
+        // Test 1: API Fetch
+        async function testAPIFetch() {
+            log('=== TEST 1: API FETCH ===', 'warning');
+            
+            try {
+                const response = await fetch('api/get_cards.php?id=17');
+                log(`API Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('✅ Raw API Response:', 'success');
+                    log(JSON.stringify(data, null, 2), 'info');
+                    
+                    // Test parsing logic from scanner.js
+                    let card = null;
+                    if (data.success && data.card) {
+                        card = data.card;
+                        log('✅ Card extracted successfully', 'success');
+                        log('Card object: ' + JSON.stringify(card, null, 2), 'info');
+                        
+                        // Test field extraction
+                        const fields = {
+                            cardType: card.CardTypeText || 'None',
+                            company: card.CompanyName || 'None', 
+                            name: card.CardName || 'None',
+                            email: card.Email || 'None',
+                            contact: card.ContactNo || 'None',
+                            birthDate: card.BirthDate || 'None',
+                            address: card.Address || 'None'
+                        };
+                        
+                        log('✅ Extracted fields:', 'success');
+                        Object.entries(fields).forEach(([key, value]) => {
+                            log(`  ${key}: "${value}"`, 'info');
+                        });
+                        
+                        return card;
+                    } else {
+                        log('❌ Failed to extract card from response', 'error');
+                    }
+                } else {
+                    log('❌ API call failed', 'error');
+                }
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: QR Processing
+        function testQRProcessing() {
+            log('=== TEST 2: QR PROCESSING ===', 'warning');
+            
+            const testCases = ['17', '{"id":"17"}', 'invalid'];
+            
+            testCases.forEach(qrData => {
+                log(`Testing QR data: "${qrData}"`, 'info');
+                
+                let cardData = null;
+                let isIdOnly = false;
+                let cardId = null;
+                
+                try {
+                    cardData = JSON.parse(qrData);
+                    log(`  Parsed as JSON: ${JSON.stringify(cardData)}`, 'info');
+                    
+                    if (typeof cardData === 'object' && cardData !== null && Object.keys(cardData).length === 1 && cardData.id) {
+                        isIdOnly = true;
+                        cardId = cardData.id.toString();
+                        log(`  ✅ ID-only JSON format detected: ${cardId}`, 'success');
+                    }
+                } catch (e) {
+                    if (typeof qrData === 'string' && qrData.trim().length > 0) {
+                        const trimmedData = qrData.trim();
+                        if (/^\d+$/.test(trimmedData)) {
+                            isIdOnly = true;
+                            cardId = trimmedData;
+                            log(`  ✅ Simple ID format detected: ${cardId}`, 'success');
+                        } else {
+                            log(`  ⚠️ Not a simple ID format`, 'warning');
+                        }
+                    }
+                }
+                
+                if (isIdOnly && cardId) {
+                    log(`  → Would call fetchCardDataById("${cardId}")`, 'success');
+                } else {
+                    log(`  → Invalid QR format`, 'error');
+                }
+                log('', '');
+            });
+        }
+
+        // Test 3: showARCard function
+        function testShowARCard() {
+            log('=== TEST 3: showARCard FUNCTION ===', 'warning');
+            
+            // Mock card data from API
+            const mockCard = {
+                HoloCardID: 17,
+                CardType: 0,
+                Address: "vmkkv",
+                ContactNo: "vhkv",
+                BirthDate: "2025-06-12",
+                Email: "dfhd@gmail.com",
+                CardName: "frdtijjjjj fgkfg",
+                CardTypeText: "Personal",
+                FirstName: "frdtijjjjj",
+                LastName: "fgkfg",
+                CompanyName: ""
+            };
+            
+            log('Testing showARCard with mock data:', 'info');
+            log(JSON.stringify(mockCard, null, 2), 'info');
+            
+            // Simulate the showARCard function logic
+            simulateShowARCard(mockCard);
+        }
+
+        function simulateShowARCard(data) {
+            log('→ Simulating showARCard function...', 'warning');
+            
+            if (typeof data === 'string') {
+                log('❌ ERROR: showARCard called with string instead of object!', 'error');
+                return;
+            }
+            
+            // Extract fields exactly like scanner.js does
+            const cardName = data.CardName || data.cardName || 
+                           `${data.FirstName || ''} ${data.LastName || ''}`.trim() ||
+                           data.CompanyName || data.companyName || 'Unknown';
+            
+            const cardType = data.CardTypeText || data.cardType || data.type || 'Unknown';
+            
+            log(`Extracted cardName: "${cardName}"`, 'success');
+            log(`Extracted cardType: "${cardType}"`, 'success');
+            
+            // Update details panel (simulating scanner.js logic)
+            const set = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const finalValue = val || 'None';
+                    el.textContent = finalValue;
+                    log(`Set ${id} = "${finalValue}"`, 'success');
+                } else {
+                    log(`❌ Element ${id} not found`, 'error');
+                }
+            };
+            
+            // Use exact field mapping from scanner.js
+            set('cardType', data.CardTypeText || data.cardType || data.type);
+            set('company', data.CompanyName || data.company || data.companyName);
+            set('name', data.CardName || data.cardName || `${data.FirstName || ''} ${data.LastName || ''}`.trim());
+            set('email', data.Email || data.email || data.personalEmail || data.companyEmail);
+            set('contact', data.ContactNo || data.contact || data.contactNo || data.phone);
+            set('birthDate', data.BirthDate || data.birthDate || data.bday);
+            set('address', data.Address || data.address);
+            
+            log('✅ Details panel updated successfully', 'success');
+        }
+
+        // Test 4: Full Flow
+        async function testFullFlow() {
+            log('=== TEST 4: FULL FLOW SIMULATION ===', 'warning');
+            
+            // Step 1: QR Detection
+            const qrData = '17';
+            log(`Step 1: QR detected with data: "${qrData}"`, 'info');
+            
+            // Step 2: QR Processing
+            let cardId = null;
+            if (/^\d+$/.test(qrData.trim())) {
+                cardId = qrData.trim();
+                log(`Step 2: QR processed, extracted cardId: "${cardId}"`, 'success');
+            } else {
+                log('Step 2: QR processing failed', 'error');
+                return;
+            }
+            
+            // Step 3: API Fetch
+            log('Step 3: Calling API...', 'info');
+            try {
+                const response = await fetch(`api/get_cards.php?id=${cardId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Step 3: API response received', 'success');
+                    
+                    let card = null;
+                    if (data.success && data.card) {
+                        card = data.card;
+                        log('Step 3: Card extracted from API response', 'success');
+                    } else {
+                        log('Step 3: Failed to extract card from response', 'error');
+                        return;
+                    }
+                    
+                    // Step 4: Display
+                    log('Step 4: Calling showARCard...', 'info');
+                    simulateShowARCard(card);
+                    log('✅ FULL FLOW COMPLETED SUCCESSFULLY', 'success');
+                    
+                } else {
+                    log(`Step 3: API call failed with status ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Step 3: API error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Scanner Data Flow Debug Ready', 'success');
+            log('Click buttons above to run individual tests', 'info');
+        });
+    </script>
+</body>
+</html>

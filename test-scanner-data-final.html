@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Data Test - Final Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .api-response {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .details-panel {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .details-panel div {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Scanner Data Processing Test</h1>
+        <p>Testing the exact data flow that occurs in the scanner</p>
+
+        <div class="test-section">
+            <h3>1. API Response Test</h3>
+            <button onclick="testAPI()">Test API Response</button>
+            <div id="apiResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Data Processing Test</h3>
+            <button onclick="testDataProcessing()">Test showARCard Function</button>
+            <div id="processingResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Details Panel Test</h3>
+            <div class="details-panel">
+                <div id="cardType">Card Type: None</div>
+                <div id="company">Company: None</div>
+                <div id="name">Name: None</div>
+                <div id="email">Email: None</div>
+                <div id="contact">Contact Number: None</div>
+                <div id="birthDate">Date of Birth: None</div>
+                <div id="address">Address: None</div>
+            </div>
+            <button onclick="testDetailsPanel()">Test Details Panel Update</button>
+        </div>
+
+        <div class="test-section">
+            <h3>4. AR Overlay Test</h3>
+            <div id="ar-overlay-test" style="display:none; border: 2px solid #667eea; border-radius: 18px; padding: 15px; background: rgba(255,255,255,0.98); margin-top: 10px;">
+                <!-- AR overlay content will be inserted here -->
+            </div>
+            <button onclick="testAROverlay()">Test AR Overlay</button>
+        </div>
+    </div>
+
+    <script>
+        let testData = null;        function esc(str) {
+            return String(str).replace(/[&<>"']/g, s => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[s]);
+        }
+
+        // Helper function to check for valid non-empty values (same as scanner.js)
+        function getValue(...values) {
+            for (const val of values) {
+                if (val && val.toString().trim() !== '') return val.toString().trim();
+            }
+            return null;
+        }
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>Fetching data...</p>';
+
+            try {
+                const response = await fetch('../api/get_cards.php?id=17');
+                console.log('API Response:', response);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('API Data:', data);
+                testData = data;
+
+                resultDiv.innerHTML = `
+                    <p class="success">✅ API Response Successful</p>
+                    <div class="api-response">${JSON.stringify(data, null, 2)}</div>
+                `;
+            } catch (error) {
+                console.error('API Error:', error);
+                resultDiv.innerHTML = `
+                    <p class="error">❌ API Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        function testDataProcessing() {
+            const resultDiv = document.getElementById('processingResult');
+            
+            if (!testData) {
+                resultDiv.innerHTML = '<p class="warning">⚠️ Please run API test first</p>';
+                return;
+            }
+
+            try {
+                // Extract card data using the same logic as scanner.js
+                let card = null;
+                if (testData.success && testData.card) {
+                    card = testData.card;
+                    console.log('Using single card response format');
+                } else if (testData.success && testData.cards && testData.cards.length > 0) {
+                    card = testData.cards[0];
+                    console.log('Using array response format');
+                } else if (Array.isArray(testData)) {
+                    card = testData[0] || null;
+                    console.log('Using direct array format');
+                } else if (typeof testData === 'object' && testData !== null && !testData.success) {
+                    card = testData;
+                    console.log('Using direct object format');
+                }
+
+                if (!card) {
+                    throw new Error('No card data found');
+                }
+
+                console.log('Final card data:', card);                // Test the field extraction logic with the new getValue function
+                const cardName = getValue(card.CardName, card.cardName) || 
+                               getValue(`${card.FirstName || card.firstName || ''} ${card.LastName || card.lastName || ''}`.trim()) ||
+                               getValue(card.CompanyName, card.companyName) || 'Unknown';
+                
+                const cardType = getValue(card.CardTypeText, card.cardType, card.type) || 'Unknown';
+                const company = getValue(card.CompanyName, card.company, card.companyName) || 'None';
+                const email = getValue(card.Email, card.email, card.personalEmail, card.companyEmail) || 'None';
+                const contact = getValue(card.ContactNo, card.contact, card.contactNo, card.phone) || 'None';
+                const birthDate = getValue(card.BirthDate, card.birthDate, card.bday) || 'None';
+                const address = getValue(card.Address, card.address) || 'None';
+
+                resultDiv.innerHTML = `
+                    <p class="success">✅ Data Processing Successful</p>
+                    <div class="api-response">
+Extracted Fields:
+- Card Name: "${cardName}"
+- Card Type: "${cardType}"
+- Company: "${company}"
+- Email: "${email}"
+- Contact: "${contact}"
+- Birth Date: "${birthDate}"
+- Address: "${address}"
+
+Raw Card Object:
+${JSON.stringify(card, null, 2)}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Processing Error:', error);
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Processing Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        function testDetailsPanel() {
+            if (!testData || !testData.card) {
+                alert('Please run API test first');
+                return;
+            }
+
+            const data = testData.card;
+            
+            const set = (id, val, label) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const finalValue = val || 'None';
+                    el.textContent = `${label}: ${finalValue}`;
+                    console.log(`Set ${id} = "${label}: ${finalValue}"`);
+                } else {
+                    console.warn(`Element ${id} not found`);
+                }
+            };            // Use the same logic as scanner.js with getValue helper
+            set('cardType', getValue(data.CardTypeText, data.cardType, data.type), 'Card Type');
+            set('company', getValue(data.CompanyName, data.company, data.companyName), 'Company');
+            set('name', getValue(data.CardName, data.cardName) || getValue(`${data.FirstName || ''} ${data.LastName || ''}`.trim()), 'Name');
+            set('email', getValue(data.Email, data.email, data.personalEmail, data.companyEmail), 'Email');
+            set('contact', getValue(data.ContactNo, data.contact, data.contactNo, data.phone), 'Contact Number');
+            set('birthDate', getValue(data.BirthDate, data.birthDate, data.bday), 'Date of Birth');
+            set('address', getValue(data.Address, data.address), 'Address');
+        }
+
+        function testAROverlay() {
+            if (!testData || !testData.card) {
+                alert('Please run API test first');
+                return;
+            }            const data = testData.card;
+            const arOverlay = document.getElementById('ar-overlay-test');
+            
+            const cardName = getValue(data.CardName, data.cardName) || 
+                           getValue(`${data.FirstName || data.firstName || ''} ${data.LastName || data.lastName || ''}`.trim()) ||
+                           getValue(data.CompanyName, data.companyName) || 'Unknown';
+            
+            const cardType = getValue(data.CardTypeText, data.cardType, data.type) || 'Unknown';
+            
+            arOverlay.innerHTML = `
+                <h2 style="margin:0 0 0.5rem 0;color:#2d3748;font-weight:bold;">${esc(cardName)}</h2>
+                <div style="font-size:1.1rem;color:#6a11cb;margin-bottom:0.5rem;font-weight:600;">${esc(cardType)}</div>
+                <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Company:</strong> ${esc(getValue(data.CompanyName, data.company, data.companyName) || 'None')}</div>
+                <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Email:</strong> ${esc(getValue(data.Email, data.email, data.personalEmail, data.companyEmail) || 'None')}</div>
+                <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Contact:</strong> ${esc(getValue(data.ContactNo, data.contact, data.contactNo, data.phone) || 'None')}</div>
+                <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Birth Date:</strong> ${esc(getValue(data.BirthDate, data.birthDate, data.bday) || 'None')}</div>
+                <div style="color:#4a5568;margin:0.3rem 0;"><strong style="color:#2d3748;">Address:</strong> ${esc(getValue(data.Address, data.address) || 'None')}</div>
+            `;
+            
+            arOverlay.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

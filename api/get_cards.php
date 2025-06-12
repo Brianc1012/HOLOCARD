@@ -64,6 +64,9 @@ try {
         $stmt->execute([$uid]);
     }    $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
+    // Debug log: Output fetched DB rows to error_log
+    error_log('[API get_cards.php] DB rows fetched: ' . print_r($cards, true));
+    
     // If fetching by card ID, return single card object instead of array
     if ($cardId) {
         if (empty($cards)) {
@@ -119,6 +122,9 @@ try {
         $response['cards'] = $cards;
         unset($response['error']);
     }
+
+    // Output fetched card(s) as part of the JSON response for debugging
+    $response['debug_fetched'] = $cardId ? $card : $cards;
 } catch (Exception $e) {
     http_response_code(200); // Always return 200 so frontend can parse JSON
     $response['error'] = $e->getMessage();
