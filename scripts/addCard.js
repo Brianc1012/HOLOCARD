@@ -69,6 +69,16 @@
   form.addEventListener("submit", async e => {
     e.preventDefault();    // collect data before SweetAlert closes the form
     const isPersonal = catSel.value === "Personal";
+    // Use UID from holocard_user object in localStorage for consistency
+    let userObj = null;
+    try {
+      userObj = JSON.parse(localStorage.getItem('holocard_user'));
+    } catch (e) {
+      console.warn('[addCard.js] Failed to parse holocard_user from localStorage:', e);
+    }
+    console.log('[addCard.js] userObj from localStorage:', userObj);
+    const uid = (userObj && userObj.UID) ? userObj.UID : 1;
+    console.log('[addCard.js] Using UID for add_card:', uid);
     const data = {
       cardType        : catSel.value, // Personal | Corporate
       company         : form.querySelector("#company")?.value || "",
@@ -82,7 +92,7 @@
       contactNo       : form.querySelector(isPersonal ? "#contact" : "#companyContact")?.value || "",
       address         : form.querySelector("#address")?.value || "",
       cardName        : ((isPersonal ? form.querySelector("#FName")?.value : form.querySelector("#company")?.value) || "undefined") + "'s Card",
-      uid             : localStorage.getItem('uid') || 1, // TODO: Use real user ID from auth
+      uid             : uid,
       qrCode          : '', // Will be set below
       // Add proper email fields for modal mapping
       personalEmail   : isPersonal ? form.querySelector("#email")?.value || "" : "",

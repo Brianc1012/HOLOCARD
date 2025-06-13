@@ -63,6 +63,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 4px 32px 0 rgba(106,17,203,0.13), 0 1.5px 12px 0 rgba(37,117,252,0.09);
+  border-radius: 22px;
+  backdrop-filter: blur(8px) saturate(1.2);
+  border: 1.5px solid rgba(106,17,203,0.18);
 }
 
 .logoContainer {
@@ -265,9 +270,109 @@ button[type="revealButton"] :hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-@media (max-width: 600px) {
-  .login-container {
-    padding: 1.2rem 0.7rem 1rem 0.7rem;
-    max-width: 95vw;
+.mainTitleGlow {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(90deg, #00eaff, #ff00ea, #00ffb3, #ffea00, #00eaff);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: holoGlow 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px #00eaff88) drop-shadow(0 0 32px #ff00ea55);
+  user-select: none;
+}
+@keyframes holoGlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.password-field input[type="password"],
+.password-field input[type="text"] {
+  width: 100%;
+  padding-right: 2.7rem;
+  box-sizing: border-box;
+  margin: 0;
+}
+.toggle-password {
+  right: 0.8rem;
+  background: rgba(255,255,255,0.18);
+  border: none;
+  border-radius: 50%;
+  translate: 0 -10px;
+  cursor: pointer;
+  padding: 0.18rem 0.18rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.07);
+  z-index: 3;
+  outline: none;
+  height: 2.1rem;
+  width: 2rem !important;
+  gap: 0.25rem;
+}
+.toggle-password:focus, .toggle-password:hover {
+  background: rgba(0,234,255,0.13);
+  box-shadow: 0 2px 8px 0 #00eaff33;
+}
+.eye-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  stroke: #00eaff;
+  transition: stroke 0.2s;
+}
+.toggle-password:focus .eye-icon svg,
+.toggle-password:hover .eye-icon svg {
+  stroke: #ff00ea;
+}
+.password-field + button[type="submit"] {
+  margin-top: 0.5rem;
+}
+@media (max-width: 500px) {
+  .mainTitleGlow {
+    font-size: 2rem;
   }
+  form {
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    max-width: 98vw;
+  }
+  .password-field input[type="password"],
+  .password-field input[type="text"] {
+    padding-right: 2.7rem;
+  }
+  .toggle-password {
+    right: 0.4rem;
+    height: 1.8rem;
+    width: 1.8rem;
+  }
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #232946 0%, #00eaff 100%);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }

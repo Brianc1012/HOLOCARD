@@ -1,0 +1,24 @@
+2025-06-13T09:53:58+02:00
+Array
+(
+    [cardType] => Personal
+    [company] => 
+    [companyName] => 
+    [firstName] => Yuan Exequiel
+    [lastName] => Evangelista
+    [middleName] => Rubi
+    [suffix] => 
+    [birthDate] => 2003-06-26
+    [email] => evangelista@gmail.com
+    [contactNo] => 09568864615
+    [address] => 21 St. Anthony, Brgy. Holy Spirit, Quezon City
+    [cardName] => Yuan Exequiel's Card
+    [uid] => 1
+    [qrCode] => eyJjYXJkVHlwZSI6IlBlcnNvbmFsIiwiY29tcGFueSI6IiIsImNvbXBhbnlOYW1lIjoiIiwiZmlyc3ROYW1lIjoiWXVhbiBFeGVxdWllbCIsImxhc3ROYW1lIjoiRXZhbmdlbGlzdGEiLCJtaWRkbGVOYW1lIjoiUnViaSIsInN1ZmZpeCI6IiIsImJpcnRoRGF0ZSI6IjIwMDMtMDYtMjYiLCJlbWFpbCI6ImV2YW5nZWxpc3RhQGdtYWlsLmNvbSIsImNvbnRhY3RObyI6IjA5NTY4ODY0NjE1IiwiYWRkcmVzcyI6IjIxIFN0LiBBbnRob255LCBCcmd5LiBIb2x5IFNwaXJpdCwgUXVlem9uIENpdHkiLCJjYXJkTmFtZSI6Ill1YW4gRXhlcXVpZWwncyBDYXJkIiwidWlkIjoxLCJxckNvZGUiOiIiLCJwZXJzb25hbEVtYWlsIjoiZXZhbmdlbGlzdGFAZ21haWwuY29tIiwiY29tcGFueUVtYWlsIjoiIiwiY29udGFjdEZpcnN0TmFtZSI6IiIsImNvbnRhY3RMYXN0TmFtZSI6IiIsImNvbnRhY3RTdWZmaXgiOiIifQ==
+    [personalEmail] => evangelista@gmail.com
+    [companyEmail] => 
+    [contactFirstName] => 
+    [contactLastName] => 
+    [contactSuffix] => 
+)
+

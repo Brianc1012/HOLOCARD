@@ -16,6 +16,9 @@ try {
     // Get JSON input
     $input = json_decode(file_get_contents('php://input'), true);
     
+    // Debug: log input to file
+    file_put_contents(__DIR__ . '/add_card_debug.log', date('c') . "\n" . print_r($input, true) . "\n", FILE_APPEND);
+    
     // Validate required fields
     $required_fields = ['cardType', 'address', 'contactNo', 'email', 'qrCode', 'uid'];
     foreach ($required_fields as $field) {

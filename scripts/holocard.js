@@ -90,24 +90,28 @@ async function refreshCardList() {
   const list = document.getElementById("holocardList");
   if (!list) return console.error("❌ #holocardList not found");
   list.innerHTML = '<div class="loading">Loading cards...</div>';
-  
-  // TODO: Replace with real user ID from auth
-  const uid = localStorage.getItem('uid') || 1;
+
+  // Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem('holocard_user'));
+  if (!user || !user.UID) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const uid = user.UID;
   console.log('🔍 Fetching cards for UID:', uid);
-  
+
   try {
     const res = await fetch(`../api/get_cards.php?uid=${uid}`);
     console.log('📡 API Response status:', res.status, res.statusText);
     const text = await res.text();
     console.log('📡 Raw API response:', text);
-    
-    // Try to parse as JSON, but if it looks like HTML, show a clear error
+
     if (text.trim().startsWith('<')) {
       throw new Error('API returned HTML instead of JSON. This usually means the file path is wrong or the server is not running.');
     }
     const data = JSON.parse(text);
     console.log('📡 Parsed API data:', data);
-    
+
     if (!data.success) throw new Error(data.error || 'Failed to fetch cards');
     list.innerHTML = '';
     if (!data.cards.length) {
@@ -1065,3 +1069,33 @@ window.populateViewCardData = populateViewCardData;
 window.generateEnhancedQRCode = generateEnhancedQRCode;
 window.setupViewCardCloseHandlers = setupViewCardCloseHandlers;
 window.setupViewCardActionHandlers = setupViewCardActionHandlers;
+
+// New function to fetch and display cards
+function fetchAndDisplayCards() {
+  // Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem('holocard_user'));
+  if (!user || !user.UID) {
+    // Not logged in, redirect to login
+    window.location.href = 'login.html';
+    return;
+  }
+  const uid = user.UID;
+
+  fetch(`../api/get_cards.php?uid=${encodeURIComponent(uid)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && Array.isArray(data.cards)) {
+        renderCardList(data.cards);
+      } else {
+        document.getElementById('holocardList').innerHTML = '<div class="text-red-500">No cards found.</div>';
+      }
+    })
+    .catch(() => {
+      document.getElementById('holocardList').innerHTML = '<div class="text-red-500">Failed to load cards.</div>';
+    });
+}
+
+// Call fetchAndDisplayCards on page load
+if (document.getElementById('holocardList')) {
+  fetchAndDisplayCards();
+}

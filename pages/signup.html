@@ -9,13 +9,22 @@
 <body>
   <div class="login-bg"></div>
   <div class="login-container">
+    <div class="mainTitleGlow">HoloCard</div>
     <div class="login-logo">
       <img src="../public/images/holocardLogo.svg" alt="Logo" style="width:80px;height:80px;display:block;margin:0 auto;" />
     </div>
     <form id="signupForm" autocomplete="off">
-      <input type="text" id="signupName" placeholder="Full Name" required maxlength="50">
+      <input type="text" id="signupName" placeholder="Username" required maxlength="50">
       <input type="email" id="signupEmail" placeholder="Email" required maxlength="100">
-      <input type="password" id="signupPassword" placeholder="Password" required maxlength="50">
+      <div class="password-field">
+        <input type="password" id="signupPassword" placeholder="Password" required maxlength="50">
+        <button type="button" class="toggle-password" tabindex="-1" aria-label="Show password">
+          <span class="eye-icon" id="eyeIcon">
+            <!-- Eye SVG (visible) -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00eaff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="8" ry="5.5"/><circle cx="12" cy="12" r="2.5"/></svg>
+          </span>
+        </button>
+      </div>
       <button type="submit">Sign Up</button>
     </form>
     <div class="login-footer">
@@ -23,5 +32,16 @@
     </div>
   </div>
   <script src="../scripts/signup.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.querySelector('.toggle-password');
+      const passwordInput = document.getElementById('signupPassword');
+      toggleBtn.addEventListener('click', function() {
+        const isPwd = passwordInput.type === 'password';
+        passwordInput.type = isPwd ? 'text' : 'password';
+        toggleBtn.querySelector('.eye-icon').textContent = isPwd ? '🙈' : '👁️';
+      });
+    });
+  </script>
 </body>
 </html>
