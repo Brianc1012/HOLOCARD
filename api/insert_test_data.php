@@ -23,7 +23,7 @@ try {
     
     // Insert a test HoloCard
     echo "Creating test HoloCard...\n";
-    $stmt = $pdo->prepare("INSERT INTO HoloCard (UID, CardType, Address, ContactNo, Email, BirthDate, isDeleted) VALUES (1, 0, '123 Test St', '555-0123', 'john.doe@example.com', '1990-01-01', FALSE)");
+    $stmt = $pdo->prepare("INSERT INTO HoloCard (UID, CardType, Address, ContactNo, Email, isDeleted) VALUES (1, 0, '123 Test St', '555-0123', 'john.doe@example.com', FALSE)");
     $stmt->execute();
     $cardId = $pdo->lastInsertId();
     echo "✅ HoloCard created with ID: $cardId\n";

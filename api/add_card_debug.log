@@ -70,3 +70,78 @@ Array
     [contactSuffix] => 
 )
 
+2025-06-22T09:18:52+02:00
+Array
+(
+    [cardType] => Corporate
+    [company] => Salford & Co.
+    [companyName] => Salford & Co.
+    [firstName] => Johnmark
+    [lastName] => Garces
+    [middleName] => Altoveros
+    [suffix] => Jr.
+    [email] => caube.brian@gmail.com
+    [contactNo] => 095688644615
+    [address] => 
+    [profession] => 
+    [position] => CEO
+    [cardName] => Salford & Co.'s Card
+    [uid] => 1
+    [qrCode] => eyJjYXJkVHlwZSI6IkNvcnBvcmF0ZSIsImNvbXBhbnkiOiJTYWxmb3JkICYgQ28uIiwiY29tcGFueU5hbWUiOiJTYWxmb3JkICYgQ28uIiwiZmlyc3ROYW1lIjoiSm9obm1hcmsiLCJsYXN0TmFtZSI6IkdhcmNlcyIsIm1pZGRsZU5hbWUiOiJBbHRvdmVyb3MiLCJzdWZmaXgiOiJKci4iLCJlbWFpbCI6ImNhdWJlLmJyaWFuQGdtYWlsLmNvbSIsImNvbnRhY3RObyI6IjA5NTY4ODY0NDYxNSIsImFkZHJlc3MiOiIiLCJwcm9mZXNzaW9uIjoiIiwicG9zaXRpb24iOiJDRU8iLCJjYXJkTmFtZSI6IlNhbGZvcmQgJiBDby4ncyBDYXJkIiwidWlkIjoxLCJxckNvZGUiOiIiLCJwZXJzb25hbEVtYWlsIjoiIiwiY29tcGFueUVtYWlsIjoiY2F1YmUuYnJpYW5AZ21haWwuY29tIiwiY29udGFjdEZpcnN0TmFtZSI6IkpvaG5tYXJrIiwiY29udGFjdExhc3ROYW1lIjoiR2FyY2VzIiwiY29udGFjdFN1ZmZpeCI6IkpyLiJ9
+    [personalEmail] => 
+    [companyEmail] => caube.brian@gmail.com
+    [contactFirstName] => Johnmark
+    [contactLastName] => Garces
+    [contactSuffix] => Jr.
+)
+
+2025-06-22T09:19:02+02:00
+Array
+(
+    [cardType] => Corporate
+    [company] => Salford & Co.
+    [companyName] => Salford & Co.
+    [firstName] => Johnmark
+    [lastName] => Garces
+    [middleName] => Altoveros
+    [suffix] => Jr.
+    [email] => caube.brian@gmail.com
+    [contactNo] => 095688644615
+    [address] => Quezon City
+    [profession] => 
+    [position] => CEO
+    [cardName] => Salford & Co.'s Card
+    [uid] => 1
+    [qrCode] => eyJjYXJkVHlwZSI6IkNvcnBvcmF0ZSIsImNvbXBhbnkiOiJTYWxmb3JkICYgQ28uIiwiY29tcGFueU5hbWUiOiJTYWxmb3JkICYgQ28uIiwiZmlyc3ROYW1lIjoiSm9obm1hcmsiLCJsYXN0TmFtZSI6IkdhcmNlcyIsIm1pZGRsZU5hbWUiOiJBbHRvdmVyb3MiLCJzdWZmaXgiOiJKci4iLCJlbWFpbCI6ImNhdWJlLmJyaWFuQGdtYWlsLmNvbSIsImNvbnRhY3RObyI6IjA5NTY4ODY0NDYxNSIsImFkZHJlc3MiOiJRdWV6b24gQ2l0eSIsInByb2Zlc3Npb24iOiIiLCJwb3NpdGlvbiI6IkNFTyIsImNhcmROYW1lIjoiU2FsZm9yZCAmIENvLidzIENhcmQiLCJ1aWQiOjEsInFyQ29kZSI6IiIsInBlcnNvbmFsRW1haWwiOiIiLCJjb21wYW55RW1haWwiOiJjYXViZS5icmlhbkBnbWFpbC5jb20iLCJjb250YWN0Rmlyc3ROYW1lIjoiSm9obm1hcmsiLCJjb250YWN0TGFzdE5hbWUiOiJHYXJjZXMiLCJjb250YWN0U3VmZml4IjoiSnIuIn0=
+    [personalEmail] => 
+    [companyEmail] => caube.brian@gmail.com
+    [contactFirstName] => Johnmark
+    [contactLastName] => Garces
+    [contactSuffix] => Jr.
+)
+
+2025-06-22T09:47:47+02:00
+Array
+(
+    [cardType] => Corporate
+    [company] => Dipensa Teknolohiya
+    [companyName] => Dipensa Teknolohiya
+    [firstName] => Brian
+    [lastName] => Andrades
+    [middleName] => Altoveros
+    [suffix] => III
+    [email] => Test1@gmail.com
+    [contactNo] => 09911892689
+    [address] => Quezon City
+    [profession] => 
+    [position] => Janitor
+    [cardName] => Dipensa Teknolohiya's Card
+    [uid] => 1
+    [qrCode] => eyJjYXJkVHlwZSI6IkNvcnBvcmF0ZSIsImNvbXBhbnkiOiJEaXBlbnNhIFRla25vbG9oaXlhIiwiY29tcGFueU5hbWUiOiJEaXBlbnNhIFRla25vbG9oaXlhIiwiZmlyc3ROYW1lIjoiQnJpYW4iLCJsYXN0TmFtZSI6IkFuZHJhZGVzIiwibWlkZGxlTmFtZSI6IkFsdG92ZXJvcyIsInN1ZmZpeCI6IklJSSIsImVtYWlsIjoiVGVzdDFAZ21haWwuY29tIiwiY29udGFjdE5vIjoiMDk5MTE4OTI2ODkiLCJhZGRyZXNzIjoiUXVlem9uIENpdHkiLCJwcm9mZXNzaW9uIjoiIiwicG9zaXRpb24iOiJKYW5pdG9yIiwiY2FyZE5hbWUiOiJEaXBlbnNhIFRla25vbG9oaXlhJ3MgQ2FyZCIsInVpZCI6MSwicXJDb2RlIjoiIiwicGVyc29uYWxFbWFpbCI6IiIsImNvbXBhbnlFbWFpbCI6IlRlc3QxQGdtYWlsLmNvbSIsImNvbnRhY3RGaXJzdE5hbWUiOiJCcmlhbiIsImNvbnRhY3RMYXN0TmFtZSI6IkFuZHJhZGVzIiwiY29udGFjdFN1ZmZpeCI6IklJSSJ9
+    [personalEmail] => 
+    [companyEmail] => Test1@gmail.com
+    [contactFirstName] => Brian
+    [contactLastName] => Andrades
+    [contactSuffix] => III
+)
+

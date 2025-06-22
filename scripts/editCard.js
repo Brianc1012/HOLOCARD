@@ -81,12 +81,12 @@ function initEditCardModal(cardData) {
       company: form.querySelector('#editCompany')?.value || '',
       firstName: form.querySelector(isPersonal ? '#editFName' : '#editCFName')?.value || '',
       lastName: form.querySelector(isPersonal ? '#editLname' : '#editCLname')?.value || '',
-      middleName: form.querySelector(isPersonal ? '#editMname' : '#editCMname')?.value || '',
-      suffix: form.querySelector(isPersonal ? '#editNameSuffix' : '#editCnameSuffix')?.value || '',
-      birthDate: form.querySelector('#editBirthDate')?.value || '',
+      middleName: form.querySelector(isPersonal ? '#editMname' : '#editCMname')?.value || '',      suffix: form.querySelector(isPersonal ? '#editNameSuffix' : '#editCnameSuffix')?.value || '',
       email: form.querySelector(isPersonal ? '#editEmail' : '#editCompanyEmail')?.value || '',
       contactNo: form.querySelector(isPersonal ? '#editContact' : '#editCompanyContact')?.value || '',
       address: form.querySelector('#editAddress')?.value || '',
+      profession: isPersonal ? form.querySelector('#editProfession')?.value || '' : '',
+      position: !isPersonal ? form.querySelector('#editPosition')?.value || '' : '',
       cardId: modal.dataset.cardId,
       profileImage: imageBase64 // send the image as base64
     };
@@ -125,12 +125,11 @@ function initEditCardModal(cardData) {
     form.querySelector('#editCompanyContact').value = cardData.companyContact || '';
     form.querySelector('#editFName').value = cardData.fName || '';
     form.querySelector('#editLname').value = cardData.lName || '';
-    form.querySelector('#editMname').value = cardData.mName || '';
-    form.querySelector('#editNameSuffix').value = cardData.suffix || '';
-    form.querySelector('#editBirthDate').value = cardData.birthDate || '';
-    form.querySelector('#editEmail').value = cardData.email || '';
-    form.querySelector('#editContact').value = cardData.contactNo || '';
+    form.querySelector('#editMname').value = cardData.mName || '';    form.querySelector('#editNameSuffix').value = cardData.suffix || '';
+    form.querySelector('#editEmail').value = cardData.email || '';    form.querySelector('#editContact').value = cardData.contactNo || '';
     form.querySelector('#editAddress').value = cardData.address || '';
+    form.querySelector('#editProfession').value = cardData.profession || '';
+    form.querySelector('#editPosition').value = cardData.position || '';
   }
 }
 

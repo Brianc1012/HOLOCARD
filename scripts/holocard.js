@@ -128,9 +128,9 @@ async function refreshCardList() {
              data-middle-name="${card.MiddleName || ''}"
              data-suffix="${card.Suffix || ''}"
              data-email="${card.Email || ''}"
-             data-contact="${card.ContactNo || ''}"
-             data-address="${card.Address || ''}"
-             data-birth-date="${card.BirthDate || ''}"
+             data-contact="${card.ContactNo || ''}"             data-address="${card.Address || ''}"
+             data-profession="${card.Profession || ''}"
+             data-position="${card.Position || ''}"
              data-company-name="${card.CompanyName || ''}"
              data-company-email="${card.CompanyEmail || ''}"
              data-company-contact="${card.CompanyContact || ''}">
@@ -159,9 +159,9 @@ async function refreshCardList() {
           MiddleName: this.getAttribute('data-middle-name'),
           Suffix: this.getAttribute('data-suffix'),
           Email: this.getAttribute('data-email'),
-          ContactNo: this.getAttribute('data-contact'),
-          Address: this.getAttribute('data-address'),
-          BirthDate: this.getAttribute('data-birth-date'),
+          ContactNo: this.getAttribute('data-contact'),          Address: this.getAttribute('data-address'),
+          Profession: this.getAttribute('data-profession'),
+          Position: this.getAttribute('data-position'),
           CompanyName: this.getAttribute('data-company-name'),
           CompanyEmail: this.getAttribute('data-company-email'),
           CompanyContact: this.getAttribute('data-company-contact')
@@ -304,12 +304,12 @@ async function refreshCardList() {
                 company: modal.querySelector('#editCompany')?.value || '',
                 firstName: modal.querySelector(isPersonal ? '#editFName' : '#editCFName')?.value || '',
                 lastName: modal.querySelector(isPersonal ? '#editLname' : '#editCLname')?.value || '',
-                middleName: modal.querySelector(isPersonal ? '#editMname' : '#editCMname')?.value || '',
-                suffix: modal.querySelector(isPersonal ? '#editNameSuffix' : '#editCnameSuffix')?.value || '',
-                birthDate: modal.querySelector('#editBirthDate')?.value || '',
+                middleName: modal.querySelector(isPersonal ? '#editMname' : '#editCMname')?.value || '',                suffix: modal.querySelector(isPersonal ? '#editNameSuffix' : '#editCnameSuffix')?.value || '',
                 email: modal.querySelector(isPersonal ? '#editEmail' : '#editCompanyEmail')?.value || '',
                 contactNo: modal.querySelector(isPersonal ? '#editContact' : '#editCompanyContact')?.value || '',
                 address: modal.querySelector('#editAddress')?.value || '',
+                profession: isPersonal ? modal.querySelector('#editProfession')?.value || '' : '',
+                position: !isPersonal ? modal.querySelector('#editPosition')?.value || '' : '',
                 cardId: modal.dataset.cardId
               };
               
@@ -634,13 +634,26 @@ function populateViewCardData(modal, cardData) {
     }
     return phone;
   };
+  // Show/hide appropriate sections
+  const personalDetails = modal.querySelector('#personalDetails');
+  const corporateDetails = modal.querySelector('#corporateDetails');
+  
+  if (personalDetails && corporateDetails) {
+    if (isPersonal) {
+      personalDetails.style.display = 'block';
+      corporateDetails.style.display = 'none';
+    } else {
+      personalDetails.style.display = 'none';
+      corporateDetails.style.display = 'block';
+    }
+  }
 
   if (isPersonal) {
     // Personal card fields with formatting
     setFieldWithValidation('detailFullName', cardData.CardName);
     setFieldWithValidation('detailEmail', cardData.Email);
     setFieldWithValidation('detailContact', cardData.ContactNo, formatPhone);
-    setFieldWithValidation('detailBirthDate', cardData.BirthDate, formatDate);
+    setFieldWithValidation('detailProfessionPosition', cardData.Profession);
     setFieldWithValidation('detailAddress', cardData.Address);
   } else {
     // Corporate card fields
@@ -648,7 +661,9 @@ function populateViewCardData(modal, cardData) {
     setFieldWithValidation('detailContactPerson', cardData.ContactPerson || 'Not specified');
     setFieldWithValidation('detailCompanyEmail', cardData.Email);
     setFieldWithValidation('detailCompanyContact', cardData.ContactNo, formatPhone);
-    setFieldWithValidation('detailCompanyAddress', cardData.Address);  }
+    setFieldWithValidation('detailPosition', cardData.Position);
+    setFieldWithValidation('detailCompanyAddress', cardData.Address);
+  }
 
   // Generate simple QR code with just card ID for fast scanning
   const qrContainer = modal.querySelector('#qrContainer');

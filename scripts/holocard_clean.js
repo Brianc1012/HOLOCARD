@@ -170,9 +170,7 @@ async function refreshCardList() {
         setField('detailFirstName', card.CardName?.split(' ')[0] || '');
         setField('detailLastName', card.CardName?.split(' ')[1] || '');
         setField('detailEmail', card.Email);
-        setField('detailContact', card.ContactNo);
-        setField('detailAddress', card.Address);
-        setField('detailBdate', card.BirthDate);
+        setField('detailContact', card.ContactNo);        setField('detailAddress', card.Address);
         
         // Generate QR code
         const qrContainer = modal.querySelector('.qr-placeholder');
@@ -308,9 +306,7 @@ async function refreshCardList() {
                 company: modal.querySelector('#editCompany')?.value || '',
                 firstName: modal.querySelector(isPersonal ? '#editFName' : '#editCFName')?.value || '',
                 lastName: modal.querySelector(isPersonal ? '#editLname' : '#editCLname')?.value || '',
-                middleName: modal.querySelector(isPersonal ? '#editMname' : '#editCMname')?.value || '',
-                suffix: modal.querySelector(isPersonal ? '#editNameSuffix' : '#editCnameSuffix')?.value || '',
-                birthDate: modal.querySelector('#editBirthDate')?.value || '',
+                middleName: modal.querySelector(isPersonal ? '#editMname' : '#editCMname')?.value || '',                suffix: modal.querySelector(isPersonal ? '#editNameSuffix' : '#editCnameSuffix')?.value || '',
                 email: modal.querySelector(isPersonal ? '#editEmail' : '#editCompanyEmail')?.value || '',
                 contactNo: modal.querySelector(isPersonal ? '#editContact' : '#editCompanyContact')?.value || '',
                 address: modal.querySelector('#editAddress')?.value || '',

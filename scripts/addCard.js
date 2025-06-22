@@ -85,12 +85,12 @@
       companyName     : form.querySelector("#company")?.value || "", // For API compatibility
       firstName       : form.querySelector(isPersonal ? "#FName"  : "#CFName")?.value || "",
       lastName        : form.querySelector(isPersonal ? "#Lname"  : "#CLname")?.value || "",
-      middleName      : form.querySelector(isPersonal ? "#Mname"  : "#CMname")?.value || "",
-      suffix          : form.querySelector(isPersonal ? "#nameSuffix"  : "#CnameSuffix")?.value || "",
-      birthDate       : form.querySelector("#birthDate")?.value || "",
+      middleName      : form.querySelector(isPersonal ? "#Mname"  : "#CMname")?.value || "",      suffix          : form.querySelector(isPersonal ? "#nameSuffix"  : "#CnameSuffix")?.value || "",
       email           : form.querySelector(isPersonal ? "#email" : "#companyEmail")?.value || "",
       contactNo       : form.querySelector(isPersonal ? "#contact" : "#companyContact")?.value || "",
       address         : form.querySelector("#address")?.value || "",
+      profession      : isPersonal ? form.querySelector("#profession")?.value || "" : "",
+      position        : !isPersonal ? form.querySelector("#position")?.value || "" : "",
       cardName        : ((isPersonal ? form.querySelector("#FName")?.value : form.querySelector("#company")?.value) || "undefined") + "'s Card",
       uid             : uid,
       qrCode          : '', // Will be set below
@@ -200,9 +200,9 @@
         middleName: formData.middleName,
         suffix: formData.suffix,
         Email: formData.email,
-        ContactNo: formData.contactNo,
-        Address: formData.address,
-        BirthDate: formData.birthDate,
+        ContactNo: formData.contactNo,        Address: formData.address,
+        Profession: formData.profession,
+        Position: formData.position,
         CompanyName: formData.company,
         CompanyEmail: formData.cardType !== 'Personal' ? formData.email : ''
       };

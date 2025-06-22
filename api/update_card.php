@@ -17,16 +17,14 @@ try {
     
     // Start transaction
     $pdo->beginTransaction();
-    
-    // Update HoloCard table
+      // Update HoloCard table
     $cardType = $input['cardType'] === 'Corporate' ? 1 : 0;
-    $stmt = $pdo->prepare("UPDATE HoloCard SET CardType = ?, Address = ?, ContactNo = ?, Email = ?, BirthDate = ? WHERE HoloCardID = ?");
+    $stmt = $pdo->prepare("UPDATE HoloCard SET CardType = ?, Address = ?, ContactNo = ?, Email = ? WHERE HoloCardID = ?");
     $stmt->execute([
         $cardType,
         $input['address'] ?? '',
         $input['contactNo'] ?? '',
         $input['email'] ?? '',
-        $input['birthDate'] ?? null,
         $cardId
     ]);
     
@@ -36,26 +34,27 @@ try {
         $stmt = $pdo->prepare("SELECT * FROM Personal WHERE HoloCardID = ?");
         $stmt->execute([$cardId]);
         $personalExists = $stmt->fetch();
-        
-        if ($personalExists) {
+          if ($personalExists) {
             // Update existing personal record
-            $stmt = $pdo->prepare("UPDATE Personal SET FirstName = ?, LastName = ?, MiddleName = ?, Suffix = ? WHERE HoloCardID = ?");
+            $stmt = $pdo->prepare("UPDATE Personal SET FirstName = ?, LastName = ?, MiddleName = ?, Suffix = ?, Profession = ? WHERE HoloCardID = ?");
             $stmt->execute([
                 $input['firstName'] ?? '',
                 $input['lastName'] ?? '',
                 $input['middleName'] ?? '',
                 $input['suffix'] ?? '',
+                $input['profession'] ?? '',
                 $cardId
             ]);
         } else {
             // Insert new personal record
-            $stmt = $pdo->prepare("INSERT INTO Personal (HoloCardID, FirstName, LastName, MiddleName, Suffix) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO Personal (HoloCardID, FirstName, LastName, MiddleName, Suffix, Profession) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $cardId,
                 $input['firstName'] ?? '',
                 $input['lastName'] ?? '',
                 $input['middleName'] ?? '',
-                $input['suffix'] ?? ''
+                $input['suffix'] ?? '',
+                $input['profession'] ?? ''
             ]);
         }
         
@@ -69,24 +68,25 @@ try {
         $stmt = $pdo->prepare("SELECT * FROM Company WHERE HoloCardID = ?");
         $stmt->execute([$cardId]);
         $companyExists = $stmt->fetch();
-        
-        if ($companyExists) {
+          if ($companyExists) {
             // Update existing company record
-            $stmt = $pdo->prepare("UPDATE Company SET CompanyName = ?, CompanyEmail = ?, CompanyContact = ? WHERE HoloCardID = ?");
+            $stmt = $pdo->prepare("UPDATE Company SET CompanyName = ?, CompanyEmail = ?, CompanyContact = ?, Position = ? WHERE HoloCardID = ?");
             $stmt->execute([
                 $input['company'] ?? '',
                 $input['email'] ?? '',
                 $input['contactNo'] ?? '',
+                $input['position'] ?? '',
                 $cardId
             ]);
         } else {
             // Insert new company record
-            $stmt = $pdo->prepare("INSERT INTO Company (HoloCardID, CompanyName, CompanyEmail, CompanyContact) VALUES (?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO Company (HoloCardID, CompanyName, CompanyEmail, CompanyContact, Position) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([
                 $cardId,
                 $input['company'] ?? '',
                 $input['email'] ?? '',
-                $input['contactNo'] ?? ''
+                $input['contactNo'] ?? '',
+                $input['position'] ?? ''
             ]);
         }
         

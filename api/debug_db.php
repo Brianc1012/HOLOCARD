@@ -36,12 +36,10 @@ try {
     // Test the specific query from get_cards.php
     echo "🔍 Testing get_cards query for UID=1:\n";
     $stmt = $pdo->prepare("
-        SELECT 
-            h.HoloCardID,
+        SELECT            h.HoloCardID,
             h.CardType,
             h.Address,
             h.ContactNo,
-            h.BirthDate,
             h.Email,
             h.QRCode,
             CASE 

@@ -18,8 +18,7 @@ try {
     
     // Debug: log input to file
     file_put_contents(__DIR__ . '/add_card_debug.log', date('c') . "\n" . print_r($input, true) . "\n", FILE_APPEND);
-    
-    // Validate required fields
+      // Validate required fields
     $required_fields = ['cardType', 'address', 'contactNo', 'email', 'qrCode', 'uid'];
     foreach ($required_fields as $field) {
         if (!isset($input[$field]) || empty($input[$field])) {
@@ -38,16 +37,13 @@ try {
     $pdo->beginTransaction();
     
     // Insert into HoloCard table
-    $stmt = $pdo->prepare("
-        INSERT INTO HoloCard (CardType, Address, ContactNo, BirthDate, Email, QRCode, UID) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+    $stmt = $pdo->prepare("        INSERT INTO HoloCard (CardType, Address, ContactNo, Email, QRCode, UID) 
+        VALUES (?, ?, ?, ?, ?, ?)
     ");
-    
-    $stmt->execute([
+      $stmt->execute([
         $input['cardType'] === 'Corporate' ? 1 : 0,
         $input['address'],
         $input['contactNo'],
-        $input['birthDate'] ?? null,
         $input['email'],
         base64_decode($input['qrCode']), // Assuming QR code is base64 encoded
         $input['uid']
@@ -56,10 +52,9 @@ try {
     $holocardId = $pdo->lastInsertId();
     
     // Insert into specific table based on card type
-    if ($input['cardType'] === 'Personal') {
-        $stmt = $pdo->prepare("
-            INSERT INTO Personal (HoloCardID, FirstName, LastName, Suffix, BirthDate, Profession, ProfilePicture) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+    if ($input['cardType'] === 'Personal') {        $stmt = $pdo->prepare("
+            INSERT INTO Personal (HoloCardID, FirstName, LastName, Suffix, Profession, ProfilePicture) 
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -67,7 +62,6 @@ try {
             $input['firstName'],
             $input['lastName'],
             $input['suffix'] ?? null,
-            $input['birthDate'],
             $input['profession'] ?? null,
             isset($input['profilePicture']) ? base64_decode($input['profilePicture']) : null
         ]);

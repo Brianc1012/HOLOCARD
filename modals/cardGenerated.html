@@ -74,29 +74,29 @@
                     </div>
                 </div>
 
-                <div class="details">
-
-                    <div class="details personalDetails">
+                <div class="details">                    <div class="details personalDetails">
                         <ul>
                             <li><span class="label">Card Type</span> <span class="value" id="detailCardType">—</span></li>
                             <li><span class="label">First Name</span>  <span class="value" id="detailFirstName">—</span></li>
                             <li><span class="label">Last Name</span>   <span class="value" id="detailLastName">—</span></li>
                             <li><span class="label">Middle Name</span> <span class="value" id="detailMiddleName">—</span></li>
                             <li><span class="label">Suffix</span>      <span class="value" id="detailSuffix">—</span></li>
-                            <li><span class="label">Birth Date</span>  <span class="value" id="detailBdate">—</span></li>
+                            <li><span class="label">Profession</span>  <span class="value" id="detailProfession">—</span></li>
                             <li><span class="label">Email Address</span> <span class="value" id="detailEmail">—</span></li>
                             <li><span class="label">Contact&nbsp;No.</span> <span class="value" id="detailContact">—</span></li>
                             <li class="address-row"><span class="label">Address</span> <span class="value" id="detailAddress">—</span></li>
                         </ul>
-                    </div>                    <div class="details corporateDetails">
+                    </div><div class="details corporateDetails">
                         <ul>
                             <li><span class="label">Card Type</span> <span class="value" id="detailCardTypeCorp">—</span></li>
+                            <li><span class="label">Company Name</span> <span class="value" id="detailCompany">—</span></li>
+                            <li><span class="label">Company Email</span> <span class="value" id="detailCompanyEmail">—</span></li>
+                            <li><span class="label">Contact Person</span> <span class="value" id="detailContactPerson">—</span></li>
                             <li><span class="label">First Name</span>  <span class="value" id="detailFirstNameCorp">—</span></li>
                             <li><span class="label">Last Name</span>   <span class="value" id="detailLastNameCorp">—</span></li>
                             <li><span class="label">Middle Name</span> <span class="value" id="detailMiddleNameCorp">—</span></li>
                             <li><span class="label">Suffix</span>      <span class="value" id="detailSuffixCorp">—</span></li>
-                            <li><span class="label">Company Name</span> <span class="value" id="detailCompany">—</span></li>
-                            <li><span class="label">Company Email</span> <span class="value" id="detailCompanyEmail">—</span></li>
+                            <li><span class="label">Position</span>    <span class="value" id="detailPosition">—</span></li>
                             <li><span class="label">Contact&nbsp;No.</span> <span class="value" id="detailContactCorp">—</span></li>
                             <li class="address-row"><span class="label">Address</span> <span class="value" id="detailAddressCorp">—</span></li>
                         </ul>
@@ -201,22 +201,24 @@ class HoloCardQRGenerator {
       
       // Card Identity
       cardId: cardData.HoloCardID || cardData.id || Date.now(),
-      
-      // Personal/Corporate Information
+        // Personal/Corporate Information
       profile: {
         name: cardData.CardName || this.buildName(cardData),
         cardType: cardData.CardTypeText || cardData.cardType || 'Personal',
         email: cardData.Email || cardData.email || '',
         contact: cardData.ContactNo || cardData.contactNo || '',
         address: cardData.Address || cardData.address || '',
-        birthDate: cardData.BirthDate || cardData.birthDate || ''
+        profession: cardData.Profession || cardData.profession || '',
+        position: cardData.Position || cardData.position || ''
       },
       
       // Company Information (if corporate)
       company: cardData.CardTypeText === 'Corporate' ? {
         name: cardData.CompanyName || cardData.company || '',
         email: cardData.CompanyEmail || cardData.companyEmail || '',
-        contact: cardData.CompanyContact || cardData.companyContact || ''
+        contact: cardData.CompanyContact || cardData.companyContact || '',
+        contactPerson: this.buildContactPersonName(cardData),
+        position: cardData.Position || cardData.position || ''
       } : null,
       
       // AR Configuration
@@ -236,7 +238,6 @@ class HoloCardQRGenerator {
 
     return JSON.stringify(arData);
   }
-
   // Build full name from parts
   buildName(cardData) {
     if (cardData.CardName) return cardData.CardName;
@@ -248,6 +249,19 @@ class HoloCardQRGenerator {
     ].filter(part => part.trim());
     
     return parts.join(' ') || 'Unknown';
+  }
+
+  // Build contact person name for corporate cards  // Build contact person name for corporate cards
+  buildContactPersonName(cardData) {
+    const parts = [
+      cardData.ContactPerson_FirstName || cardData.contactFirstName || cardData.firstName || cardData.FirstName || '',
+      cardData.ContactPerson_LastName || cardData.contactLastName || cardData.lastName || cardData.LastName || ''
+    ].filter(part => part.trim());
+    
+    const fullName = parts.join(' ');
+    const suffix = cardData.ContactPerson_Suffix || cardData.contactSuffix || cardData.suffix || cardData.Suffix || '';
+    
+    return fullName ? (suffix ? `${fullName} ${suffix}` : fullName) : '—';
   }
   // Add visual AR marker indicators
   addARMarkers() {
@@ -347,30 +361,28 @@ class HoloCardQRGenerator {
     const cardNameEl = document.getElementById('detailCardName');
     if (cardNameEl) {
       cardNameEl.textContent = cardData.CardName || this.buildName(cardData) || 'HoloCard';
-    }
-
-    // Update personal detail fields
+    }    // Update personal detail fields
     const personalFieldMappings = {
       'detailCardType': cardData.CardTypeText || cardData.cardType,
       'detailFirstName': cardData.firstName || cardData.FirstName || cardData.CardName?.split(' ')[0],
       'detailLastName': cardData.lastName || cardData.LastName || cardData.CardName?.split(' ')[1],
       'detailMiddleName': cardData.middleName || cardData.MiddleName,
       'detailSuffix': cardData.suffix || cardData.Suffix,
-      'detailBdate': cardData.BirthDate || cardData.birthDate,
+      'detailProfession': cardData.Profession || cardData.profession,
       'detailEmail': cardData.Email || cardData.email,
       'detailContact': cardData.ContactNo || cardData.contactNo,
       'detailAddress': cardData.Address || cardData.address
-    };
-
-    // Update corporate detail fields
+    };    // Update corporate detail fields
     const corporateFieldMappings = {
       'detailCardTypeCorp': cardData.CardTypeText || cardData.cardType,
-      'detailFirstNameCorp': cardData.firstName || cardData.FirstName || cardData.CardName?.split(' ')[0],
-      'detailLastNameCorp': cardData.lastName || cardData.LastName || cardData.CardName?.split(' ')[1],
-      'detailMiddleNameCorp': cardData.middleName || cardData.MiddleName,
-      'detailSuffixCorp': cardData.suffix || cardData.Suffix,
       'detailCompany': cardData.CompanyName || cardData.company,
       'detailCompanyEmail': cardData.CompanyEmail || cardData.companyEmail,
+      'detailContactPerson': this.buildContactPersonName(cardData),
+      'detailFirstNameCorp': cardData.ContactPerson_FirstName || cardData.contactFirstName || cardData.firstName || cardData.FirstName,
+      'detailLastNameCorp': cardData.ContactPerson_LastName || cardData.contactLastName || cardData.lastName || cardData.LastName,
+      'detailMiddleNameCorp': '—', // Not available in database
+      'detailSuffixCorp': cardData.ContactPerson_Suffix || cardData.contactSuffix || cardData.suffix || cardData.Suffix,
+      'detailPosition': cardData.Position || cardData.position,
       'detailContactCorp': cardData.ContactNo || cardData.contactNo,
       'detailAddressCorp': cardData.Address || cardData.address
     };

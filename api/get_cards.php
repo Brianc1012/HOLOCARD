@@ -28,13 +28,11 @@ try {
     }
 
     // Base query for card information
-    $baseQuery = "
-        SELECT 
+    $baseQuery = "        SELECT 
             h.HoloCardID,
             h.CardType,
             h.Address,
             h.ContactNo,
-            h.BirthDate,
             h.Email,
             h.QRCode,
             CASE 
@@ -50,11 +48,11 @@ try {
             p.LastName,
             p.Suffix,
             p.Profession,
-            p.ProfilePicture,
-            -- Company fields  
+            p.ProfilePicture,            -- Company fields  
             c.CompanyName,
             c.ContactPerson_FirstName,
             c.ContactPerson_LastName,
+            c.ContactPerson_Suffix,
             c.Position,
             c.CompanyLogo
         FROM HoloCard h
@@ -96,15 +94,25 @@ try {
         } elseif ($card['CardType'] == 1 && isset($card['CompanyLogo']) && $card['CompanyLogo']) {
             $mime = getImageMimeType($card['CompanyLogo']);
             $card['CompanyLogo'] = 'data:' . $mime . ';base64,' . base64_encode($card['CompanyLogo']);
-            $card['profileImage'] = $card['CompanyLogo'];
-        } else {
+            $card['profileImage'] = $card['CompanyLogo'];        } else {
             $card['profileImage'] = '';
         }
         
-        if ($card['CardType'] == 0) { // Personal
+        // Build ContactPerson field only for Corporate cards
+        if ($card['CardType'] == 1) { // Corporate only
             $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
-        } else { // Corporate
-            $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
+            // For Corporate cards, also map the ContactPerson fields to more accessible names
+            $card['firstName'] = $card['ContactPerson_FirstName'] ?? '';
+            $card['lastName'] = $card['ContactPerson_LastName'] ?? '';
+            $card['suffix'] = $card['ContactPerson_Suffix'] ?? '';
+            $card['middleName'] = ''; // Not available in database
+        } else { // Personal cards don't have contact person
+            $card['ContactPerson'] = '';
+            // For Personal cards, use the Personal table fields
+            $card['firstName'] = $card['FirstName'] ?? '';
+            $card['lastName'] = $card['LastName'] ?? '';
+            $card['suffix'] = $card['Suffix'] ?? '';
+            $card['middleName'] = ''; // Not available in Personal table either
         }
         
         // Clean up null values
@@ -134,16 +142,26 @@ try {
             } elseif ($card['CardType'] == 1 && isset($card['CompanyLogo']) && $card['CompanyLogo']) {
                 $mime = getImageMimeType($card['CompanyLogo']);
                 $card['CompanyLogo'] = 'data:' . $mime . ';base64,' . base64_encode($card['CompanyLogo']);
-                $card['profileImage'] = $card['CompanyLogo'];
-            } else {
+                $card['profileImage'] = $card['CompanyLogo'];            } else {
                 $card['profileImage'] = '';
             }
             
             // Add computed fields for compatibility
-            if ($card['CardType'] == 0) { // Personal
+            // Build ContactPerson field only for Corporate cards
+            if ($card['CardType'] == 1) { // Corporate only
                 $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
-            } else { // Corporate
-                $card['ContactPerson'] = trim(($card['ContactPerson_FirstName'] ?? '') . ' ' . ($card['ContactPerson_LastName'] ?? ''));
+                // For Corporate cards, also map the ContactPerson fields to more accessible names
+                $card['firstName'] = $card['ContactPerson_FirstName'] ?? '';
+                $card['lastName'] = $card['ContactPerson_LastName'] ?? '';
+                $card['suffix'] = $card['ContactPerson_Suffix'] ?? '';
+                $card['middleName'] = ''; // Not available in database
+            } else { // Personal cards don't have contact person
+                $card['ContactPerson'] = '';
+                // For Personal cards, use the Personal table fields
+                $card['firstName'] = $card['FirstName'] ?? '';
+                $card['lastName'] = $card['LastName'] ?? '';
+                $card['suffix'] = $card['Suffix'] ?? '';
+                $card['middleName'] = ''; // Not available in Personal table either
             }
             
             // Clean up null values

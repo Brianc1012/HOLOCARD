@@ -158,18 +158,18 @@ function showARCard(data, qrLocation, qrCorners) {
     ? data.ProfilePicture
     : (data.CompanyLogo && data.CompanyLogo.startsWith('data:image/')
       ? data.CompanyLogo
-      : '../public/images/holocardLogo.svg');
-  arOverlay.innerHTML = `
+      : '../public/images/holocardLogo.svg');  arOverlay.innerHTML = `
     <div class="ar-lshape-parent">
       <div class="ar-lshape-col">
         <div class="ar-business-card">
           <div class="ar-card-content">
             <h2>${esc(cardName)}</h2>
             <div class="ar-card-type">${esc(cardType)}</div>
-            <div class="ar-card-row"><span class="ar-card-label">Company:</span><span class="ar-card-value">${esc(getValue(data.CompanyName, data.company, data.companyName) || 'None')}</span></div>
+            ${cardType === 'Corporate' ? `<div class="ar-card-row"><span class="ar-card-label">Company:</span><span class="ar-card-value">${esc(getValue(data.CompanyName, data.company, data.companyName) || 'None')}</span></div>` : ''}
+            ${cardType === 'Corporate' ? `<div class="ar-card-row"><span class="ar-card-label">Contact Person:</span><span class="ar-card-value">${esc(getValue(data.ContactPerson) || 'None')}</span></div>` : ''}
             <div class="ar-card-row"><span class="ar-card-label">Email:</span><span class="ar-card-value">${esc(getValue(data.Email, data.email, data.personalEmail, data.companyEmail) || 'None')}</span></div>
             <div class="ar-card-row"><span class="ar-card-label">Contact:</span><span class="ar-card-value">${esc(getValue(data.ContactNo, data.contact, data.contactNo, data.phone) || 'None')}</span></div>
-            <div class="ar-card-row"><span class="ar-card-label">Birth Date:</span><span class="ar-card-value">${esc(getValue(data.BirthDate, data.birthDate, data.bday) || 'None')}</span></div>
+            <div class="ar-card-row"><span class="ar-card-label">Profession/Position:</span><span class="ar-card-value">${esc(getValue(data.Profession, data.profession, data.Position, data.position) || 'None')}</span></div>
             <div class="ar-card-row"><span class="ar-card-label">Address:</span><span class="ar-card-value">${esc(getValue(data.Address, data.address) || 'None')}</span></div>
           </div>
         </div>
@@ -231,14 +231,19 @@ function showARCard(data, qrLocation, qrCorners) {
       console.warn(`[DISPLAY] Element ${id} not found`);
     }
   };
-  
-  // Use the getValue helper function for consistent empty string handling
+    // Use the getValue helper function for consistent empty string handling
   set('cardType', getValue(data.CardTypeText, data.cardType, data.type), 'Card Type');
   set('company', getValue(data.CompanyName, data.company, data.companyName), 'Company');
   set('name', getValue(data.CardName, data.cardName) || getValue(`${data.FirstName || ''} ${data.LastName || ''}`.trim()), 'Name');
+  
+  // Add Contact Person field for Corporate cards
+  if (getValue(data.CardTypeText, data.cardType, data.type) === 'Corporate') {
+    set('contactPerson', getValue(data.ContactPerson), 'Contact Person');
+  }
+  
   set('email', getValue(data.Email, data.email, data.personalEmail, data.companyEmail), 'Email');
   set('contact', getValue(data.ContactNo, data.contact, data.contactNo, data.phone), 'Contact Number');
-  set('birthDate', getValue(data.BirthDate, data.birthDate, data.bday), 'Date of Birth');
+  set('professionPosition', getValue(data.Profession, data.profession, data.Position, data.position), 'Profession/Position');
   set('address', getValue(data.Address, data.address), 'Address');
   set('cardId', getValue(data.HoloCardID, data.cardId, data.id), 'Card ID');
   
@@ -268,40 +273,91 @@ function updateOverlayPosition(qrCorners) {
 
 function startCamera() {
   console.log('[CAM] Starting camera...');
+    // Check if the video container exists
+  const videoContainer = document.querySelector('.arSceneContainer');
+  if (!videoContainer) {
+    console.error('[CAM] Video container (.arSceneContainer) not found!');
+    setScanStatus('Scanner container not found', '#ff4e4e');
+    return;
+  }
+  
+  // Hide the A-Frame scene temporarily to avoid camera conflicts
+  const arScene = document.querySelector('#arScene');
+  if (arScene) {
+    arScene.style.display = 'none';
+    console.log('[CAM] Hiding A-Frame scene to avoid camera conflicts');
+  }
+  
+  // Check if getUserMedia is supported
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    console.error('[CAM] getUserMedia not supported');
+    setScanStatus('Camera not supported in this browser', '#ff4e4e');
+    return;
+  }
+  
   video = document.createElement('video');
   canvas = document.createElement('canvas');
   // Use willReadFrequently for better performance in QR scanning
   ctx = canvas.getContext('2d', { willReadFrequently: true });
   scanning = true;
-
-  const videoContainer = document.querySelector('.arSceneContainer');
   video.setAttribute('autoplay', '');
   video.setAttribute('playsinline', '');
+  video.setAttribute('muted', ''); // Add muted attribute for autoplay
   video.style.width = '100%';
   video.style.height = '100%';
   video.style.objectFit = 'cover';
   video.style.position = 'absolute';
   video.style.top = '0';
   video.style.left = '0';
-  video.style.zIndex = '1';
-  video.style.borderRadius = '12px';  videoContainer.appendChild(video);
+  video.style.zIndex = '5'; // Higher than A-Frame but lower than overlays
+  video.style.borderRadius = '12px';
+  video.style.background = '#000'; // Add black background for debugging
   
-  // AR.js will automatically access the camera, but we also need our own stream for QR scanning
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+  console.log('[CAM] Appending video to container:', videoContainer);
+  videoContainer.appendChild(video);
+  
+  // Request camera access with better error handling
+  console.log('[CAM] Requesting camera access...');
+  navigator.mediaDevices.getUserMedia({ 
+    video: { 
+      facingMode: 'environment',
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    } 
+  })
     .then(stream => {
-      console.log('[CAM] Camera stream started.');
+      console.log('[CAM] Camera stream obtained successfully:', stream);
+      console.log('[CAM] Stream tracks:', stream.getTracks());
       video.srcObject = stream;
-      
+      console.log('[CAM] Video srcObject set');
+      // Add error handler for video element
+      video.addEventListener('error', (e) => {
+        console.error('[CAM] Video element error:', e);
+        setScanStatus('Video playback error', '#ff4e4e');
+      });
       // Wait for video to be ready before starting scan loop
       video.addEventListener('loadeddata', () => {
         console.log('[CAM] Video loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
+        console.log('[CAM] Video readyState:', video.readyState);
+        console.log('[CAM] Video style:', video.style.cssText);
         if (video.videoWidth > 0 && video.videoHeight > 0) {
           console.log('[CAM] Starting scanner...');
           setScanningState('idle');
           requestAnimationFrame(tick);
+        } else {
+          console.warn('[CAM] Video dimensions are 0, waiting...');
         }
       });
-      
+      // Add additional event listeners for debugging
+      video.addEventListener('loadedmetadata', () => {
+        console.log('[CAM] Video metadata loaded');
+      });
+      video.addEventListener('canplay', () => {
+        console.log('[CAM] Video can start playing');
+      });
+      video.addEventListener('playing', () => {
+        console.log('[CAM] Video is playing');
+      });
       // Fallback: start after play event if loadeddata doesn't fire
       video.addEventListener('play', () => {
         setTimeout(() => {
@@ -314,13 +370,51 @@ function startCamera() {
           }
         }, 500);
       });
-      
-      video.play();
+      console.log('[CAM] Starting video playback...');
+      video.play().then(() => {
+        console.log('[CAM] Video.play() resolved successfully');
+      }).catch(playError => {
+        console.error('[CAM] Video.play() failed:', playError);
+        setScanStatus('Failed to start video', '#ff4e4e');
+      });
     })
     .catch(err => {
-      console.error('[CAM] Camera access denied or not available.', err);
-      setScanStatus('Camera access denied', '#ff4e4e');
-      alert('Camera access denied or not available.');
+      console.error('[CAM] Camera access error:', err);
+      console.error('[CAM] Error name:', err.name);
+      console.error('[CAM] Error message:', err.message);
+      let errorMessage = 'Camera access failed';
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Camera permission denied';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'No camera found';
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = 'Camera not supported';
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Camera is busy';
+      }
+      setScanStatus(errorMessage, '#ff4e4e');
+      // Only try fallback if error is NOT NotReadableError (camera busy)
+      if (err.name !== 'NotReadableError') {
+        console.log('[CAM] Trying fallback camera settings...');
+        navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'user', // Try front camera
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          } 
+        })
+        .then(fallbackStream => {
+          console.log('[CAM] Fallback camera stream obtained');
+          video.srcObject = fallbackStream;
+          video.play();
+        })
+        .catch(fallbackErr => {
+          console.error('[CAM] Fallback camera also failed:', fallbackErr);
+          alert(`Camera access failed: ${errorMessage}\n\nPlease check:\n1. Camera permissions\n2. HTTPS connection\n3. Camera availability`);
+        });
+      } else {
+        alert(`Camera access failed: ${errorMessage}\n\nPlease check:\n1. Camera permissions\n2. Close other apps using the camera\n3. Camera availability`);
+      }
     });
 }
 
@@ -608,13 +702,12 @@ function hideAROverlay() {
   lastCardId = null;
   lastCardData = null;
   currentCardDisplayed = null;
-  
-  // Clear the details panel
-  const detailElements = ['cardType', 'company', 'name', 'email', 'contact', 'birthDate', 'address', 'cardId'];
+    // Clear the details panel
+  const detailElements = ['cardType', 'company', 'contactPerson', 'name', 'email', 'contact', 'professionPosition', 'address', 'cardId'];
   detailElements.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.textContent = 'None';
+      el.textContent = `${id === 'cardType' ? 'Card Type' : id === 'company' ? 'Company' : id === 'contactPerson' ? 'Contact Person' : id === 'name' ? 'Name' : id === 'email' ? 'Email' : id === 'contact' ? 'Contact Number' : id === 'professionPosition' ? 'Profession/Position' : id === 'address' ? 'Address' : 'Card ID'}: None`;
     }
   });
 }
