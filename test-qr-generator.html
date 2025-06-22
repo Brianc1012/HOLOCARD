@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+    <h1>Test QR Code for Scanner</h1>
+    <p>Use this QR code to test the scanner and "Add to Contacts" functionality.</p>
+    <div id="qrcode"></div>
+    
+    <script>
+        // Create QR code with test card data that matches our test card (ID 45)
+        const cardData = {
+            HoloCardID: 45,
+            cardType: "Personal",
+            company: "",
+            contactPerson: "Jane Smith",
+            name: "Jane Smith",
+            email: "jane.smith@example.com",
+            contact: "555-0789",
+            professionPosition: "",
+            address: "789 Another St"
+        };
+        
+        // Generate QR code
+        QRCode.toCanvas(document.getElementById('qrcode'), JSON.stringify(cardData), {
+            width: 256,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, function (error) {
+            if (error) console.error(error);
+            console.log('QR code generated successfully!');
+        });
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ let arOverlay = null;
 let lastCardData = null;
 let lastCardId = null;
 let lastOverlayVisible = false;
+let currentScannedCardId = null; // Track the currently scanned card for contacts
 
 // Enhanced scanning state management
 let scanningState = 'idle'; // 'idle', 'scanning', 'fetching', 'displaying', 'cooldown'
@@ -240,12 +241,16 @@ function showARCard(data, qrLocation, qrCorners) {
   if (getValue(data.CardTypeText, data.cardType, data.type) === 'Corporate') {
     set('contactPerson', getValue(data.ContactPerson), 'Contact Person');
   }
-  
-  set('email', getValue(data.Email, data.email, data.personalEmail, data.companyEmail), 'Email');
+    set('email', getValue(data.Email, data.email, data.personalEmail, data.companyEmail), 'Email');
   set('contact', getValue(data.ContactNo, data.contact, data.contactNo, data.phone), 'Contact Number');
   set('professionPosition', getValue(data.Profession, data.profession, data.Position, data.position), 'Profession/Position');
   set('address', getValue(data.Address, data.address), 'Address');
-  set('cardId', getValue(data.HoloCardID, data.cardId, data.id), 'Card ID');
+  
+  // Store the current scanned card ID for contacts functionality
+  currentScannedCardId = getValue(data.HoloCardID, data.cardId, data.id);
+  
+  // Show the "Add to Contacts" button
+  showAddContactButton();
   
   // Don't set scan status here - let state management handle it
   console.log('[DISPLAY] Card data displayed successfully');
@@ -702,17 +707,67 @@ function hideAROverlay() {
   lastCardId = null;
   lastCardData = null;
   currentCardDisplayed = null;
+  currentScannedCardId = null;
+  
+  // Hide the "Add to Contacts" button
+  hideAddContactButton();
     // Clear the details panel
-  const detailElements = ['cardType', 'company', 'contactPerson', 'name', 'email', 'contact', 'professionPosition', 'address', 'cardId'];
+  const detailElements = ['cardType', 'company', 'contactPerson', 'name', 'email', 'contact', 'professionPosition', 'address'];
   detailElements.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.textContent = `${id === 'cardType' ? 'Card Type' : id === 'company' ? 'Company' : id === 'contactPerson' ? 'Contact Person' : id === 'name' ? 'Name' : id === 'email' ? 'Email' : id === 'contact' ? 'Contact Number' : id === 'professionPosition' ? 'Profession/Position' : id === 'address' ? 'Address' : 'Card ID'}: None`;
+      const labels = {
+        'cardType': 'Card Type',
+        'company': 'Company', 
+        'contactPerson': 'Contact Person',
+        'name': 'Name',
+        'email': 'Email',
+        'contact': 'Contact Number',
+        'professionPosition': 'Profession/Position',
+        'address': 'Address'
+      };
+      el.textContent = `${labels[id]}: None`;
     }
   });
 }
 
+// Add session check functionality
+async function checkSession() {
+  try {
+    const currentPath = window.location.pathname;
+    let apiPath;
+    if (currentPath.includes('/pages/')) {
+      apiPath = '../api/session_test.php';
+    } else {
+      apiPath = 'api/session_test.php';
+    }
+    
+    const response = await fetch(apiPath, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    const result = await response.json();
+    console.log('[SESSION] Session check result:', result);
+    
+    if (!result.logged_in) {
+      console.warn('[SESSION] User not logged in, some features may not work');
+      // Optionally redirect to login or show a warning
+    } else {
+      console.log('[SESSION] User is logged in:', result.username);
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('[SESSION] Error checking session:', error);
+    return { logged_in: false };
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+  // Check session status when page loads
+  checkSession();
+  
   // Only start camera if jsQR is loaded
   if (window.jsQR) {
     console.log('[INIT] jsQR loaded, starting camera.');
@@ -727,8 +782,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(script);
   }
   // Copy to clipboard for scanned details
-  document.querySelectorAll('.copy-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
+  document.querySelectorAll('.copy-btn').forEach(btn => {    btn.addEventListener('click', function(e) {
       e.stopPropagation();
       const targetId = btn.getAttribute('data-copy-target');
       const field = document.getElementById(targetId);
@@ -742,9 +796,112 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+    // Add to Contacts button event listener
+  const addContactBtn = document.getElementById('addContactBtn');
+  if (addContactBtn) {
+    addContactBtn.addEventListener('click', handleAddToContacts);
+    console.log('[INIT] Add to Contacts button event listener attached');
+  }
 });
 
 // Error handling for invalid QR
 function handleInvalidQR() {
   setScanStatus('Cannot scan: Invalid QR code', '#ff4e4e');
 }
+
+// Add to Contacts functionality
+function showAddContactButton() {
+  const container = document.getElementById('addContactContainer');
+  const button = document.getElementById('addContactBtn');
+  
+  if (container && button) {
+    container.style.display = 'block';
+    
+    // Reset button state
+    button.disabled = false;
+    button.className = 'add-contact-btn';
+    button.innerHTML = '<span class="btn-icon">👤</span><span class="btn-text">Add to Contacts</span>';
+    
+    // Remove any existing event listeners and add new one
+    button.replaceWith(button.cloneNode(true));
+    const newButton = document.getElementById('addContactBtn');
+    newButton.addEventListener('click', handleAddToContacts);
+  }
+}
+
+function hideAddContactButton() {
+  const container = document.getElementById('addContactContainer');
+  if (container) {
+    container.style.display = 'none';
+  }
+}
+
+async function handleAddToContacts() {
+  const button = document.getElementById('addContactBtn');
+  
+  if (!currentScannedCardId) {
+    alert('No card data available');
+    return;
+  }
+  
+  // Set loading state
+  button.disabled = true;
+  button.className = 'add-contact-btn loading';
+  button.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Adding...</span>';
+  
+  try {
+    // Use correct API path based on current location
+    const currentPath = window.location.pathname;
+    let apiPath;
+    if (currentPath.includes('/pages/')) {
+      apiPath = '../api/add_contact.php';
+    } else {
+      apiPath = 'api/add_contact.php';
+    }
+      const response = await fetch(apiPath, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include session cookies
+      body: JSON.stringify({
+        holocardId: currentScannedCardId // Fix the field name to match backend
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Success state
+      button.className = 'add-contact-btn success';
+      button.innerHTML = '<span class="btn-icon">✅</span><span class="btn-text">Added!</span>';
+      
+      // Show success message
+      setTimeout(() => {
+        alert('Contact added successfully!');
+      }, 500);
+      
+    } else {
+      // Error state
+      button.disabled = false;
+      button.className = 'add-contact-btn';
+      button.innerHTML = '<span class="btn-icon">👤</span><span class="btn-text">Add to Contacts</span>';
+      
+      // Show error message
+      alert('Error: ' + (result.error || 'Failed to add contact'));
+    }
+    
+  } catch (error) {
+    console.error('Error adding contact:', error);
+    
+    // Reset button state
+    button.disabled = false;
+    button.className = 'add-contact-btn';
+    button.innerHTML = '<span class="btn-icon">👤</span><span class="btn-text">Add to Contacts</span>';
+    
+    alert('Network error: Please check your connection and try again.');
+  }
+}
+
+// Add session check on load
+checkSession();

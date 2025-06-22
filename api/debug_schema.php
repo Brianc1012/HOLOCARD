@@ -6,7 +6,19 @@ header('Content-Type: text/plain');
 echo "=== DATABASE SCHEMA CHECK ===\n\n";
 
 try {
-    echo "Company table structure:\n";
+    echo "User table structure:\n";
+    $stmt = $pdo->query("DESCRIBE user");
+    while ($row = $stmt->fetch()) {
+        echo "- " . $row['Field'] . " (" . $row['Type'] . ")\n";
+    }
+    
+    echo "\nContacts table structure:\n";
+    $stmt = $pdo->query("DESCRIBE contacts");
+    while ($row = $stmt->fetch()) {
+        echo "- " . $row['Field'] . " (" . $row['Type'] . ")\n";
+    }
+    
+    echo "\nCompany table structure:\n";
     $stmt = $pdo->query("DESCRIBE Company");
     while ($row = $stmt->fetch()) {
         echo "- " . $row['Field'] . " (" . $row['Type'] . ")\n";

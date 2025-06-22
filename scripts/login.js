@@ -6,14 +6,17 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
 
-  const formData = new FormData();
-  formData.append('email', email);
-  formData.append('password', password);
-
   try {
     const res = await fetch('../api/login.php', {
       method: 'POST',
-      body: formData
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include session cookies
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
     });
     const data = await res.json();
     if (data.success) {

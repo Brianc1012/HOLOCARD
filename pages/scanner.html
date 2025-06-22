@@ -129,22 +129,51 @@
         </div>
         <div id="scanStatus" style="width:100%;text-align:center;margin-top:0.5rem;font-size:1rem;color:#fff;font-family:'Poppins',sans-serif;letter-spacing:0.05rem;min-height:1.5em;">
           Ready to scan...
-        </div>
-        <!-- Scanned Info (now below camera preview) -->
-        <div class="scannedDetails compact">
+        </div>        <!-- Scanned Info (now below camera preview) -->
+        <div class="scannedDetails wide">
           <h1 class="scannedDetailsLabel">Scanned Details</h1>
           <div class="photoLogoContainer">
             <img src="../public/images/holocardLogo.svg" alt="Logo" class="photoLogo" />
-          </div>          <div class="details">
-            <p class="detailsLabel" id="cardType">Card Type: None <button class="copy-btn" data-copy-target="cardType" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="company">Company: None <button class="copy-btn" data-copy-target="company" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="contactPerson">Contact Person: None <button class="copy-btn" data-copy-target="contactPerson" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="name">Name: None <button class="copy-btn" data-copy-target="name" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="email">Email: None <button class="copy-btn" data-copy-target="email" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="contact">Contact Number: None <button class="copy-btn" data-copy-target="contact" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="professionPosition">Profession/Position: None <button class="copy-btn" data-copy-target="professionPosition" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="address">Address: None <button class="copy-btn" data-copy-target="address" title="Copy">📋</button></p>
-            <p class="detailsLabel" id="cardId">Card ID: None <button class="copy-btn" data-copy-target="cardId" title="Copy">📋</button></p>
+          </div>
+          <div class="details details-grid">
+            <div class="details-row">
+              <span class="detailsLabel" id="cardType">Card Type: None</span>
+              <button class="copy-btn" data-copy-target="cardType" title="Copy">📋</button>
+            </div>
+            <div class="details-row">
+              <span class="detailsLabel" id="company">Company: None</span>
+              <button class="copy-btn" data-copy-target="company" title="Copy">📋</button>
+            </div>
+            <div class="details-row">
+              <span class="detailsLabel" id="contactPerson">Contact Person: None</span>
+              <button class="copy-btn" data-copy-target="contactPerson" title="Copy">📋</button>
+            </div>
+            <div class="details-row">
+              <span class="detailsLabel" id="name">Name: None</span>
+              <button class="copy-btn" data-copy-target="name" title="Copy">📋</button>
+            </div>
+            <div class="details-row">
+              <span class="detailsLabel" id="email">Email: None</span>
+              <button class="copy-btn" data-copy-target="email" title="Copy">📋</button>
+            </div>
+            <div class="details-row">
+              <span class="detailsLabel" id="contact">Contact Number: None</span>
+              <button class="copy-btn" data-copy-target="contact" title="Copy">📋</button>
+            </div>
+            <div class="details-row">
+              <span class="detailsLabel" id="professionPosition">Profession/Position: None</span>
+              <button class="copy-btn" data-copy-target="professionPosition" title="Copy">📋</button>
+            </div>            <div class="details-row">
+              <span class="detailsLabel" id="address">Address: None</span>
+              <button class="copy-btn" data-copy-target="address" title="Copy">📋</button>
+            </div>
+          </div>
+          <!-- Add to Contacts Button -->
+          <div class="add-contact-container" id="addContactContainer" style="display: none;">
+            <button class="add-contact-btn" id="addContactBtn">
+              <span class="btn-icon">👤</span>
+              <span class="btn-text">Add to Contacts</span>
+            </button>
           </div>
         </div>
       </div>
