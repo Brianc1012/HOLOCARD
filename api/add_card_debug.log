@@ -22,3 +22,51 @@ Array
     [contactSuffix] => 
 )
 
+2025-06-13T15:05:24+02:00
+Array
+(
+    [cardType] => Personal
+    [company] => 
+    [companyName] => 
+    [firstName] => Joel
+    [lastName] => Estrada
+    [middleName] => 
+    [suffix] => Jr.
+    [birthDate] => 2003-08-13
+    [email] => caube.brian@gmail.com
+    [contactNo] => 09568864615
+    [address] => 101 Bulacan City
+    [cardName] => Joel's Card
+    [uid] => 1
+    [qrCode] => eyJjYXJkVHlwZSI6IlBlcnNvbmFsIiwiY29tcGFueSI6IiIsImNvbXBhbnlOYW1lIjoiIiwiZmlyc3ROYW1lIjoiSm9lbCIsImxhc3ROYW1lIjoiRXN0cmFkYSIsIm1pZGRsZU5hbWUiOiIiLCJzdWZmaXgiOiJKci4iLCJiaXJ0aERhdGUiOiIyMDAzLTA4LTEzIiwiZW1haWwiOiJjYXViZS5icmlhbkBnbWFpbC5jb20iLCJjb250YWN0Tm8iOiIwOTU2ODg2NDYxNSIsImFkZHJlc3MiOiIxMDEgQnVsYWNhbiBDaXR5IiwiY2FyZE5hbWUiOiJKb2VsJ3MgQ2FyZCIsInVpZCI6MSwicXJDb2RlIjoiIiwicGVyc29uYWxFbWFpbCI6ImNhdWJlLmJyaWFuQGdtYWlsLmNvbSIsImNvbXBhbnlFbWFpbCI6IiIsImNvbnRhY3RGaXJzdE5hbWUiOiIiLCJjb250YWN0TGFzdE5hbWUiOiIiLCJjb250YWN0U3VmZml4IjoiIn0=
+    [personalEmail] => caube.brian@gmail.com
+    [companyEmail] => 
+    [contactFirstName] => 
+    [contactLastName] => 
+    [contactSuffix] => 
+)
+
+2025-06-13T15:24:08+02:00
+Array
+(
+    [cardType] => Personal
+    [company] => 
+    [companyName] => 
+    [firstName] => Brian
+    [lastName] => Caube
+    [middleName] => Sanoria
+    [suffix] => 
+    [birthDate] => 2004-10-12
+    [email] => caube.brian@gmail.com
+    [contactNo] => 09568864615
+    [address] => Quezon City
+    [cardName] => Brian's Card
+    [uid] => 1
+    [qrCode] => eyJjYXJkVHlwZSI6IlBlcnNvbmFsIiwiY29tcGFueSI6IiIsImNvbXBhbnlOYW1lIjoiIiwiZmlyc3ROYW1lIjoiQnJpYW4iLCJsYXN0TmFtZSI6IkNhdWJlIiwibWlkZGxlTmFtZSI6IlNhbm9yaWEiLCJzdWZmaXgiOiIiLCJiaXJ0aERhdGUiOiIyMDA0LTEwLTEyIiwiZW1haWwiOiJjYXViZS5icmlhbkBnbWFpbC5jb20iLCJjb250YWN0Tm8iOiIwOTU2ODg2NDYxNSIsImFkZHJlc3MiOiJRdWV6b24gQ2l0eSIsImNhcmROYW1lIjoiQnJpYW4ncyBDYXJkIiwidWlkIjoxLCJxckNvZGUiOiIiLCJwZXJzb25hbEVtYWlsIjoiY2F1YmUuYnJpYW5AZ21haWwuY29tIiwiY29tcGFueUVtYWlsIjoiIiwiY29udGFjdEZpcnN0TmFtZSI6IiIsImNvbnRhY3RMYXN0TmFtZSI6IiIsImNvbnRhY3RTdWZmaXgiOiIifQ==
+    [personalEmail] => caube.brian@gmail.com
+    [companyEmail] => 
+    [contactFirstName] => 
+    [contactLastName] => 
+    [contactSuffix] => 
+)
+
