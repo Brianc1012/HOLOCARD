@@ -31,6 +31,7 @@ body {
     min-width: 350px;
     max-width: 800px;
     width: 90vw;
+    margin-bottom: 16px;
 }
 
 .logoContainer {
@@ -201,3 +202,27 @@ body {
         margin-bottom: 1.2rem;
     }
 }
+
+/* Only overlay the scanner section, do not override its inner styling */
+#scannerInlineSection {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: #0a0020;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: none;
+  padding: 0; /* Remove padding to prevent horizontal overflow */
+  box-sizing: border-box;
+}
+
+.scannerPageContainer {
+  padding: 2.5rem 1.5rem 2.5rem 1.5rem;
+  box-sizing: border-box;
+}
+
+/* Remove previous overrides for .scannerPageContainer and children */
+/* Let scanner.css handle the rest for original look */
