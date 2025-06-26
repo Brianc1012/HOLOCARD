@@ -60,9 +60,8 @@ try {
             comp.ContactPerson_LastName,
             comp.Position
         FROM contacts c
-        JOIN holocard h ON c.HoloCardID = h.HoloCardID
-        LEFT JOIN Personal p ON h.HoloCardID = p.HoloCardID
-        LEFT JOIN Company comp ON h.HoloCardID = comp.HoloCardID
+        JOIN holocard h ON c.HoloCardID = h.HoloCardID        LEFT JOIN personal p ON h.HoloCardID = p.HoloCardID
+        LEFT JOIN company comp ON h.HoloCardID = comp.HoloCardID
         WHERE c.UID = ? AND h.isDeleted = 0
         ORDER BY c.ContactID DESC
     ");

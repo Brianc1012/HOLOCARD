@@ -37,7 +37,7 @@ try {
     $pdo->beginTransaction();
     
     // Insert into HoloCard table
-    $stmt = $pdo->prepare("        INSERT INTO HoloCard (CardType, Address, ContactNo, Email, QRCode, UID) 
+    $stmt = $pdo->prepare("        INSERT INTO holocard (CardType, Address, ContactNo, Email, QRCode, UID) 
         VALUES (?, ?, ?, ?, ?, ?)
     ");
       $stmt->execute([
@@ -53,7 +53,7 @@ try {
     
     // Insert into specific table based on card type
     if ($input['cardType'] === 'Personal') {        $stmt = $pdo->prepare("
-            INSERT INTO Personal (HoloCardID, FirstName, LastName, Suffix, Profession, ProfilePicture) 
+            INSERT INTO personal (HoloCardID, FirstName, LastName, Suffix, Profession, ProfilePicture) 
             VALUES (?, ?, ?, ?, ?, ?)
         ");
         
@@ -65,9 +65,8 @@ try {
             $input['profession'] ?? null,
             isset($input['profilePicture']) ? base64_decode($input['profilePicture']) : null
         ]);
-    } else {
-        $stmt = $pdo->prepare("
-            INSERT INTO Company (HoloCardID, CompanyName, CompanyLogo, ContactPerson_FirstName, ContactPerson_LastName, ContactPerson_Suffix, Position) 
+    } else {        $stmt = $pdo->prepare("
+            INSERT INTO company (HoloCardID, CompanyName, CompanyLogo, ContactPerson_FirstName, ContactPerson_LastName, ContactPerson_Suffix, Position) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         

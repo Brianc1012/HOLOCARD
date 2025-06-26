@@ -26,7 +26,7 @@ try {
     
     // Check HoloCard table
     if (in_array('HoloCard', $tables)) {
-        $stmt = $pdo->query("SELECT * FROM HoloCard WHERE isDeleted = FALSE LIMIT 10");
+        $stmt = $pdo->query("SELECT * FROM holocard WHERE isDeleted = FALSE LIMIT 10");
         $cards = $stmt->fetchAll();
         echo "🃏 HoloCards (first 10):\n";
         print_r($cards);
@@ -49,10 +49,9 @@ try {
             CASE 
                 WHEN h.CardType = 0 THEN 'Personal'
                 ELSE 'Corporate'
-            END as CardTypeText
-        FROM HoloCard h
-        LEFT JOIN Personal p ON h.HoloCardID = p.HoloCardID
-        LEFT JOIN Company c ON h.HoloCardID = c.HoloCardID
+            END as CardTypeText        FROM holocard h
+        LEFT JOIN personal p ON h.HoloCardID = p.HoloCardID
+        LEFT JOIN company c ON h.HoloCardID = c.HoloCardID
         WHERE h.UID = ? AND h.isDeleted = FALSE
         ORDER BY h.HoloCardID DESC
     ");

@@ -145,3 +145,78 @@ Array
     [contactSuffix] => III
 )
 
+2025-06-22T21:08:43+02:00
+Array
+(
+    [cardType] => Personal
+    [company] => 
+    [companyName] => 
+    [firstName] => Brian
+    [lastName] => Caube
+    [middleName] => Sanoria
+    [suffix] => III
+    [email] => caube.brian@gmail.com
+    [contactNo] => 09568864615
+    [address] => QuezonCity
+    [profession] => Student
+    [position] => 
+    [cardName] => Brian's Card
+    [uid] => 2
+    [qrCode] => eyJjYXJkVHlwZSI6IlBlcnNvbmFsIiwiY29tcGFueSI6IiIsImNvbXBhbnlOYW1lIjoiIiwiZmlyc3ROYW1lIjoiQnJpYW4iLCJsYXN0TmFtZSI6IkNhdWJlIiwibWlkZGxlTmFtZSI6IlNhbm9yaWEiLCJzdWZmaXgiOiJJSUkiLCJlbWFpbCI6ImNhdWJlLmJyaWFuQGdtYWlsLmNvbSIsImNvbnRhY3RObyI6IjA5NTY4ODY0NjE1IiwiYWRkcmVzcyI6IlF1ZXpvbkNpdHkiLCJwcm9mZXNzaW9uIjoiU3R1ZGVudCIsInBvc2l0aW9uIjoiIiwiY2FyZE5hbWUiOiJCcmlhbidzIENhcmQiLCJ1aWQiOjIsInFyQ29kZSI6IiIsInBlcnNvbmFsRW1haWwiOiJjYXViZS5icmlhbkBnbWFpbC5jb20iLCJjb21wYW55RW1haWwiOiIiLCJjb250YWN0Rmlyc3ROYW1lIjoiIiwiY29udGFjdExhc3ROYW1lIjoiIiwiY29udGFjdFN1ZmZpeCI6IiJ9
+    [personalEmail] => caube.brian@gmail.com
+    [companyEmail] => 
+    [contactFirstName] => 
+    [contactLastName] => 
+    [contactSuffix] => 
+)
+
+2025-06-23T19:25:34+02:00
+Array
+(
+    [cardType] => Personal
+    [company] => 
+    [companyName] => 
+    [firstName] => Brian
+    [lastName] => Caube
+    [middleName] => Sanoria
+    [suffix] => 
+    [email] => caube.brian@gmail.com
+    [contactNo] => 09568864615
+    [address] => Quezon City
+    [profession] => Student
+    [position] => 
+    [cardName] => Brian's Card
+    [uid] => 4
+    [qrCode] => eyJjYXJkVHlwZSI6IlBlcnNvbmFsIiwiY29tcGFueSI6IiIsImNvbXBhbnlOYW1lIjoiIiwiZmlyc3ROYW1lIjoiQnJpYW4iLCJsYXN0TmFtZSI6IkNhdWJlIiwibWlkZGxlTmFtZSI6IlNhbm9yaWEiLCJzdWZmaXgiOiIiLCJlbWFpbCI6ImNhdWJlLmJyaWFuQGdtYWlsLmNvbSIsImNvbnRhY3RObyI6IjA5NTY4ODY0NjE1IiwiYWRkcmVzcyI6IlF1ZXpvbiBDaXR5IiwicHJvZmVzc2lvbiI6IlN0dWRlbnQiLCJwb3NpdGlvbiI6IiIsImNhcmROYW1lIjoiQnJpYW4ncyBDYXJkIiwidWlkIjo0LCJxckNvZGUiOiIiLCJwZXJzb25hbEVtYWlsIjoiY2F1YmUuYnJpYW5AZ21haWwuY29tIiwiY29tcGFueUVtYWlsIjoiIiwiY29udGFjdEZpcnN0TmFtZSI6IiIsImNvbnRhY3RMYXN0TmFtZSI6IiIsImNvbnRhY3RTdWZmaXgiOiIifQ==
+    [personalEmail] => caube.brian@gmail.com
+    [companyEmail] => 
+    [contactFirstName] => 
+    [contactLastName] => 
+    [contactSuffix] => 
+)
+
+2025-06-23T19:37:13+02:00
+Array
+(
+    [cardType] => Personal
+    [company] => 
+    [companyName] => 
+    [firstName] => Johnmark
+    [lastName] => Garces
+    [middleName] => Altoveros
+    [suffix] => 
+    [email] => caube.brian@gmail.com
+    [contactNo] => 09568864615
+    [address] => Quezon City
+    [profession] => Doctor
+    [position] => 
+    [cardName] => Johnmark's Card
+    [uid] => 5
+    [qrCode] => eyJjYXJkVHlwZSI6IlBlcnNvbmFsIiwiY29tcGFueSI6IiIsImNvbXBhbnlOYW1lIjoiIiwiZmlyc3ROYW1lIjoiSm9obm1hcmsiLCJsYXN0TmFtZSI6IkdhcmNlcyIsIm1pZGRsZU5hbWUiOiJBbHRvdmVyb3MiLCJzdWZmaXgiOiIiLCJlbWFpbCI6ImNhdWJlLmJyaWFuQGdtYWlsLmNvbSIsImNvbnRhY3RObyI6IjA5NTY4ODY0NjE1IiwiYWRkcmVzcyI6IlF1ZXpvbiBDaXR5IiwicHJvZmVzc2lvbiI6IkRvY3RvciIsInBvc2l0aW9uIjoiIiwiY2FyZE5hbWUiOiJKb2hubWFyaydzIENhcmQiLCJ1aWQiOjUsInFyQ29kZSI6IiIsInBlcnNvbmFsRW1haWwiOiJjYXViZS5icmlhbkBnbWFpbC5jb20iLCJjb21wYW55RW1haWwiOiIiLCJjb250YWN0Rmlyc3ROYW1lIjoiIiwiY29udGFjdExhc3ROYW1lIjoiIiwiY29udGFjdFN1ZmZpeCI6IiJ9
+    [personalEmail] => caube.brian@gmail.com
+    [companyEmail] => 
+    [contactFirstName] => 
+    [contactLastName] => 
+    [contactSuffix] => 
+)
+

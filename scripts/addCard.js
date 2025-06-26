@@ -180,7 +180,7 @@
     
     try {
       // Fetch the viewCard modal
-      const response = await fetch("../modals/viewCard.html");
+      const response = await fetch("../pages/viewCard.html");
       const html = await response.text();
       
       // Create modal container and inject directly into DOM

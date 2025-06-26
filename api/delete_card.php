@@ -13,7 +13,7 @@ try {
     }
     $cardId = intval($input['id']);
     // Soft delete: set isDeleted = TRUE
-    $stmt = $pdo->prepare('UPDATE HoloCard SET isDeleted = TRUE WHERE HoloCardID = ?');
+    $stmt = $pdo->prepare('UPDATE holocard SET isDeleted = TRUE WHERE HoloCardID = ?');
     $stmt->execute([$cardId]);
     if ($stmt->rowCount() === 0) {
         throw new Exception('Card not found or already deleted');

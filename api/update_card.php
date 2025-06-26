@@ -19,7 +19,7 @@ try {
     $pdo->beginTransaction();
       // Update HoloCard table
     $cardType = $input['cardType'] === 'Corporate' ? 1 : 0;
-    $stmt = $pdo->prepare("UPDATE HoloCard SET CardType = ?, Address = ?, ContactNo = ?, Email = ? WHERE HoloCardID = ?");
+    $stmt = $pdo->prepare("UPDATE holocard SET CardType = ?, Address = ?, ContactNo = ?, Email = ? WHERE HoloCardID = ?");
     $stmt->execute([
         $cardType,
         $input['address'] ?? '',
@@ -31,12 +31,12 @@ try {
     if ($cardType === 0) {
         // Personal card - update Personal table
         // First check if personal record exists
-        $stmt = $pdo->prepare("SELECT * FROM Personal WHERE HoloCardID = ?");
+        $stmt = $pdo->prepare("SELECT * FROM personal WHERE HoloCardID = ?");
         $stmt->execute([$cardId]);
         $personalExists = $stmt->fetch();
           if ($personalExists) {
             // Update existing personal record
-            $stmt = $pdo->prepare("UPDATE Personal SET FirstName = ?, LastName = ?, MiddleName = ?, Suffix = ?, Profession = ? WHERE HoloCardID = ?");
+            $stmt = $pdo->prepare("UPDATE personal SET FirstName = ?, LastName = ?, MiddleName = ?, Suffix = ?, Profession = ? WHERE HoloCardID = ?");
             $stmt->execute([
                 $input['firstName'] ?? '',
                 $input['lastName'] ?? '',
@@ -47,7 +47,7 @@ try {
             ]);
         } else {
             // Insert new personal record
-            $stmt = $pdo->prepare("INSERT INTO Personal (HoloCardID, FirstName, LastName, MiddleName, Suffix, Profession) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO personal (HoloCardID, FirstName, LastName, MiddleName, Suffix, Profession) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $cardId,
                 $input['firstName'] ?? '',
@@ -59,18 +59,18 @@ try {
         }
         
         // Remove any company record if it exists
-        $stmt = $pdo->prepare("DELETE FROM Company WHERE HoloCardID = ?");
+        $stmt = $pdo->prepare("DELETE FROM company WHERE HoloCardID = ?");
         $stmt->execute([$cardId]);
         
     } else {
         // Corporate card - update Company table
         // First check if company record exists
-        $stmt = $pdo->prepare("SELECT * FROM Company WHERE HoloCardID = ?");
+        $stmt = $pdo->prepare("SELECT * FROM company WHERE HoloCardID = ?");
         $stmt->execute([$cardId]);
         $companyExists = $stmt->fetch();
           if ($companyExists) {
             // Update existing company record
-            $stmt = $pdo->prepare("UPDATE Company SET CompanyName = ?, CompanyEmail = ?, CompanyContact = ?, Position = ? WHERE HoloCardID = ?");
+            $stmt = $pdo->prepare("UPDATE company SET CompanyName = ?, CompanyEmail = ?, CompanyContact = ?, Position = ? WHERE HoloCardID = ?");
             $stmt->execute([
                 $input['company'] ?? '',
                 $input['email'] ?? '',
@@ -80,7 +80,7 @@ try {
             ]);
         } else {
             // Insert new company record
-            $stmt = $pdo->prepare("INSERT INTO Company (HoloCardID, CompanyName, CompanyEmail, CompanyContact, Position) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO company (HoloCardID, CompanyName, CompanyEmail, CompanyContact, Position) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([
                 $cardId,
                 $input['company'] ?? '',
@@ -91,7 +91,7 @@ try {
         }
         
         // Remove any personal record if it exists
-        $stmt = $pdo->prepare("DELETE FROM Personal WHERE HoloCardID = ?");
+        $stmt = $pdo->prepare("DELETE FROM personal WHERE HoloCardID = ?");
         $stmt->execute([$cardId]);
     }
     
@@ -103,7 +103,7 @@ try {
             $base64 = explode('base64,', $base64, 2)[1];
         }
         $imageData = base64_decode($base64);
-        $stmt = $pdo->prepare("UPDATE Personal SET ProfilePicture = ? WHERE HoloCardID = ?");
+        $stmt = $pdo->prepare("UPDATE personal SET ProfilePicture = ? WHERE HoloCardID = ?");
         $stmt->execute([$imageData, $cardId]);
     } elseif ($cardType === 1 && !empty($input['profileImage'])) {
         // Corporate card: update CompanyLogo
@@ -112,7 +112,7 @@ try {
             $base64 = explode('base64,', $base64, 2)[1];
         }
         $imageData = base64_decode($base64);
-        $stmt = $pdo->prepare("UPDATE Company SET CompanyLogo = ? WHERE HoloCardID = ?");
+        $stmt = $pdo->prepare("UPDATE company SET CompanyLogo = ? WHERE HoloCardID = ?");
         $stmt->execute([$imageData, $cardId]);
     }
     

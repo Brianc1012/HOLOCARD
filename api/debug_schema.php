@@ -31,7 +31,7 @@ try {
     }
     
     echo "\nHoloCard table structure:\n";
-    $stmt = $pdo->query("DESCRIBE HoloCard");
+    $stmt = $pdo->query("DESCRIBE holocard");
     while ($row = $stmt->fetch()) {
         echo "- " . $row['Field'] . " (" . $row['Type'] . ")\n";
     }

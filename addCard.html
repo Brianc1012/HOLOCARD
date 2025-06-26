@@ -1,0 +1,201 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Card Modal</title>
+    <link rel="stylesheet" href="../styles/addCard.css" />
+    <script src="../scripts/qrcode.min.js"></script>
+    <script src="../scripts/addCard.js" defer></script>
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    
+</head>
+
+<body>    <div class="modal-overlay">
+        <div class="modalContent">
+            <div id="modalHeader">
+                <h1 class="modalTitle">Add Card</h1>
+            </div>
+            
+            <!-- This is where the form for adding a card will be -->
+            <form id="addCardForm">
+                <div class="cardTypeContainer">
+                    <label for="cardCategory">Card Type:</label>
+                    <div class="customSelect">
+                        <select id="cardCategory" name="cardCategory" required data-required>
+                            <option value="Personal">Personal</option>
+                            <option value="Corporate">Corporate</option>
+                        </select>
+                    </div>
+                </div>
+                
+                
+                
+                <!-- Upload you photo here -->
+                <div class="photoLogoContainer">
+                    <label for="photoUpload" class="photoUploadLabel">
+                        <img src="../public/images/holocardLogo.svg" alt="Upload Photo" id="photoPreview" class="photoPreviewClickable" />
+                      </label>
+                      <input type="file" id="photoUpload" name="photoUpload" accept="image/*" style="display: none;">                      
+                </div>
+
+
+                <!----------------------- Forms for Corporate HoloCards ---------------->
+                <div class="corporateDetails">
+                    <label for="company">Company:</label>
+                    <input type="text" id="company" name="company" required data-required>
+
+                    <!-- CONTACT PERSON CONTAINER -->
+                    <div class="contactPerson">
+                        <h2>Contact Person</h2>
+                        <div class="contactPersonDetails">
+                            <!-- CONTACT PERSON NAME -->
+                            <div class="row">
+                                <div class="inputContainer">
+                                    <label for="CFName">First Name:</label>
+                                    <input type="text" id="CFName" name="Fname" required data-required>
+                                </div>
+
+                                <div class="inputContainer" class="inputContainer">
+                                    <label for="CLname">Last Name:</label>
+                                    <input type="text" id="CLname" name="Lname" required data-required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!--OPTIONAL MIDDLE NAME-->
+                                <div class="inputContainer">
+                                    <label for="CMname">Middle Name:</label>
+                                    <input type="text" id="CMname" name="Mname" optional>
+                                </div>
+                                <!--OPTIONAL SUFFIX-->
+                                <div class="inputContainerSuffix">
+                                    <label for="CnameSuffix">Suffix:</label>
+                                    <div class="customSelect">
+                                        <select id="CnameSuffix" name="CnameSuffix">
+                                            <option value="">None</option>
+                                            <option value="Jr.">Jr.</option>
+                                            <option value="Sr.">Sr.</option>
+                                            <option value="III">III</option>
+                                            <option value="IV">IV</option>
+                                            <option value="V">V</option>
+                                        </select>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--COMPANY DETAILS-->
+                    <div class="row">
+                        <div class="inputContainer">
+                            <label for="companyEmail">Company Email:</label>
+                            <input type="email" id="companyEmail" name="companyEmail" required data-required>
+                        </div>
+                        
+                        <div class="inputContainer">
+                            <label for="companyContact">Company Contact Number:</label>
+                            <input type="tel" id="companyContact" name="companyContact" optional>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="inputContainer">
+                            <label for="position">Position:</label>
+                            <input type="text" id="position" name="position" placeholder="e.g., Manager, Director, CEO">
+                        </div>
+                    </div>
+                </div>
+
+                <!-------------------------- Forms for Personal HoloCards ------------------------>
+                <div class="personalDetails">
+                    <!-- NAME -->
+                    <div class="name">
+                        <div class="row">                            <div class="inputContainer">
+                                <label for="fName">First Name:</label>
+                                <input type="text" id="fName" name="fName" required data-required>
+                            </div>
+                            
+                            <div class="inputContainer">
+                                <label for="lname">Last Name:</label>
+                                <input type="text" id="lname" name="lname" required data-required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">                            <div class="inputContainer">
+                                <label for="mname">Middle Name:</label>
+                                <input type="text" id="mname" name="mname">
+                            </div>
+
+                            <div class="inputContainerSuffix">
+                                <label for="nameSuffix">Suffix:</label>
+                                <div class="customSelect">
+                                    <select id="nameSuffix" name="nameSuffix">
+                                        <option value="">None</option>
+                                        <option value="Jr.">Jr.</option>
+                                        <option value="Sr.">Sr.</option>
+                                        <option value="III">III</option>
+                                        <option value="PhD">PhD</option>
+                                        <option value="MD">MD</option>                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">                        <div class="inputContainer">
+                            <label for="email">Personal Email:</label>
+                            <input type="email" id="email" name="email" required data-required>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label for="contact">Contact Number:</label>
+                            <input type="tel" id="contact" name="contact" required data-required>
+                        </div>
+                    </div> 
+                    
+                    <div class="row">
+                        <div class="inputContainer">
+                            <label for="profession">Profession:</label>
+                            <input type="text" id="profession" name="profession" placeholder="e.g., Software Engineer, Doctor, Teacher">
+                        </div>
+                    </div>
+                </div> <!-- end-of-personalDetails -->
+                
+                <!-- otherDetails -->
+                <div class="commonDetails">
+                    <label for="address">Address:</label>
+                    <textarea id="address" name="address"></textarea>
+                </div>
+                
+                <!-- QR Code Output -->
+                <div id="qrcode" style="text-align:center;margin:1em 0;"></div>
+                <a id="downloadQR" style="display:none;" download="holocard_qr.png">Download QR Code</a>
+                  <!-- Submit and Cancel buttons -->
+                <div class="buttonContainer">
+                    <button type="submit" id="addCardButton">Add Card</button>
+                    <button type="button" class="cancelButton">Cancel</button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+
+    <script>
+        // Add cancel functionality
+        document.querySelector('.cancelButton').addEventListener('click', function() {
+            const modal = document.querySelector('.modal-overlay');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                const modalContainer = document.getElementById('modalContainer');
+                if (modalContainer) {
+                    modalContainer.innerHTML = '';
+                }
+            }, 300);
+        });
+    </script>
+    
+</body>
+</html>

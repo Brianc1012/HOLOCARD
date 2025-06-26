@@ -54,10 +54,9 @@ try {
             c.ContactPerson_LastName,
             c.ContactPerson_Suffix,
             c.Position,
-            c.CompanyLogo
-        FROM HoloCard h
-        LEFT JOIN Personal p ON h.HoloCardID = p.HoloCardID
-        LEFT JOIN Company c ON h.HoloCardID = c.HoloCardID
+            c.CompanyLogo        FROM holocard h
+        LEFT JOIN personal p ON h.HoloCardID = p.HoloCardID
+        LEFT JOIN company c ON h.HoloCardID = c.HoloCardID
         WHERE h.isDeleted = FALSE
     ";
     
