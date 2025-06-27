@@ -1,106 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scanner</title>  <link rel="stylesheet" href="../styles/scanner.css" />
-  <!-- Load A-Frame -->
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-
-  <!-- Load AR.js AFTER A-Frame -->
-  <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js@3.3.2/aframe/build/aframe-ar.min.js"></script>
-
-  <!-- Load jsQR for QR code detection -->
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
-  <script src="../scripts/scanner.js" defer></script>
-  <script>
-    // Debug log: HTML loaded
-    console.log('[scanner.html] HTML loaded, DOMContentLoaded event will be fired soon.');
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('[scanner.html] DOMContentLoaded event fired.');
-      // Log AR.js and A-Frame presence
-      if (window.AFRAME) {
-        console.log('[scanner.html] A-Frame loaded:', window.AFRAME);
-      } else {
-        console.error('[scanner.html] A-Frame NOT loaded!');
-      }
-      if (window.ARjs) {
-        console.log('[scanner.html] AR.js loaded:', window.ARjs);
-      } else {
-        console.warn('[scanner.html] AR.js not found as window.ARjs (may be normal for aframe-ar.js)');
-      }
-      // Log AR scene and marker presence
-      const arScene = document.getElementById('arScene');
-      const arMarker = document.getElementById('arMarker');
-      const arCardInfo = document.getElementById('arCardInfo');
-      if (arScene) {
-        console.log('[scanner.html] AR scene found:', arScene);
-      } else {
-        console.error('[scanner.html] AR scene NOT found!');
-      }
-      if (arMarker) {
-        console.log('[scanner.html] AR marker found:', arMarker);
-      } else {
-        console.error('[scanner.html] AR marker NOT found!');
-      }
-      if (arCardInfo) {
-        console.log('[scanner.html] AR card info entity found:', arCardInfo);
-      } else {
-        console.error('[scanner.html] AR card info entity NOT found!');
-      }
-      // DEBUG: Log when scan area overlay is present
-      const scanArea = document.getElementById('scanAreaOverlay');
-      if (scanArea) {
-        console.log('[scanner.html] Scan area overlay found:', scanArea);
-      } else {
-        console.warn('[scanner.html] Scan area overlay NOT found!');
-      }
-      // Camera test: try to access camera and log result
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        // Prefer environment camera, but allow fallback to any camera
-        const constraints = {
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
-        };
-        navigator.mediaDevices.getUserMedia(constraints)
-          .then(function(stream) {
-            console.log('[CAMERA TEST] Camera access: SUCCESS', stream);
-            // Stop the stream immediately after test
-            stream.getTracks().forEach(track => track.stop());
-          })
-          .catch(function(err) {
-            // Fallback: try any camera if environment fails
-            console.warn('[CAMERA TEST] Environment camera failed, trying any camera...', err);
-            navigator.mediaDevices.getUserMedia({ video: true })
-              .then(function(stream) {
-                console.log('[CAMERA TEST] Fallback camera access: SUCCESS', stream);
-                stream.getTracks().forEach(track => track.stop());
-              })
-              .catch(function(err2) {
-                console.error('[CAMERA TEST] Camera access: FAILED', err2);
-              });
-          });
-      } else {
-        console.error('[CAMERA TEST] navigator.mediaDevices.getUserMedia not supported');
-      }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Menu</title>
+    <link rel="stylesheet" href="../styles/mainMenu.css">
+    <link rel="stylesheet" href="../styles/scanner.css">
+    <!-- Dynamically load AR/QR scripts only if camera access is available -->
+    <script>
+    // Remove static AR/QR script tags from head
+    document.addEventListener('DOMContentLoaded', function () {
+        const scannerSection = document.getElementById('scannerInlineSection');
+        const showScannerMenuBtn = document.getElementById('showScannerMenuBtn');
+        const hideScannerBtn = document.getElementById('hideScannerBtn');
+        let scannerScriptsLoaded = false;
+        async function loadScannerScripts() {
+            if (scannerScriptsLoaded) return;
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = src;
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.body.appendChild(s);
+                });
+            }
+            await loadScript('https://aframe.io/releases/1.2.0/aframe.min.js');
+            await loadScript('https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js@3.3.2/aframe/build/aframe-ar.min.js');
+            await loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js');
+            scannerScriptsLoaded = true;
+        }
+        // Show scanner section as fullscreen overlay
+        showScannerMenuBtn.addEventListener('click', async function (event) {
+            event.preventDefault();
+            // Check for camera access before loading AR.js
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                await loadScannerScripts();
+                scannerSection.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+            } else {
+                scannerSection.innerHTML = '<div class="scannerPageContainer"><h2>Camera access is not available on this hosting platform.<br>Please use the app locally or on a different host.</h2></div>';
+                scannerSection.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+        // Hide scanner section and restore scroll
+        hideScannerBtn.addEventListener('click', function () {
+            scannerSection.style.display = 'none';
+            document.body.style.overflow = '';
+        });
     });
-  </script>
+    </script>
+    <script src="../scripts/scanner.js" defer></script>
 </head>
+
 <body>
+<div class="mainTitleGlow">HoloCard</div>
+<div class="mainMenuContainer">
+    <!-- Left Side: Logo and Title -->
+    <div class="logoContainer">
+        <img src="../public/images/holocardLogo.svg" alt="Logo" class="logo" />
+        <h1>Main Menu</h1>
+    </div>    <!-- Right Side: Buttons -->
+    <div class="menuItems">
+        <ul>
+            <li>
+                <a href="holocards.html">My HoloCard</a>
+            </li>
+            <li>
+                <a href="#" id="showScannerMenuBtn">Scan HoloCard</a>
+            </li>
+            <li>
+                <a href="contacts.html">My Contacts</a>
+            </li>
+        </ul>
+        <a href="login.html" class="logoutButton">
+            Logout
+        </a>
+    </div>
+</div>
+
+<!-- Inline scanner.html content, hidden by default -->
+<div id="scannerInlineSection" style="display:none;">
   <div class="scannerPageContainer">
     <div class="backandlabel">
-      <button class="backButton" onclick="window.location.href='../pages/menuPage.html'">Back</button>
+      <button class="backButton" id="hideScannerBtn">Back</button>
       <h1 class="AppName">HoloCard</h1>
     </div>
-
     <h1 class="label">Scanner</h1>
-
     <div class="scannerContainer">
-      <!-- Camera Preview (AR Scene) -->
       <div class="camScanner">
         <div class="arSceneContainer" style="width:100%;height:640px;min-height:400px;position:relative;">
           <div id="scanAreaOverlay" style="position:absolute;top:50%;left:50%;width:180px;height:180px;transform:translate(-50%,-50%);border:2.5px dashed #00ffae;border-radius:18px;box-shadow:0 0 16px #00ffae55;pointer-events:none;z-index:10;transition:border-color 0.2s;">
@@ -117,11 +105,9 @@
             id="arScene"
             style="width:100%;height:100%;"
           >
-            <!-- Use pattern-based marker that can track any QR-like pattern -->
             <a-marker type="pattern" preset="custom" url="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" 
                       smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5"
                       id="arMarker">
-              <!-- Card info will be injected here by scanner.js -->
               <a-entity id="arCardInfo"></a-entity>
             </a-marker>
             <a-entity camera look-controls="enabled: false" cursor="rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
@@ -129,7 +115,7 @@
         </div>
         <div id="scanStatus" style="width:100%;text-align:center;margin-top:0.5rem;font-size:1rem;color:#fff;font-family:'Poppins',sans-serif;letter-spacing:0.05rem;min-height:1.5em;">
           Ready to scan...
-        </div>        <!-- Scanned Info (now below camera preview) -->
+        </div>
         <div class="scannedDetails wide">
           <h1 class="scannedDetailsLabel">Scanned Details</h1>
           <div class="photoLogoContainer">
@@ -163,12 +149,12 @@
             <div class="details-row">
               <span class="detailsLabel" id="professionPosition">Profession/Position: None</span>
               <button class="copy-btn" data-copy-target="professionPosition" title="Copy">📋</button>
-            </div>            <div class="details-row">
+            </div>
+            <div class="details-row">
               <span class="detailsLabel" id="address">Address: None</span>
               <button class="copy-btn" data-copy-target="address" title="Copy">📋</button>
             </div>
           </div>
-          <!-- Add to Contacts Button -->
           <div class="add-contact-container" id="addContactContainer" style="display: none;">
             <button class="add-contact-btn" id="addContactBtn">
               <span class="btn-icon">👤</span>
@@ -177,8 +163,29 @@
           </div>
         </div>
       </div>
-      <!-- AR overlay is handled by scanner.js and .details -->
     </div>
   </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const scannerSection = document.getElementById('scannerInlineSection');
+        const showScannerMenuBtn = document.getElementById('showScannerMenuBtn');
+        const hideScannerBtn = document.getElementById('hideScannerBtn');
+
+        // Show scanner section as fullscreen overlay
+        showScannerMenuBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            scannerSection.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        });
+
+        // Hide scanner section and restore scroll
+        hideScannerBtn.addEventListener('click', function () {
+            scannerSection.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+    });
+</script>
 </body>
 </html>

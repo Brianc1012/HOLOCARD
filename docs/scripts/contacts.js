@@ -24,14 +24,14 @@ async function checkSession() {
         
         if (!result.logged_in) {
             console.log('[contacts.js] User not logged in, redirecting to login');
-            window.location.href = '../pages/login.html';
+            window.location.href = 'login.html';
             return;
         }
         
         console.log('[contacts.js] Session valid for user:', result.username);
     } catch (error) {
         console.error('[contacts.js] Session check failed:', error);
-        window.location.href = '../pages/login.html';
+        window.location.href = 'login.html';
     }
 }
 
@@ -45,7 +45,7 @@ async function loadContacts() {
         // Use correct API path based on current location
         const currentPath = window.location.pathname;
         let apiPath;
-        if (currentPath.includes('/pages/')) {
+        if (currentPath.includes('/menuPage.html')) {
             apiPath = '../api/get_contacts.php';
         } else {
             apiPath = 'api/get_contacts.php';
@@ -236,7 +236,7 @@ async function deleteContact(contactId) {
         // Use correct API path based on current location
         const currentPath = window.location.pathname;
         let apiPath;
-        if (currentPath.includes('/pages/')) {
+        if (currentPath.includes('/menuPage.html')) {
             apiPath = '../api/delete_contact.php';
         } else {
             apiPath = 'api/delete_contact.php';

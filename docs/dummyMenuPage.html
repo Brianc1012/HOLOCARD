@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Menu (Basic)</title>
+    <link rel="stylesheet" href="styles/mainMenu.css">
+</head>
+<body>
+    <div class="mainTitleGlow">HoloCard</div>
+    <div class="mainMenuContainer">
+        <div class="logoContainer">
+            <img src="public/images/holocardLogo.svg" alt="Logo" class="logo" />
+            <h1>Main Menu</h1>
+        </div>
+        <div class="menuItems">
+            <ul>
+                <li><a href="holocards.html">My HoloCard</a></li>
+                <li><a href="contacts.html">My Contacts</a></li>
+                <li><a href="#" id="openScanner">Scan HoloCard</a></li>
+            </ul>
+            <a href="login.html" class="logoutButton">Logout</a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('openScanner').addEventListener('click', function(e) {
+                e.preventDefault();
+                // Replace with your GitHub Pages scanner URL
+                window.open(
+                  'https://<your-username>.github.io/<repo-name>/scanner.html',
+                  '_blank', 'noopener'
+                );
+            });
+        });
+    </script>
+</body>
+</html>

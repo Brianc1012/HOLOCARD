@@ -37,7 +37,7 @@ function openAddModal() {
   }
 
   console.log("📡 Fetching addCard.html…");
-  fetch("../pages/addCard.html")
+  fetch("addCard.html")
     .then((res) => {
       if (!res.ok) throw new Error("addCard.html fetch failed");
       return res.text();
@@ -143,7 +143,7 @@ async function refreshCardList() {
         if (!card) return;
         
         // Open cardGenerated modal
-        const res = await fetch('../pages/cardGenerated.html');
+        const res = await fetch('cardGenerated.html');
         const html = await res.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const modal = doc.querySelector('.modal-overlay');
@@ -248,7 +248,7 @@ async function refreshCardList() {
         
         try {
           const modalContainer = document.getElementById('modalContainer');
-          const res = await fetch('../pages/editCard.html');
+          const res = await fetch('editCard.html');
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
           const modal = doc.querySelector('.modal-overlay');

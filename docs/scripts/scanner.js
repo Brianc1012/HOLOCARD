@@ -573,7 +573,7 @@ function fetchCardDataById(cardId, qrLocation, qrCorners) {
   // Use correct API path based on current location
   const currentPath = window.location.pathname;
   let apiPath;
-  if (currentPath.includes('/pages/')) {
+  if (currentPath.includes('/addCard.html')) {
     // We're in pages directory, go up one level
     apiPath = `../api/get_cards.php?id=${encodeURIComponent(cardId)}`;
   } else {
@@ -587,7 +587,7 @@ function fetchCardDataById(cardId, qrLocation, qrCorners) {
       console.log('[API] Response headers:', Object.fromEntries(res.headers.entries()));
       if (!res.ok) {
         // Try alternative path if first fails
-        const altPath = currentPath.includes('/pages/') ? 
+        const altPath = currentPath.includes('/addCard.html') ? 
           `../api/get_cards.php?id=${encodeURIComponent(cardId)}` : 
           `/holocard_nonext/api/get_cards.php?id=${encodeURIComponent(cardId)}`;
         console.log('[API] Trying alternative path:', altPath);
@@ -736,7 +736,7 @@ async function checkSession() {
   try {
     const currentPath = window.location.pathname;
     let apiPath;
-    if (currentPath.includes('/pages/')) {
+    if (currentPath.includes('/addCard.html')) {
       apiPath = '../api/session_test.php';
     } else {
       apiPath = 'api/session_test.php';
@@ -853,7 +853,7 @@ async function handleAddToContacts() {
     // Use correct API path based on current location
     const currentPath = window.location.pathname;
     let apiPath;
-    if (currentPath.includes('/pages/')) {
+    if (currentPath.includes('/addCard.html')) {
       apiPath = '../api/add_contact.php';
     } else {
       apiPath = 'api/add_contact.php';

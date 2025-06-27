@@ -171,7 +171,7 @@ class HoloCardQRGenerator {
         email: cardData.Email || cardData.email || '',
         contact: cardData.ContactNo || cardData.contactNo || ''
       },
-      webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID || cardData.id}`,
+      webUrl: `${window.location.origin}/holocard_nonext/viewCard.html?id=${cardData.HoloCardID || cardData.id}`,
       generated: new Date().toISOString()
     };
     return JSON.stringify(reducedData);
@@ -230,7 +230,7 @@ class HoloCardQRGenerator {
       },
       
       // Web Fallback
-      webUrl: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID || cardData.id}`,
+      webUrl: `${window.location.origin}/holocard_nonext/viewCard.html?id=${cardData.HoloCardID || cardData.id}`,
       
       // Timestamp for caching
       generated: new Date().toISOString()

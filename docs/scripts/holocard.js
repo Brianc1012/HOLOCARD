@@ -36,7 +36,7 @@ function openAddModal() {
   }
 
   console.log("📡 Fetching addCard.html…");
-  fetch("../pages/addCard.html")
+  fetch("addCard.html")
     .then((res) => {
       if (!res.ok) throw new Error("addCard.html fetch failed");
       return res.text();
@@ -220,7 +220,7 @@ async function refreshCardList() {
         
         try {
           const modalContainer = document.getElementById('modalContainer');
-          const res = await fetch('../pages/editCard.html');
+          const res = await fetch('editCard.html');
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
           const modal = doc.querySelector('.modal-overlay');
@@ -417,7 +417,7 @@ window.openViewCardModal = async function(cardData) {
       await new Promise(resolve => setTimeout(resolve, 300));
     }
     
-    const res = await fetch('../pages/viewCard.html');
+    const res = await fetch('viewCard.html');
     if (!res.ok) throw new Error('Failed to load ViewCard modal');
     
     const html = await res.text();
@@ -1003,7 +1003,7 @@ function setupViewCardActionHandlers(modal, cardData) {
       const shareData = {
         title: `${cardData.CardName} - HoloCard`,
         text: `Check out my HoloCard: ${cardData.CardName}`,
-        url: `${window.location.origin}/holocard_nonext/pages/view-card.html?id=${cardData.HoloCardID}`
+        url: `${window.location.origin}/holocard_nonext/view-card.html?id=${cardData.HoloCardID}`
       };
 
       if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {

@@ -23,7 +23,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       // Optionally store user info in sessionStorage/localStorage
       localStorage.setItem('holocard_loggedin', 'true');
       localStorage.setItem('holocard_user', JSON.stringify(data.user));
-      window.location.href = 'menuPage.html';
+      window.location.href = 'dummyMenuPage.html';
     } else {
       alert(data.message || 'Login failed.');
     }

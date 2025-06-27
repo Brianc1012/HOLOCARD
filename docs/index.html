@@ -152,18 +152,18 @@
     <script>
         // Redirect to login page after a short delay for the loading animation
         setTimeout(function() {
-            window.location.href = 'pages/login.html';
+            window.location.href = 'login.html';
         }, 2000); // 2 second delay to show the loading animation
 
         // Also provide immediate redirect if user clicks anywhere (skip animation)
         document.addEventListener('click', function() {
-            window.location.href = 'pages/login.html';
+            window.location.href = 'login.html';
         });
 
         // Fallback redirect in case setTimeout fails
         setTimeout(function() {
             if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
-                window.location.href = 'pages/login.html';
+                window.location.href = 'login.html';
             }
         }, 5000); // 5 second fallback
     </script>
